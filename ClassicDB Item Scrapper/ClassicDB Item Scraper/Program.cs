@@ -19,9 +19,17 @@ namespace ClassicDB_Item_Scraper
     {
         static void Main(string[] args)
         {
-            var crmUrl = "https://discoverxvdemocrm16a.crm.powerobjects.net/NateDemo2016Test";
-            var userName = "";
-            var password = "";
+            var item
+
+            
+
+        }
+
+        private static void ConnectToCRM()
+        {
+            var crmUrl = "https://wowepgp.crm.dynamics.com";
+            var userName = "nate.arms@wowepgp.onmicrosoft.com";
+            var password = "A69S869x27$bAA@N";
             /*
             Console.Write("Please Enter a CRM URL: ");
             var crmUrl = Console.ReadLine();
@@ -37,21 +45,25 @@ namespace ClassicDB_Item_Scraper
             // Get the CRM connection string and connect to the CRM Organization
             CrmServiceClient crmConn = new CrmServiceClient(connectionString);
             IOrganizationService crmService = crmConn.OrganizationServiceProxy;
-
+            
             if (crmConn.IsReady)
             {
-                Entity acc = new Entity("account");
-                acc["name"] = "Joe's New Account";
-                crmService.Create(acc);
+                Entity loot = new Entity("wowc_loot");
+                loot["wowc_name"] = "Joe's New Account";
+                loot["wowc_ilvl"] = 66;
+                loot["wowc_lootid"] = 50;
+                loot["wowc_rarity"] = 1;
+                loot["wowc_slot"] = 1;
+                crmService.Create(loot);
+
             }
             
-
         }
 
-        private void ParseClassiDB()
+        private static void ParseClassiDB()
         {
 
-            int initializedNumber = 16802;
+            int initializedNumber = 0;
 
             var html = @"https://classicdb.ch/?item=" + initializedNumber;
             HtmlWeb web = new HtmlWeb();
@@ -92,6 +104,7 @@ namespace ClassicDB_Item_Scraper
 
             Console.ReadLine();
         }
+
     }
 
 }
