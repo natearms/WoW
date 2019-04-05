@@ -9,6 +9,9 @@ using System.Net.Http;
 using System.Xml.XPath;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
+using System.Configuration;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Tooling.Connector;
 
 namespace ClassicDB_Item_Scraper
 {
@@ -16,41 +19,79 @@ namespace ClassicDB_Item_Scraper
     {
         static void Main(string[] args)
         {
-            MainAsync(args).ConfigureAwait(false).GetAwaiter().GetResult();
-            
+            var crmUrl = "https://discoverxvdemocrm16a.crm.powerobjects.net/NateDemo2016Test";
+            var userName = "";
+            var password = "";
             /*
-            WebClient wc = new WebClient();
+            Console.Write("Please Enter a CRM URL: ");
+            var crmUrl = Console.ReadLine();
 
-            string raw = wc.DownloadString("https://classicdb.ch/?item=16802");
-                        
-            Regex iLvl = new Regex("(?=<div>Level: )([^\n\r]*)");
-            Match iLvlR = iLvl.Match(raw);
+            Console.Write("Please Enter a Username: ");
+            var userName = Console.ReadLine();            
 
-            string iLvlResult = iLvlR.ToString().Replace(@"<div>Level: ", "").Replace(@"</div>","");
-            
-            Console.WriteLine(iLvlResult);
-            
-
-            string reader = File.ReadAllText(raw, Encoding.UTF8);
+            Console.Write("Please Enter a Password: ");
+            var password = Console.ReadLine();
             */
+            var connectionString = "AuthType=Office365;Url="+crmUrl+"; Username="+userName+"; Password="+password+"";
 
+            // Get the CRM connection string and connect to the CRM Organization
+            CrmServiceClient crmConn = new CrmServiceClient(connectionString);
+            IOrganizationService crmService = crmConn.OrganizationServiceProxy;
 
+            if (crmConn.IsReady)
+            {
+                Entity acc = new Entity("account");
+                acc["name"] = "Joe's New Account";
+                crmService.Create(acc);
+            }
+            
 
         }
-        async static Task MainAsync(string[] args)
+
+        private void ParseClassiDB()
         {
-            HttpClient client = new HttpClient();
-            var response = await client.GetAsync("https://classicdb.ch/?item=16802");
-            var pageContents = await response.Content.ReadAsStringAsync();
 
-            HtmlDocument pageDocument = new HtmlDocument();
-            pageDocument.LoadHtml(pageContents);
+            int initializedNumber = 16802;
 
-            IEnumerable<string> listItemHtml = pageDocument.DocumentNode
-                .SelectNodes("//div[contains(@class, 'infobox-spacer')]").Select(li => li.OuterHtml);
-}
-            Console.WriteLine("1");
+            var html = @"https://classicdb.ch/?item=" + initializedNumber;
+            HtmlWeb web = new HtmlWeb();
+            var doc = web.Load(html);
+
+            var iLvl = doc.DocumentNode.SelectSingleNode("//table[@class='infobox']//tr//td//ul//li//div").InnerHtml.Replace("Level: ", "");
+            var rarity = doc.DocumentNode.SelectSingleNode("//div[@id='tooltip" + initializedNumber + "-generic']//*//b").Attributes["class"].Value;
+            var itemName = doc.DocumentNode.SelectSingleNode("//div[@id='tooltip" + initializedNumber + "-generic']//*//b").InnerText;
+            var slot = doc.DocumentNode.SelectSingleNode("//div[@id='tooltip" + initializedNumber + "-generic']//*//table[@width='100%']//td").InnerText;
+            var rarityText = "n/a";
+
+            if (rarity == "q2")
+            {
+                rarityText = "Uncommon";
+            }
+            else if (rarity == "q3")
+            {
+                rarityText = "Rare";
+            }
+            else if (rarity == "q4")
+            {
+                rarityText = "Epic";
+            }
+            else if (rarity == "q5")
+            {
+                rarityText = "Legendary";
+            }
+            else
+            {
+                Console.WriteLine("Rarity Value Not Set");
+            }
+
+            Console.WriteLine("iLvl: " + iLvl);
+            Console.WriteLine("Rarity: " + rarity);
+
+            Console.WriteLine("Item Name: " + itemName);
+            Console.WriteLine("Slot: " + slot);
+
             Console.ReadLine();
         }
     }
+
 }
