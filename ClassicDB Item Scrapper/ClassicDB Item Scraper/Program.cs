@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.IO;
 using System.Net.Http;
+using System.Xml;
 using System.Xml.XPath;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
@@ -23,85 +24,139 @@ namespace ClassicDB_Item_Scraper
     {
         static void Main(string[] args)
         {
-            CrmServiceClient crmConn = ConnectToCRM();
-            IOrganizationService crmService = crmConn.OrganizationServiceProxy;
-
-            Console.WriteLine(crmConn.IsReady);
-
-            List<string> itemStatistics = ParseClassicDB(16802);
-
-            Console.WriteLine("iLvl: " + itemStatistics[0]);
-            Console.WriteLine("Rarity: " + itemStatistics[1]);
-
-            Console.WriteLine("Item Name: " + itemStatistics[2]);
-            Console.WriteLine("Slot: " + itemStatistics[3]);
-
-            Console.ReadLine();
             /*
-            if (crmConn.IsReady)
-            {
-                Entity loot = new Entity("wowc_loot");
-                loot["wowc_name"] = itemStatistics[2];
-                loot["wowc_ilvl"] = itemStatistics[0];
-                loot["wowc_lootid"] = 16802;
-                loot["wowc_rarity"] = ;
-                loot["wowc_slot"] = 1;
-                crmService.Create(loot);
+            CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
+            IOrganizationService crmService = crmConn.OrganizationServiceProxy;
+            
+            Console.WriteLine(crmConn.IsReady);
+            */
+            //List<string> itemStatistics = ParseClassicDB(16802);
 
-            }
+            int startingNumber = 16000;
+            int endingNumber = 22000;
+
+            BuildCsvFile(startingNumber, endingNumber);
+
+            //List<string> itemStatistics = ParseClassicWowHead(1);
+            /*
+            Console.WriteLine("Item Name: " + itemStatistics[0]);
+            Console.WriteLine("iLvl: " + itemStatistics[1]);
+            Console.WriteLine("Rarity: " + itemStatistics[2]);
+            Console.WriteLine("Rarity Name: " + itemStatistics[3]);
+            Console.WriteLine("Slot: " + itemStatistics[4]);
+            Console.WriteLine("Slot Name: " + itemStatistics[5]);
+            */
+
+            
+
+            //Console.ReadLine();
+            /*
+            
             */
            
 
         }
-   
-        
 
-    static CrmServiceClient ConnectToCRM()
+        static List<string> ParseClassicWowHead(int providedNumber)
         {
-            var crmUrl = "https://discoverxvdemocrm16a.crm.powerobjects.net/NateDemo2016Test";
-            var serverUrl = "https://discoverxvdemocrm16a.crm.powerobjects.net";
-            var orgName = "NateDemo2016Test";
-            var domain = "";
-            var userName = "";
-            var password = "";
+            int initializedNumber = providedNumber;
+            List<string> itemStats = new List<String>();
 
-            ClientCredentials credentials = new ClientCredentials();
+            String URLString = @"https://classic.wowhead.com/item=" + initializedNumber + "&xml";
+            XmlDocument doc = new XmlDocument();
+            doc.Load(URLString);
 
-            credentials.UserName.UserName = userName;
+            XmlElement root = doc.DocumentElement;
+            //XmlNode nodeInfo = root.SelectSingleNode("descendant::item");
+            if (root.InnerText == "Item not found!" || 
+                Int32.Parse(doc.GetElementsByTagName("level")[0].InnerText) < 60 || 
+                Int32.Parse(doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText) < 3)
+            {
+                itemStats.Add("Item not found or skipped!");
+            }
+            else
+            {
+                var itemId = doc.GetElementsByTagName("item")[0].Attributes[0].InnerText;
+                var itemName = doc.GetElementsByTagName("name")[0].InnerText;
+                var itemLvl = doc.GetElementsByTagName("level")[0].InnerText;
+                var quality = doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText;
+                var qualityName = doc.GetElementsByTagName("quality")[0].InnerText;
+                var classId = doc.GetElementsByTagName("class")[0].Attributes[0].InnerText;
+                var classIdName = doc.GetElementsByTagName("class")[0].InnerText;
+                var subClassId = doc.GetElementsByTagName("subclass")[0].Attributes[0].InnerText;
+                var inventorySlot = doc.GetElementsByTagName("inventorySlot")[0].Attributes[0].InnerText;
+                var inventorySlotName = doc.GetElementsByTagName("inventorySlot")[0].InnerText;
+                var crmRarity = "";
+                var crmSlot = "";
 
-            credentials.UserName.Password = password;
-            /*
+                switch (quality)
+                {
+                    case "2":
+                        crmRarity = "257260000";
+                        break;
+                    case "3":
+                        crmRarity = "257260001";
+                        break;
+                    case "4":
+                        crmRarity = "257260002";
+                        break;
+                    case "5":
+                        crmRarity = "257260003";
+                        break;
+                    default:
+                        
+                        break;
+                }
+                /*
+                switch (slot)
+                {
+                    case "2":
+                        crmRarity = "257260000";
+                        break;
+                    case "3":
+                        crmRarity = "257260001";
+                        break;
+                    case "4":
+                        crmRarity = "257260002";
+                        break;
+                    case "5":
+                        crmRarity = "257260003";
+                        break;
+                    default:
+                        Console.WriteLine("Rarity Value Not Set");
+                        break;
+                }
+                */
 
-            var crmUrl = "https://wowepgp.crm.dynamics.com";
-            var userName = "nate.arms@wowepgp.onmicrosoft.com";
-            var password = "A69S869x27$bAA@N";
 
-            Console.Write("Please Enter a CRM URL: ");
-            var crmUrl = Console.ReadLine();
+                //XmlNodeList xnList = doc.ChildNodes("/wowhead/item");
 
-            Console.Write("Please Enter a Username: ");
-            var userName = Console.ReadLine();            
+                //string iLvl = XmlNode.xnList["level"].InnerText;
 
-            Console.Write("Please Enter a Password: ");
-            var password = Console.ReadLine();
-            */
-            var connectionString = "AuthType=IFD;Url=" + crmUrl + "; Username=" + userName + "; Password=" +
-                                   password + "; Domain=" + domain + "; orgName="+orgName+"";
+                //itemStats.Add(node.InnerText);
 
-            // Get the CRM connection string and connect to the CRM Organization
-            //CrmServiceClient conn = new CrmServiceClient(new NetworkCredential(userName, password, domain), AuthenticationType.IFD, "natedemo2016test.crm.powerobjects.net", "443",orgName);
+                itemStats.Add(itemId);
+                itemStats.Add(itemName);
+                itemStats.Add(itemLvl);
+                itemStats.Add(quality);
+                itemStats.Add(qualityName);
+                itemStats.Add(classId);
+                itemStats.Add(classIdName);
+                itemStats.Add(subClassId);
+                itemStats.Add(inventorySlot);
+                itemStats.Add(inventorySlotName);
+                itemStats.Add(crmRarity);
+                itemStats.Add(crmSlot);
+            }
             
-            CrmServiceClient conn = new CrmServiceClient(connectionString);
-            IOrganizationService crmService = conn(OrganizationServiceProxy);
-            //IOrganizationService crmService = (IOrganizationService)conn.OrganizationWebProxyClient != null ? (IOrganizationService)conn.OrganizationWebProxyClient : (IOrganizationService)conn.OrganizationServiceProxy;
 
-            return conn;
-
+            return itemStats;
         }
 
         static List<string> ParseClassicDB(int providedNumber)
         {
 
+            
             int initializedNumber = providedNumber;
             List<string> itemStats = new List<string>();
 
@@ -151,6 +206,51 @@ namespace ClassicDB_Item_Scraper
 
             Console.ReadLine();
             */
+        }
+
+        private static void InsertIntoCRM()
+        {
+            /*
+            if (crmConn.IsReady)
+            {
+                Entity loot = new Entity("equipment");
+                loot["name"] = itemStatistics[0];
+                loot["wowc_ilvl"] = itemStatistics[1];
+                loot["wowc_lootid"] = 16802;
+                loot["wowc_rarity"] = ;
+                loot["wowc_slot"] = 1;
+                crmService.Create(loot);
+
+            }
+            */
+        }
+
+        private static void BuildCsvFile(int start, int end)
+        {
+            var csv = new StringBuilder();
+            csv.AppendLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}", 
+                "itemId", "itemName", "itemLvl", "quality", "qualityName", "classId", "classIdName", 
+                "subClassId", "inventorySlot", "inventorySlotName", "crmRarity", "crmSlot"));
+
+            for (int i = start; i < end; i++)
+            {
+                List<string> itemStatistics = ParseClassicWowHead(i);
+                Console.WriteLine("Parsing Item: " + i);
+                if (itemStatistics[0]== "Item not found or skipped!")
+                {
+                    
+                }
+                else
+                {
+                    var newLine = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}",
+                        itemStatistics[0], itemStatistics[1], itemStatistics[2], itemStatistics[3], itemStatistics[4], itemStatistics[5], itemStatistics[6],
+                        itemStatistics[7], itemStatistics[8], itemStatistics[9], itemStatistics[10], itemStatistics[11]);
+                    csv.AppendLine(newLine);
+                }
+                
+            }
+
+            File.WriteAllText(@"c:\test.csv", csv.ToString());
         }
 
     }
