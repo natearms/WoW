@@ -16,6 +16,7 @@ using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Tooling.Connector;
+using Microsoft.Xrm.Sdk.Query;
 using AuthenticationType = Microsoft.Xrm.Tooling.Connector.AuthenticationType;
 
 namespace ClassicDB_Item_Scraper
@@ -24,37 +25,13 @@ namespace ClassicDB_Item_Scraper
     {
         static void Main(string[] args)
         {
-            /*
-            CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
-            IOrganizationService crmService = crmConn.OrganizationServiceProxy;
-            
-            Console.WriteLine(crmConn.IsReady);
-            */
-            //List<string> itemStatistics = ParseClassicDB(16802);
-
             int startingNumber = 16000;
-            int endingNumber = 22000;
+            int endingNumber = 24080;
 
-            BuildCsvFile(startingNumber, endingNumber);
-
-            //List<string> itemStatistics = ParseClassicWowHead(1);
-            /*
-            Console.WriteLine("Item Name: " + itemStatistics[0]);
-            Console.WriteLine("iLvl: " + itemStatistics[1]);
-            Console.WriteLine("Rarity: " + itemStatistics[2]);
-            Console.WriteLine("Rarity Name: " + itemStatistics[3]);
-            Console.WriteLine("Slot: " + itemStatistics[4]);
-            Console.WriteLine("Slot Name: " + itemStatistics[5]);
-            */
-
-            
+            //BuildCsvFile(startingNumber, endingNumber);
+            InsertIntoCRM(startingNumber, endingNumber);
 
             //Console.ReadLine();
-            /*
-            
-            */
-           
-
         }
 
         static List<string> ParseClassicWowHead(int providedNumber)
@@ -67,17 +44,24 @@ namespace ClassicDB_Item_Scraper
             doc.Load(URLString);
 
             XmlElement root = doc.DocumentElement;
-            //XmlNode nodeInfo = root.SelectSingleNode("descendant::item");
-            if (root.InnerText == "Item not found!" || 
-                Int32.Parse(doc.GetElementsByTagName("level")[0].InnerText) < 60 || 
-                Int32.Parse(doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText) < 3)
+            XmlNode nodeInfo = root.SelectSingleNode("descendant::item");
+            if (root.InnerText == "Item not found!" ||
+                Int32.Parse(doc.GetElementsByTagName("level")[0].InnerText) < 60 ||
+                Int32.Parse(doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText) < 3 ||
+                Int32.Parse(doc.GetElementsByTagName("inventorySlot")[0].Attributes[0].InnerText) == 0 ||
+                Int32.Parse(doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText) == 6
+                )
             {
                 itemStats.Add("Item not found or skipped!");
             }
             else
             {
+                var xmlDoc = new HtmlDocument();
+                xmlDoc.OptionEmptyCollection = true;
+                xmlDoc.LoadHtml(doc.GetElementsByTagName("htmlTooltip")[0].InnerText);
+
                 var itemId = doc.GetElementsByTagName("item")[0].Attributes[0].InnerText;
-                var itemName = doc.GetElementsByTagName("name")[0].InnerText;
+                var itemName = doc.GetElementsByTagName("name")[0].InnerText.Replace(',', ' ');
                 var itemLvl = doc.GetElementsByTagName("level")[0].InnerText;
                 var quality = doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText;
                 var qualityName = doc.GetElementsByTagName("quality")[0].InnerText;
@@ -88,6 +72,7 @@ namespace ClassicDB_Item_Scraper
                 var inventorySlotName = doc.GetElementsByTagName("inventorySlot")[0].InnerText;
                 var crmRarity = "";
                 var crmSlot = "";
+                var slotType = xmlDoc?.DocumentNode?.SelectSingleNode("//span[@class='q1']")?.InnerText;
 
                 switch (quality)
                 {
@@ -104,36 +89,50 @@ namespace ClassicDB_Item_Scraper
                         crmRarity = "257260003";
                         break;
                     default:
-                        
+
                         break;
                 }
-                /*
-                switch (slot)
+
+                if (inventorySlot == "17")
                 {
-                    case "2":
-                        crmRarity = "257260000";
-                        break;
-                    case "3":
-                        crmRarity = "257260001";
-                        break;
-                    case "4":
-                        crmRarity = "257260002";
-                        break;
-                    case "5":
-                        crmRarity = "257260003";
-                        break;
-                    default:
-                        Console.WriteLine("Rarity Value Not Set");
-                        break;
+                    //2H weapon
+                    crmSlot = "257260000";
                 }
-                */
-
-
-                //XmlNodeList xnList = doc.ChildNodes("/wowhead/item");
-
-                //string iLvl = XmlNode.xnList["level"].InnerText;
-
-                //itemStats.Add(node.InnerText);
+                else if (inventorySlot == "13" || inventorySlot == "21" || inventorySlot == "22")
+                {
+                    //1H Weapon
+                    crmSlot = "257260001";
+                }
+                else if (inventorySlot == "1" || inventorySlot == "5" || inventorySlot == "7")
+                {
+                    //Head, Chest, Legs
+                    crmSlot = "257260002";
+                }
+                else if (inventorySlot == "3" || inventorySlot == "6" || inventorySlot == "8" || inventorySlot == "10" || inventorySlot == "12")
+                {
+                    //Shoulder, Waist, Feet, Hands, Trinket
+                    crmSlot = "257260003";
+                }
+                else if (inventorySlot == "2" || inventorySlot == "9" || inventorySlot == "11" || inventorySlot == "16" || inventorySlot == "23" || slotType == "Wand" || inventorySlot == "18" || inventorySlot == "28" || inventorySlot == "25")
+                {
+                    //Neck, Wrist, Finger, Back, Off-Hand, Wand, Relic, Bag
+                    crmSlot = "257260004";
+                }
+                else if (inventorySlot == "14")
+                {
+                    //Shield
+                    crmSlot = "257260005";
+                }
+                else if (inventorySlot == "15" && subClassId != "19")
+                {
+                    //Ranged Weapon (without wand)
+                    crmSlot = "257260006";
+                }
+                else
+                {
+                    //default to lowest value slot
+                    crmSlot = "257260004";
+                }
 
                 itemStats.Add(itemId);
                 itemStats.Add(itemName);
@@ -147,16 +146,13 @@ namespace ClassicDB_Item_Scraper
                 itemStats.Add(inventorySlotName);
                 itemStats.Add(crmRarity);
                 itemStats.Add(crmSlot);
+                itemStats.Add(slotType);
             }
-            
-
             return itemStats;
         }
 
         static List<string> ParseClassicDB(int providedNumber)
         {
-
-            
             int initializedNumber = providedNumber;
             List<string> itemStats = new List<string>();
 
@@ -197,60 +193,129 @@ namespace ClassicDB_Item_Scraper
             itemStats.Add(slot);
             itemStats.Add(rarityText);
             return itemStats;
-            /*
-            Console.WriteLine("iLvl: " + iLvl);
-            Console.WriteLine("Rarity: " + rarity);
-
-            Console.WriteLine("Item Name: " + itemName);
-            Console.WriteLine("Slot: " + slot);
-
-            Console.ReadLine();
-            */
+           
         }
 
-        private static void InsertIntoCRM()
+        private static void InsertIntoCRM(int start, int end)
         {
-            /*
-            if (crmConn.IsReady)
-            {
-                Entity loot = new Entity("equipment");
-                loot["name"] = itemStatistics[0];
-                loot["wowc_ilvl"] = itemStatistics[1];
-                loot["wowc_lootid"] = 16802;
-                loot["wowc_rarity"] = ;
-                loot["wowc_slot"] = 1;
-                crmService.Create(loot);
+            CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
+            IOrganizationService crmService = crmConn.OrganizationServiceProxy;
 
+
+            Console.WriteLine(crmConn.IsReady);
+
+            for (int i = start; i < end; i++)
+            {
+                List<string> itemStats = ParseClassicWowHead(i);
+                Console.WriteLine("Parsing Item: " + i);
+                
+
+                if (itemStats[0] == "Item not found or skipped!")
+                {
+                }
+                else
+                {
+                    if (itemStats[8] == "14")
+                    {
+                        itemStats[8] = "257260000";
+                    }
+
+                    Guid defaultBU = new Guid("{599C9952-0971-E911-A9B9-000D3A37051A}");
+                    OptionSetValue rarity = new OptionSetValue(Int32.Parse(itemStats[10]));
+                    OptionSetValue slot = new OptionSetValue(Int32.Parse(itemStats[11]));
+
+                    QueryExpression query = new QueryExpression("equipment");
+                    query.ColumnSet.AddColumns("wowc_itemid", "equipmentid");
+                    query.Criteria = new FilterExpression();
+                    query.Criteria.AddCondition("wowc_itemid", ConditionOperator.Equal, itemStats[0]);
+
+                    EntityCollection results = crmService.RetrieveMultiple(query);
+
+                    int totalrecords = results.Entities.Count;
+
+                    if (totalrecords == 0)
+                    {
+                        try
+                        {
+                            Entity loot = new Entity("equipment");
+                            loot["name"] = itemStats[1];
+                            loot["wowc_ilvl"] = Int32.Parse(itemStats[2]);
+                            loot["wowc_itemid"] = itemStats[0];
+                            loot["wowc_rarity"] = rarity;
+                            loot["wowc_slot"] = slot;
+                            loot["businessunitid"] = new EntityReference("businessunit", defaultBU);
+                            loot["timezonecode"] = 33;
+                            crmService.Create(loot);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                            throw;
+                        }
+                    }
+                    else
+                    {
+                        foreach (var a in results.Entities)
+                        {
+                            if (a.Contains("wowc_itemid") && a["wowc_itemid"] != null)
+                            {
+                                Console.WriteLine("{0} {1}", a.GetAttributeValue<string>("wowc_itemid"), a.GetAttributeValue<Guid>("equipmentid"));
+                                try
+                                {
+                                    Entity loot = new Entity("equipment");
+                                    loot.Id = a.GetAttributeValue<Guid>("equipmentid");
+                                    loot["name"] = itemStats[1];
+                                    loot["wowc_ilvl"] = Int32.Parse(itemStats[2]);
+                                    loot["wowc_itemid"] = itemStats[0];
+                                    loot["wowc_rarity"] = rarity;
+                                    loot["wowc_slot"] = slot;
+
+                                    crmService.Update(loot);
+                                    
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine(ex.Message);
+                                    throw;
+                                }
+                            }
+                            else
+                            {
+
+                            }
+                        }
+                       
+                    }
+                    
+                }
             }
-            */
         }
 
         private static void BuildCsvFile(int start, int end)
         {
             var csv = new StringBuilder();
-            csv.AppendLine(string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}", 
+            csv.AppendLine(string.Format("{0},{1},{2},{3},{4},{5},{6}" +
+                ",{7},{8},{9},{10},{11},{12}", 
                 "itemId", "itemName", "itemLvl", "quality", "qualityName", "classId", "classIdName", 
-                "subClassId", "inventorySlot", "inventorySlotName", "crmRarity", "crmSlot"));
+                "subClassId", "inventorySlot", "inventorySlotName", "crmRarity", "crmSlot", "slotType"));
 
             for (int i = start; i < end; i++)
             {
-                List<string> itemStatistics = ParseClassicWowHead(i);
+                List<string> itemStats = ParseClassicWowHead(i);
                 Console.WriteLine("Parsing Item: " + i);
-                if (itemStatistics[0]== "Item not found or skipped!")
+                if (itemStats[0]== "Item not found or skipped!")
                 {
-                    
                 }
                 else
                 {
-                    var newLine = string.Format("{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11}",
-                        itemStatistics[0], itemStatistics[1], itemStatistics[2], itemStatistics[3], itemStatistics[4], itemStatistics[5], itemStatistics[6],
-                        itemStatistics[7], itemStatistics[8], itemStatistics[9], itemStatistics[10], itemStatistics[11]);
+                    var newLine = string.Format("{0},{1},{2},{3},{4},{5},{6}" +
+                        ",{7},{8},{9},{10},{11},{12}",
+                        itemStats[0], itemStats[1], itemStats[2], itemStats[3], itemStats[4], itemStats[5], itemStats[6],
+                        itemStats[7], itemStats[8], itemStats[9], itemStats[10], itemStats[11], itemStats[12]);
                     csv.AppendLine(newLine);
-                }
-                
+                }   
             }
-
-            File.WriteAllText(@"c:\test.csv", csv.ToString());
+            File.WriteAllText(@"C:\GitHub\natearms\WoW\ClassicDB Item Scrapper\ClassicDB Item Scraper\Files\test.csv", csv.ToString());
         }
 
     }
