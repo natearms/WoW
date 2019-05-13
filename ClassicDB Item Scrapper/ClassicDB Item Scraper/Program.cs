@@ -220,12 +220,12 @@ namespace ClassicDB_Item_Scraper
                         itemStats[8] = "257260000";
                     }
 
-                    Guid defaultBU = new Guid("{599C9952-0971-E911-A9B9-000D3A37051A}");
+                    Guid defaultBU = new Guid("{FDF40AEB-1C6E-E911-A99F-000D3A1ABFB7}");
                     OptionSetValue rarity = new OptionSetValue(Int32.Parse(itemStats[10]));
                     OptionSetValue slot = new OptionSetValue(Int32.Parse(itemStats[11]));
 
-                    QueryExpression query = new QueryExpression("equipment");
-                    query.ColumnSet.AddColumns("wowc_itemid", "equipmentid");
+                    QueryExpression query = new QueryExpression("wowc_loot");
+                    query.ColumnSet.AddColumns("wowc_itemid", "wowc_lootid");
                     query.Criteria = new FilterExpression();
                     query.Criteria.AddCondition("wowc_itemid", ConditionOperator.Equal, itemStats[0]);
 
@@ -237,14 +237,14 @@ namespace ClassicDB_Item_Scraper
                     {
                         try
                         {
-                            Entity loot = new Entity("equipment");
-                            loot["name"] = itemStats[1];
+                            Entity loot = new Entity("wowc_loot");
+                            loot["wowc_name"] = itemStats[1];
                             loot["wowc_ilvl"] = Int32.Parse(itemStats[2]);
                             loot["wowc_itemid"] = itemStats[0];
                             loot["wowc_rarity"] = rarity;
                             loot["wowc_slot"] = slot;
-                            loot["businessunitid"] = new EntityReference("businessunit", defaultBU);
-                            loot["timezonecode"] = 33;
+                            //loot["businessunitid"] = new EntityReference("businessunit", defaultBU);
+                            //loot["timezonecode"] = 33;
                             crmService.Create(loot);
                         }
                         catch (Exception ex)
@@ -259,12 +259,12 @@ namespace ClassicDB_Item_Scraper
                         {
                             if (a.Contains("wowc_itemid") && a["wowc_itemid"] != null)
                             {
-                                Console.WriteLine("{0} {1}", a.GetAttributeValue<string>("wowc_itemid"), a.GetAttributeValue<Guid>("equipmentid"));
+                                Console.WriteLine("{0} {1}", a.GetAttributeValue<string>("wowc_itemid"), a.GetAttributeValue<Guid>("wowc_lootid"));
                                 try
                                 {
-                                    Entity loot = new Entity("equipment");
-                                    loot.Id = a.GetAttributeValue<Guid>("equipmentid");
-                                    loot["name"] = itemStats[1];
+                                    Entity loot = new Entity("wowc_loot");
+                                    loot.Id = a.GetAttributeValue<Guid>("wowc_lootid");
+                                    loot["wowc_name"] = itemStats[1];
                                     loot["wowc_ilvl"] = Int32.Parse(itemStats[2]);
                                     loot["wowc_itemid"] = itemStats[0];
                                     loot["wowc_rarity"] = rarity;
