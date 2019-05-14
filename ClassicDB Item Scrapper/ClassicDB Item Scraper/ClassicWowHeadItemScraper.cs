@@ -21,7 +21,7 @@ using AuthenticationType = Microsoft.Xrm.Tooling.Connector.AuthenticationType;
 
 namespace ClassicDB_Item_Scraper
 {
-    class Program
+    class ClassicWowHeadItemScraper
     {
         static void Main(string[] args)
         {

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("WoWPlugins")]
+[assembly: AssemblyTitle("WoW.DKPEPGP.Plugins")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("WoWPlugins")]
+[assembly: AssemblyProduct("WoW.DKPEPGP.Plugins")]
 [assembly: AssemblyCopyright("Copyright ©  2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("0621a19a-a448-49a9-8741-a42752443ae8")]
+[assembly: Guid("155ba134-198a-4252-9b82-e8662b6e9a93")]
 
 // Version information for an assembly consists of the following four values:
 //
