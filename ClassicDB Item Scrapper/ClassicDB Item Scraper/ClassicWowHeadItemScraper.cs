@@ -25,11 +25,11 @@ namespace ClassicDB_Item_Scraper
     {
         static void Main(string[] args)
         {
-            int startingNumber = 16000;
-            int endingNumber = 24080;
+            int startingNumber = 13500;
+            int endingNumber = 13600;
 
-            //BuildCsvFile(startingNumber, endingNumber);
-            InsertIntoCRM(startingNumber, endingNumber);
+            BuildCsvFile(startingNumber, endingNumber);
+            //InsertIntoCRM(startingNumber, endingNumber);
 
             //Console.ReadLine();
         }
@@ -45,11 +45,11 @@ namespace ClassicDB_Item_Scraper
 
             XmlElement root = doc.DocumentElement;
             XmlNode nodeInfo = root.SelectSingleNode("descendant::item");
-            if (root.InnerText == "Item not found!" ||
-                Int32.Parse(doc.GetElementsByTagName("level")[0].InnerText) < 60 ||
-                Int32.Parse(doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText) < 3 ||
-                Int32.Parse(doc.GetElementsByTagName("inventorySlot")[0].Attributes[0].InnerText) == 0 ||
-                Int32.Parse(doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText) == 6
+            if (root.InnerText == "Item not found!" 
+                || Int32.Parse(doc.GetElementsByTagName("level")[0].InnerText) < 40 
+                || Int32.Parse(doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText) < 1 
+                //|| Int32.Parse(doc.GetElementsByTagName("inventorySlot")[0].Attributes[0].InnerText) == 0 
+                || Int32.Parse(doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText) == 6
                 )
             {
                 itemStats.Add("Item not found or skipped!");
@@ -76,6 +76,9 @@ namespace ClassicDB_Item_Scraper
 
                 switch (quality)
                 {
+                    case "1":
+                        crmRarity = "257260004";
+                        break;
                     case "2":
                         crmRarity = "257260000";
                         break;
