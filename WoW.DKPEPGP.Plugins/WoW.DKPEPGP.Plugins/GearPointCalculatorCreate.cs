@@ -8,7 +8,7 @@ using Microsoft.Xrm.Sdk;
 
 namespace WoW.DKPEPGP.Plugins
 {
-    public class GearPointCalculator : IPlugin
+    public class GearPointCalculatorCreate : IPlugin
     {
         public void Execute(IServiceProvider serviceProvider)
         {
@@ -20,36 +20,21 @@ namespace WoW.DKPEPGP.Plugins
             if (context.InputParameters.Contains("Target") &&
                 context.InputParameters["Target"] is Entity)
             {
-                Entity entity = (Entity)context.InputParameters["Target"];
-                Entity image = context.PreEntityImages["PreImage"];
+                Entity entity = context.PostEntityImages["PostImage"];
 
                 try
                 {
-                    
-                    Decimal ilvl = 0;
-                    int rarityValue = 0;
-                    Decimal slotModifier = 0;
+
+                    Decimal ilvl = (Decimal)entity.Attributes["wowc_ilvl"];
+                    int rarityValue = (int)entity.Attributes["wowc_rarityvalue"];
+                    Decimal slotModifier = (Decimal)entity.Attributes["wowc_slotmodifier"];
                     Decimal four = 4;
                     Decimal twoFive = 2.5m;
 
-                    if (entity.Attributes.Contains("wowc_ilvl"))
-                        ilvl = (Decimal)entity.Attributes["wowc_ilvl"];
-                    else
-                        ilvl = (Decimal)image.Attributes["wowc_ilvl"];
-                    
-                    if (entity.Attributes.Contains("wowc_rarityvalue"))
-                        rarityValue = (int)entity.Attributes["wowc_rarityvalue"];
-                    else
-                        rarityValue = (int)image.Attributes["wowc_rarityvalue"];
-
-                    if (entity.Attributes.Contains("wowc_slotmodifier"))
-                        slotModifier = (Decimal)entity.Attributes["wowc_slotmodifier"];
-                    else
-                        slotModifier = (Decimal)image.Attributes["wowc_slotmodifier"];
-
                     Decimal total = ((ilvl / four) * (rarityValue * slotModifier)) / twoFive;
-                    
+
                     entity["wowc_gp"] = total;
+                    service.Update(entity);
                 }
 
                 catch (FaultException<OrganizationServiceFault> ex)
