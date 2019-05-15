@@ -25,8 +25,43 @@ namespace ClassicDB_Item_Scraper
     {
         static void Main(string[] args)
         {
-            int startingNumber = 13500;
-            int endingNumber = 13600;
+            int startingNumber = 0;
+            int endingNumber = 0;
+
+            string startingNumberTxt = string.Empty;
+            
+            string endingNumberTxt = string.Empty;
+            bool validUserInput = false;
+
+            startingNumber = StartingNumber();
+
+            while (validUserInput == false)
+            {
+
+
+                try
+                {
+                    Console.WriteLine("Please enter an ending number:");
+                    endingNumber = int.Parse(Console.ReadLine());
+                }
+                catch (Exception e)
+                { }
+
+                if (endingNumber >= startingNumber)
+                {
+                    validUserInput = true;
+                }
+                else
+                {
+                    Console.WriteLine("Please provide a number that is greater than your starting number");
+                }
+               
+            }
+            
+
+
+            //int startingNumber = 13500;
+            //int endingNumber = 13600;
 
             BuildCsvFile(startingNumber, endingNumber);
             //InsertIntoCRM(startingNumber, endingNumber);
@@ -34,6 +69,27 @@ namespace ClassicDB_Item_Scraper
             //Console.ReadLine();
         }
 
+        static int StartingNumber()
+        {
+            int startingNumer = 0;
+            string startingNumberTxt = string.Empty;
+            do
+            {
+                Console.WriteLine("Please enter a starting number:");
+                startingNumberTxt = Console.ReadLine();
+
+            } while (!int.TryParse(startingNumberTxt, out startingNumer));
+
+            return startingNumer;
+        }
+
+        static int EndingNumber(int startNumber)
+        {
+            int endingNumber = 0;
+            string endingNumberTxt = string.Empty;
+
+
+        }
         static List<string> ParseClassicWowHead(int providedNumber)
         {
             int initializedNumber = providedNumber;
