@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xaml;
 using System.Threading.Tasks;
 using System.Net;
 using System.IO;
@@ -17,49 +18,52 @@ using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Tooling.Connector;
 using Microsoft.Xrm.Sdk.Query;
+using System.Windows.Markup;
 using AuthenticationType = Microsoft.Xrm.Tooling.Connector.AuthenticationType;
 
-namespace ClassicDB_Item_Scraper
+namespace ClassicDB.Item.Scraper
 {
     class ClassicWowHeadItemScraper
     {
+        [STAThread] // Added to support UX
         static void Main(string[] args)
         {
-            int startingNumber = 0;
-            int endingNumber = 0;
-
-            string startingNumberTxt = string.Empty;
-            
-            string endingNumberTxt = string.Empty;
-            bool validUserInput = false;
-
-            startingNumber = StartingNumber();
-
-            while (validUserInput == false)
+            CrmServiceClient service = null;
+            try
             {
-
-
-                try
-                {
-                    Console.WriteLine("Please enter an ending number:");
-                    endingNumber = int.Parse(Console.ReadLine());
-                }
-                catch (Exception e)
-                { }
-
-                if (endingNumber >= startingNumber)
-                {
-                    validUserInput = true;
-                }
-                else
-                {
-                    Console.WriteLine("Please provide a number that is greater than your starting number");
-                }
-               
+                service = CrmAuthentication.Connect("Connect");
+                Console.WriteLine(service.IsReady);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
             }
             
 
+            
 
+            int startingNumber = 0;
+            int endingNumber = 0;
+            
+            startingNumber = IntInputValidation("a starting");
+            do
+            {
+                if (endingNumber == 0)
+                {
+                    endingNumber = IntInputValidation("an ending");
+                }
+                else if(endingNumber <= startingNumber)
+                {
+                    Console.WriteLine("Provided ending number {0} needs to be greater than {1}", endingNumber, startingNumber);
+                    endingNumber = IntInputValidation("an ending");
+                }
+                    
+            } while (endingNumber <= startingNumber);
+
+            Console.WriteLine(startingNumber);
+            Console.WriteLine(endingNumber);
+            
             //int startingNumber = 13500;
             //int endingNumber = 13600;
 
@@ -69,27 +73,20 @@ namespace ClassicDB_Item_Scraper
             //Console.ReadLine();
         }
 
-        static int StartingNumber()
+        private static int IntInputValidation(string requestedNumber)
         {
-            int startingNumer = 0;
-            string startingNumberTxt = string.Empty;
+            int inputNumber = 0;
+            string inputNumberTxt = string.Empty;
             do
             {
-                Console.WriteLine("Please enter a starting number:");
-                startingNumberTxt = Console.ReadLine();
+                Console.WriteLine("Please enter {0} number:", requestedNumber);
+                inputNumberTxt = Console.ReadLine();
 
-            } while (!int.TryParse(startingNumberTxt, out startingNumer));
+            } while (!int.TryParse(inputNumberTxt, out inputNumber));
 
-            return startingNumer;
+            return inputNumber;
         }
 
-        static int EndingNumber(int startNumber)
-        {
-            int endingNumber = 0;
-            string endingNumberTxt = string.Empty;
-
-
-        }
         static List<string> ParseClassicWowHead(int providedNumber)
         {
             int initializedNumber = providedNumber;
