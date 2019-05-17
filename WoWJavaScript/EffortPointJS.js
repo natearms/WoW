@@ -1,53 +1,19 @@
-function setLookupRaidMemberFields() {
-    var recordId = Xrm.Page.data.entity.getId().replace("{", "").replace("}", "");
-    var raidMember = Xrm.Page.getAttribute("wowc_raidmember").getValue();
-
-    if (raidMember == null) {
-        Xrm.Page.getAttribute("wowc_class").setValue();
-    }
-    else {
-        var lookupId = Xrm.Page.getAttribute("wowc_raidmember").getValue()[0].id.replace("{", "").replace("}", "");
-        var req = new XMLHttpRequest();
-        req.open("GET", Xrm.Page.context.getClientUrl() + "/api/data/v8.2/contacts(" + lookupId + ")?$select=wowc_class", true);
-        req.setRequestHeader("OData-MaxVersion", "4.0");
-        req.setRequestHeader("OData-Version", "4.0");
-        req.setRequestHeader("Accept", "application/json");
-        req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-        req.setRequestHeader("Prefer", "odata.include-annotations=\"*\"");
-        req.onreadystatechange = function () {
-            if (this.readyState === 4) {
-                req.onreadystatechange = null;
-                if (this.status === 200) {
-                    var result = JSON.parse(this.response);
-                    var wowc_class = result["wowc_class"];
-                    Xrm.Page.getAttribute("wowc_class").setValue(wowc_class);
-                } else {
-                    Xrm.Utility.alertDialog(this.statusText);
-                }
-            }
-        };
-        req.send();
-    }
-
-}
-
 function setLookupItemFields() {
     var recordId = Xrm.Page.data.entity.getId().replace("{", "").replace("}", "");
     var lootId = Xrm.Page.getAttribute("wowc_item").getValue();
 
     if (lootId == null) {
-        Xrm.Page.getAttribute("wowc_slot").setValue();
-        Xrm.Page.getAttribute("wowc_rarity").setValue();
-        Xrm.Page.getAttribute("wowc_ilvl").setValue();
-        Xrm.Page.getAttribute("wowc_classspec").setValue();
+        Xrm.Page.getAttribute("wowc_eprate").setValue();
+        Xrm.Page.getControl("wowc_eprate").setDisabled(false);
         Xrm.Page.getAttribute("wowc_category").setValue();
         Xrm.Page.getControl("wowc_category").setDisabled(false);
+        
     }
     else {
         var lookupId = Xrm.Page.getAttribute("wowc_item").getValue()[0].id.replace("{", "").replace("}", "");
 
         var req = new XMLHttpRequest();
-        req.open("GET", Xrm.Page.context.getClientUrl() + "/api/data/v8.2/wowc_loots(" + lookupId + ")?$select=wowc_ilvl,wowc_rarity,wowc_slot, wowc_classspecmodifier,wowc_category", true);
+        req.open("GET", Xrm.Page.context.getClientUrl() + "/api/data/v8.2/wowc_loots(" + lookupId + ")?$select=wowc_epvalue,wowc_category", true);
         req.setRequestHeader("OData-MaxVersion", "4.0");
         req.setRequestHeader("OData-Version", "4.0");
         req.setRequestHeader("Accept", "application/json");
@@ -58,21 +24,23 @@ function setLookupItemFields() {
                 req.onreadystatechange = null;
                 if (this.status === 200) {
                     var result = JSON.parse(this.response);
-                    var wowc_ilvl = result["wowc_ilvl"];
-                    var wowc_rarity = result["wowc_rarity"];
-                    var wowc_slot = result["wowc_slot"];
-                    var wowc_classspecmodifier = result["wowc_classspecmodifier"];
+                    var wowc_epvalue = result["wowc_epvalue"];
                     var wowc_category = result["wowc_category"];
                     
-                    Xrm.Page.getAttribute("wowc_slot").setValue(wowc_slot);
-                    Xrm.Page.getAttribute("wowc_rarity").setValue(wowc_rarity);
-                    Xrm.Page.getAttribute("wowc_ilvl").setValue(wowc_ilvl);
-                    Xrm.Page.getAttribute("wowc_classspec").setValue(wowc_classspecmodifier);
                     if (wowc_category != null) {
                         Xrm.Page.getAttribute("wowc_category").setValue(wowc_category);
                         Xrm.Page.getControl("wowc_category").setDisabled(true);
+                        
                     } else {
                         Xrm.Page.getControl("wowc_category").setDisabled(false);
+                    }
+
+                    if (wowc_epvalue != null) {
+                        Xrm.Page.getAttribute("wowc_eprate").setValue(wowc_epvalue);
+                        Xrm.Page.getControl("wowc_eprate").setDisabled(true);
+
+                    } else {
+                        Xrm.Page.getControl("wowc_eprate").setDisabled(false);
                     }
                     
                 } else {
@@ -99,14 +67,16 @@ function concatenateSubject() {
         Xrm.Page.getAttribute("subject").setSubmitMode("always");
     }
 }
-function setMissingItemCategory() {
-    var gpCategory = Xrm.Page.getAttribute("wowc_category").getValue();
+function setLookupItemFields() {
+    var epCategory = Xrm.Page.getAttribute("wowc_category").getValue();
+    var epRate = Xrm.Page.getAttribute("wowc_eprate").getValue();
     var itemCategory = 0;
+    var itemEP = 0;
     
     var lookupId = Xrm.Page.getAttribute("wowc_item").getValue()[0].id.replace("{", "").replace("}", "");
 
     var req = new XMLHttpRequest();
-    req.open("GET", Xrm.Page.context.getClientUrl() + "/api/data/v8.2/wowc_loots(" + lookupId + ")?$select=wowc_category", true);
+    req.open("GET", Xrm.Page.context.getClientUrl() + "/api/data/v8.2/wowc_loots(" + lookupId + ")?$select=wowc_epvalue,wowc_category", true);
     req.setRequestHeader("OData-MaxVersion", "4.0");
     req.setRequestHeader("OData-Version", "4.0");
     req.setRequestHeader("Accept", "application/json");
@@ -117,10 +87,12 @@ function setMissingItemCategory() {
             req.onreadystatechange = null;
             if (this.status === 200) {
                 var result = JSON.parse(this.response);
-                
+                var wowc_epvalue = result["wowc_epvalue"];
                 var wowc_category = result["wowc_category"];
+
                 itemCategory = wowc_category;
-                
+                itemEP = wowc_epvalue;
+
             } else {
                 Xrm.Utility.alertDialog(this.statusText);
             }
@@ -128,9 +100,16 @@ function setMissingItemCategory() {
     };
     req.send();
 
-    if (itemCategory != gpCategory) {
+    if (itemCategory != epCategory || itemEP != epRate) {
         var entity = {};
-        entity.wowc_category = gpCategory;
+
+        if (itemCategory != epCategory) {
+            entity.wowc_category = epCategory;
+        }
+        if (itemEP != epRate) {
+            entity.wowc_epvalue = epRate;
+        }
+        
 
         var req = new XMLHttpRequest();
         req.open("PATCH", Xrm.Page.context.getClientUrl() + "/api/data/v9.1/wowc_loots(" + lookupId + ")", true);
@@ -148,7 +127,21 @@ function setMissingItemCategory() {
                 }
             }
         };
+        
         req.send(JSON.stringify(entity));
-        Xrm.Page.getControl("wowc_category").setDisabled(true);
+        if (itemCategory != epCategory) {
+            Xrm.Page.getControl("wowc_category").setDisabled(true);
+            Xrm.Page.getControl("wowc_eprate").setDisabled(true);
+        }
+        
     }
+}
+
+function calculateEP() {
+    var epRate = Xrm.Page.getAttribute("wowc_eprate").getValue();
+    var epCount = Xrm.Page.getAttribute("wowc_epcount").getValue();
+
+    Xrm.Page.getAttribute("wowc_ep").setValue(epRate * epCount);
+    Xrm.Page.getAttribute("wowc_ep").setSubmitMode("always");
+    Xrm.Page.getAttribute("wowc_overridevalues").setValue("0");
 }

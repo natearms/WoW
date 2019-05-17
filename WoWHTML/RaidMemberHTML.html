@@ -1,0 +1,70 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <script src="../jquery_1.10.2.js" type="text/javascript"></script>
+    <script>
+        function RefreshCount() {
+            var url = parent.Xrm.Page.context.getClientUrl();
+            var recordId = parent.Xrm.Page.data.entity.getId();
+            var workflowId = "4D130B2F-2BC9-4934-8822-0328F1DBD456";
+            var request = "< s:Envelope xmlns:s='http://schemas.xmlsoap.org/soap/envelope/'>" +
+                  "< s:Body>" +
+                    "< Execute xmlns='http://schemas.microsoft.com/xrm/2011/Contracts/Services' xmlns:i='http://www.w3.org/2001/XMLSchema-instance'>" +
+                      "< request i:type='b:ExecuteWorkflowRequest' xmlns:a='http://schemas.microsoft.com/xrm/2011/Contracts' xmlns:b='http://schemas.microsoft.com/crm/2011/Contracts'>" +
+                        "< a:Parameters xmlns:c='http://schemas.datacontract.org/2004/07/System.Collections.Generic'>" +
+                          "< a:KeyValuePairOfstringanyType>" +
+                            "< c:key>EntityId
+" +
+                            "< c:value i:type='d:guid' xmlns:d='http://schemas.microsoft.com/2003/10/Serialization/'>" + recordId + "
+" +
+                          "< /a:KeyValuePairOfstringanyType>" +
+                          "< a:KeyValuePairOfstringanyType>" +
+                            "< c:key>WorkflowId
+" +
+                            "< c:value i:type='d:guid' xmlns:d='http://schemas.microsoft.com/2003/10/Serialization/'>" + workflowId + "
+" +
+                          "< /a:KeyValuePairOfstringanyType>" +
+                        "< /a:Parameters>" +
+                        "< a:RequestId i:nil='true' />" +
+                        "< a:RequestName>ExecuteWorkflow
+" +
+                      "< /request>" +
+                    "< /Execute>" +
+                  "< /s:Body>" +
+                "< /s:Envelope>";
+
+            var req = new XMLHttpRequest();
+            req.open("POST", url + "/XRMServices/2011/Organization.svc/web", true);
+
+            req.setRequestHeader("Accept", "application/xml, text/xml, */*");
+            req.setRequestHeader("Content-Type", "text/xml; charset=utf-8");
+            req.setRequestHeader("SOAPAction", "http://schemas.microsoft.com/xrm/2011/Contracts/Services/IOrganizationService/Execute");
+            req.onreadystatechange = function () {
+                if (req.readyState == 4) {
+                    if (req.status == 200) {
+                       parent.Xrm.Utility.openEntityForm("contact", recordId);
+                    }
+                    else {
+                        alert('Unable to calculate');
+                    }
+                }
+            };
+
+            req.send(request);
+
+        }
+    </script>
+</head>
+<body>
+    <div>
+        <table style="width:50%">
+            <tr>
+                <td style="text-align: right">  <input id="btnRecalculate" type="button" value="Recalculate" onclick="RefreshCount()" /></td>
+                <td></td>
+            </tr>
+        </table>
+
+    </div>
+</body>
+</html>
