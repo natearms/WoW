@@ -28,6 +28,7 @@ namespace ClassicDB.Item.Scraper
         [STAThread] // Added to support UX
         static void Main(string[] args)
         {
+            /*
             CrmServiceClient service = null;
             try
             {
@@ -39,7 +40,7 @@ namespace ClassicDB.Item.Scraper
                 Console.WriteLine(e);
                 throw;
             }
-            
+            */
 
             
 
@@ -61,8 +62,6 @@ namespace ClassicDB.Item.Scraper
                     
             } while (endingNumber <= startingNumber);
 
-            Console.WriteLine(startingNumber);
-            Console.WriteLine(endingNumber);
             
             //int startingNumber = 13500;
             //int endingNumber = 13600;
@@ -94,7 +93,15 @@ namespace ClassicDB.Item.Scraper
 
             String URLString = @"https://classic.wowhead.com/item=" + initializedNumber + "&xml";
             XmlDocument doc = new XmlDocument();
-            doc.Load(URLString);
+            try
+            {
+                doc.Load(URLString);
+            }
+            catch (Exception e)
+            {
+                doc.Load(URLString);
+            }
+            
 
             XmlElement root = doc.DocumentElement;
             XmlNode nodeInfo = root.SelectSingleNode("descendant::item");
