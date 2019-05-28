@@ -67,7 +67,7 @@ function concatenateSubject() {
         Xrm.Page.getAttribute("subject").setSubmitMode("always");
     }
 }
-function setLookupItemFields() {
+function updateItemInfoFromEP() {
     var epCategory = Xrm.Page.getAttribute("wowc_category").getValue();
     var epRate = Xrm.Page.getAttribute("wowc_eprate").getValue();
     var itemCategory = 0;
