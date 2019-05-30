@@ -66,8 +66,8 @@ namespace ClassicDB.Item.Scraper
             //int startingNumber = 13500;
             //int endingNumber = 13600;
 
-            BuildCsvFile(startingNumber, endingNumber);
-            //InsertIntoCRM(startingNumber, endingNumber);
+            //BuildCsvFile(startingNumber, endingNumber);
+            InsertIntoCRM(startingNumber, endingNumber);
 
             //Console.ReadLine();
         }
