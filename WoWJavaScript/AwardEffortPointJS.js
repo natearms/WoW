@@ -54,15 +54,24 @@ function setLookupItemFields() {
 }
 
 function concatenateSubject() {
-    var raidMember = Xrm.Page.getAttribute("wowc_raidmember").getValue();
+    var raidTeam = Xrm.Page.getAttribute("wowc_raidteam").getValue();
+    var standbyTeam = Xrm.Page.getAttribute("wowc_standbyteam").getValue();
     var itemName = Xrm.Page.getAttribute("wowc_item").getValue();
 
-    if (raidMember != null && itemName != null) {
-        var raidMember = Xrm.Page.getAttribute("wowc_raidmember").getValue()[0].name;
+    if (raidTeam != null && itemName != null && standbyTeam != null) {
+        var raidTeam = Xrm.Page.getAttribute("wowc_raidteam").getValue()[0].name;
+        var standbyTeam = Xrm.Page.getAttribute("wowc_standbyteam").getValue()[0].name;
         var itemName = Xrm.Page.getAttribute("wowc_item").getValue()[0].name;
-        Xrm.Page.getAttribute("subject").setValue(raidMember + "-" + itemName);
+        Xrm.Page.getAttribute("subject").setValue(raidTeam + "-" + standbyTeam + "-" + itemName);
         Xrm.Page.getAttribute("subject").setSubmitMode("always");
-    } else {
+    }
+    else if (raidTeam != null && itemName != null) {
+        var raidTeam = Xrm.Page.getAttribute("wowc_raidteam").getValue()[0].name;
+        var itemName = Xrm.Page.getAttribute("wowc_item").getValue()[0].name;
+        Xrm.Page.getAttribute("subject").setValue(raidTeam + "-" + itemName);
+        Xrm.Page.getAttribute("subject").setSubmitMode("always");
+    }
+    else {
         Xrm.Page.getAttribute("subject").setValue("");
         Xrm.Page.getAttribute("subject").setSubmitMode("always");
     }
