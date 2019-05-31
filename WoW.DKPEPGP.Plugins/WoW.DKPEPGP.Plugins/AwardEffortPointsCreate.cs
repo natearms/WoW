@@ -23,7 +23,7 @@ namespace WoW.DKPEPGP.Plugins
             if (context.InputParameters.Contains("Target") &&
                 context.InputParameters["Target"] is Entity)
             {
-                Entity entity = context.PostEntityImages["PostImage"];
+                Entity entity = (Entity)context.InputParameters["Target"];
 
                 try
                 {
