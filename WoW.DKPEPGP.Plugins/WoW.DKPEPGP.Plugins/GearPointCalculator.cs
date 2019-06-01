@@ -23,46 +23,56 @@ namespace WoW.DKPEPGP.Plugins
                 Entity entity = (Entity)context.InputParameters["Target"];
                 Entity image = context.PreEntityImages["PreImage"];
 
-                try
+                Decimal ilvlCheck = 0;
+                if (entity.Attributes.Contains("wowc_ilvl"))
+                ilvlCheck = (Decimal)entity.Attributes["wowc_ilvl"];
+                else
+                ilvlCheck = (Decimal)image.Attributes["wowc_ilvl"];
+
+                if (ilvlCheck > 0 )
                 {
-                    
-                    Decimal ilvl = 0;
-                    int rarityValue = 0;
-                    Decimal slotModifier = 0;
-                    Decimal four = 4;
-                    Decimal twoFive = 2.5m;
+                    try
+                    {
+                       
+                        Decimal ilvl = 0;
+                        int rarityValue = 0;
+                        Decimal slotModifier = 0;
+                        Decimal four = 4;
+                        Decimal twoFive = 2.5m;
 
-                    if (entity.Attributes.Contains("wowc_ilvl"))
-                        ilvl = (Decimal)entity.Attributes["wowc_ilvl"];
-                    else
-                        ilvl = (Decimal)image.Attributes["wowc_ilvl"];
-                    
-                    if (entity.Attributes.Contains("wowc_rarityvalue"))
-                        rarityValue = (int)entity.Attributes["wowc_rarityvalue"];
-                    else
-                        rarityValue = (int)image.Attributes["wowc_rarityvalue"];
+                        if (entity.Attributes.Contains("wowc_ilvl"))
+                            ilvl = (Decimal)entity.Attributes["wowc_ilvl"];
+                        else
+                            ilvl = (Decimal)image.Attributes["wowc_ilvl"];
 
-                    if (entity.Attributes.Contains("wowc_slotmodifier"))
-                        slotModifier = (Decimal)entity.Attributes["wowc_slotmodifier"];
-                    else
-                        slotModifier = (Decimal)image.Attributes["wowc_slotmodifier"];
+                        if (entity.Attributes.Contains("wowc_rarityvalue"))
+                            rarityValue = (int)entity.Attributes["wowc_rarityvalue"];
+                        else
+                            rarityValue = (int)image.Attributes["wowc_rarityvalue"];
 
-                    Decimal total = ((ilvl / four) * (rarityValue * slotModifier)) / twoFive;
-                    
-                    entity["wowc_gp"] = total;
-                }
+                        if (entity.Attributes.Contains("wowc_slotmodifier"))
+                            slotModifier = (Decimal)entity.Attributes["wowc_slotmodifier"];
+                        else
+                            slotModifier = (Decimal)image.Attributes["wowc_slotmodifier"];
+                        
+                        Decimal total = ((ilvl / four) * (rarityValue * slotModifier)) / twoFive;
 
-                catch (FaultException<OrganizationServiceFault> ex)
-                {
-                    throw new InvalidPluginExecutionException("An error occurred in FollowUpPlugin.", ex);
-                }
+                        entity.Attributes.Add("wowc_gp",total);
+                    }
 
-                catch (Exception ex)
-                {
-                    tracingService.Trace("FollowUpPlugin: {0}", ex.ToString());
-                    throw;
+                    catch (FaultException<OrganizationServiceFault> ex)
+                    {
+                        throw new InvalidPluginExecutionException("An error occurred in FollowUpPlugin.", ex);
+                    }
+
+                    catch (Exception ex)
+                    {
+                        tracingService.Trace("FollowUpPlugin: {0}", ex.ToString());
+                        throw;
+                    }
                 }
             }
+                
         }
     }
 }

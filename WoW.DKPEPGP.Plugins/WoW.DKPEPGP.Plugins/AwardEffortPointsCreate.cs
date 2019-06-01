@@ -71,7 +71,7 @@ namespace WoW.DKPEPGP.Plugins
 
                 Entity effortPoint = new Entity("letter");
                 
-                effortPoint["subject"] = entity.Attributes["wowc_item"] + "-" + "Raumedrius";
+                effortPoint["subject"] = entity.Attributes["wowc_item"] + "-" + a.GetAttributeValue<string>("fullname");
                 effortPoint["wowc_raidmember"] = new EntityReference("contact", a.GetAttributeValue<Guid>("contactid"));
                 effortPoint["wowc_item"] = entity.Attributes["wowc_item"];
                 effortPoint["wowc_efforttype"] = entity.Attributes["wowc_efforttype"];

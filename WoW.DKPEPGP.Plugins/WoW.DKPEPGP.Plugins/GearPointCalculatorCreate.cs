@@ -20,33 +20,37 @@ namespace WoW.DKPEPGP.Plugins
             if (context.InputParameters.Contains("Target") &&
                 context.InputParameters["Target"] is Entity)
             {
-                Entity entity = context.PostEntityImages["PostImage"];
+                Entity entity = (Entity)context.InputParameters["Target"];
 
-                try
+                if (entity.GetAttributeValue<decimal>("wowc_ilvl") > 0)
                 {
+                    try
+                    {
 
-                    Decimal ilvl = (Decimal)entity.Attributes["wowc_ilvl"];
-                    int rarityValue = (int)entity.Attributes["wowc_rarityvalue"];
-                    Decimal slotModifier = (Decimal)entity.Attributes["wowc_slotmodifier"];
-                    Decimal four = 4;
-                    Decimal twoFive = 2.5m;
+                        Decimal ilvl = (Decimal)entity.Attributes["wowc_ilvl"];
+                        int rarityValue = (int)entity.Attributes["wowc_rarityvalue"];
+                        Decimal slotModifier = (Decimal)entity.Attributes["wowc_slotmodifier"];
+                        Decimal four = 4;
+                        Decimal twoFive = 2.5m;
 
-                    Decimal total = ((ilvl / four) * (rarityValue * slotModifier)) / twoFive;
+                        Decimal total = ((ilvl / four) * (rarityValue * slotModifier)) / twoFive;
 
-                    entity["wowc_gp"] = total;
-                    service.Update(entity);
+                        entity["wowc_gp"] = total;
+                        service.Update(entity);
+                    }
+
+                    catch (FaultException<OrganizationServiceFault> ex)
+                    {
+                        throw new InvalidPluginExecutionException("An error occurred in FollowUpPlugin.", ex);
+                    }
+
+                    catch (Exception ex)
+                    {
+                        tracingService.Trace("FollowUpPlugin: {0}", ex.ToString());
+                        throw;
+                    }
                 }
-
-                catch (FaultException<OrganizationServiceFault> ex)
-                {
-                    throw new InvalidPluginExecutionException("An error occurred in FollowUpPlugin.", ex);
-                }
-
-                catch (Exception ex)
-                {
-                    tracingService.Trace("FollowUpPlugin: {0}", ex.ToString());
-                    throw;
-                }
+                    
             }
         }
     }
