@@ -12,8 +12,8 @@ namespace WoW.DKPEPGP.Plugins
 {
     public sealed class CalculateEPandGPDecay : CodeActivity
     {
-        [Input("Test")]
-        public InArgument<string> Test { get; set; }
+        //[Input("Test")]
+        //public InArgument<string> Test { get; set; }
         protected override void Execute(CodeActivityContext executionContext)
         {
             //Create the tracing service
@@ -33,9 +33,9 @@ namespace WoW.DKPEPGP.Plugins
                 {
                     tracingService.Trace("Getting Raid Members informaiton");
                     QueryExpression query = new QueryExpression("contact");
-                    query.ColumnSet.AddColumns("contactid", "wowc_totalep", "wowc_totalgp", "fullname");
+                    query.ColumnSet.AddColumns("contactid", "wowc_totalep", "wowc_totalgp", "fullname","wowc_class");
                     query.Criteria = new FilterExpression();
-                    query.Criteria.AddCondition("contactid", ConditionOperator.Equal, "{0B352331-7982-E911-A827-000D3A1D5A0B}");
+                    query.Criteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
 
                     RaidMembers = service.RetrieveMultiple(query);
                 }
@@ -58,17 +58,38 @@ namespace WoW.DKPEPGP.Plugins
                 {
                     tracingService.Trace("Creating EP Decay record");
                     Entity effortPoint = new Entity("letter");
+                    Entity gearPoint = new Entity("task");
+                    if(a.GetAttributeValue<Decimal>("wowc_totalgp") > 0)
+                    {
+                        effortPoint["subject"] = decayItemLoot.Attributes["wowc_name"] + " - " + a.GetAttributeValue<string>("fullname") + " - " + DateTime.Today.ToShortDateString();
+                        effortPoint["wowc_raidmember"] = new EntityReference("contact", a.GetAttributeValue<Guid>("contactid"));
+                        effortPoint["wowc_item"] = new EntityReference("wowc_loot", decayItemLoot.GetAttributeValue<Guid>("wowc_lootid"));
+                        effortPoint["wowc_efforttype"] = new OptionSetValue(Int32.Parse("257260006"));
+                        effortPoint["wowc_category"] = decayItemLoot.Attributes["wowc_category"];
+                        effortPoint["wowc_eprate"] = new Decimal(1);
+                        effortPoint["wowc_epcount"] = new Decimal(1);
+                        effortPoint["wowc_ep"] = (a.GetAttributeValue<Decimal>("wowc_totalep") * new Decimal(.10)) * -1;
 
-                    effortPoint["subject"] = decayItemLoot.Attributes["wowc_name"] + " " + DateTime.Today.Date + "-" + a.GetAttributeValue<string>("fullname");
-                    effortPoint["wowc_raidmember"] = new EntityReference("contact", a.GetAttributeValue<Guid>("contactid"));
-                    effortPoint["wowc_item"] = new EntityReference("wowc_loot",decayItemLoot.GetAttributeValue<Guid>("wowc_lootid"));
-                    effortPoint["wowc_efforttype"] = new OptionSetValue(Int32.Parse("257260006"));
-                    effortPoint["wowc_category"] = decayItemLoot.Attributes["wowc_category"];
-                    effortPoint["wowc_eprate"] = new Decimal(1);
-                    effortPoint["wowc_epcount"] = new Decimal(1);
-                    effortPoint["wowc_ep"] = (a.GetAttributeValue<decimal>("wowc_totalep") * new Decimal(.10)) * -1;
+                        service.Create(effortPoint);
+                    }
+                    
+                    if(a.GetAttributeValue<Decimal>("wowc_totalgp") > 0)
+                    {
+                        gearPoint["subject"] = decayItemLoot.Attributes["wowc_name"] + " - " + a.GetAttributeValue<string>("fullname") + " - " + DateTime.Today.ToShortDateString();
+                        gearPoint["wowc_raidmember"] = new EntityReference("contact", a.GetAttributeValue<Guid>("contactid"));
+                        gearPoint["wowc_item"] = new EntityReference("wowc_loot", decayItemLoot.GetAttributeValue<Guid>("wowc_lootid"));
+                        gearPoint["wowc_category"] = decayItemLoot.Attributes["wowc_category"];
+                        gearPoint["wowc_class"] = a.Attributes["wowc_class"];
+                        gearPoint["wowc_slot"] = decayItemLoot.Attributes["wowc_slot"];
+                        gearPoint["wowc_rarity"] = decayItemLoot.Attributes["wowc_rarity"];
+                        gearPoint["wowc_ilvl"] = new Decimal(0);
+                        gearPoint["wowc_rarityvalue"] = 0;
+                        gearPoint["wowc_slotmodifier"] = new Decimal(0);
+                        gearPoint["wowc_gp"] = (a.GetAttributeValue<Decimal>("wowc_totalgp") * new Decimal(.10)) * -1;
 
-                    service.Create(effortPoint);
+                        service.Create(gearPoint);
+                    }
+                    
                 }
                 
 
@@ -80,52 +101,6 @@ namespace WoW.DKPEPGP.Plugins
             }
 
         }
-        /*
-        private static EntityCollection GetRaidMembers(IOrganizationService service, ITracingService tracingService)
-        {
-            tracingService.Trace("Getting Raid Members informaiton");
-            QueryExpression query = new QueryExpression("contact");
-            query.ColumnSet.AddColumns("contactid", "wowc_totalep", "wowc_totalgp", "fullname");
-            query.Criteria = new FilterExpression();
-            query.Criteria.AddCondition("contactid", ConditionOperator.Equal, "{0B352331-7982-E911-A827-000D3A1D5A0B}");
-
-            EntityCollection results = service.RetrieveMultiple(query);
-            return results;
-
-        }
-
-        private static EntityCollection GetDecayInfo(IOrganizationService service, ITracingService tracingService)
-        {
-            tracingService.Trace("Getting decay item informaiton");
-            QueryExpression query = new QueryExpression("wowc_loot");
-            query.ColumnSet.AddColumns("wowc_itemid", "wowc_name", "wowc_ilvl", "wowc_itemid", "wowc_rarity", "wowc_slot", "wowc_category");
-            query.Criteria = new FilterExpression();
-            query.Criteria.AddCondition("wowc_name", ConditionOperator.Equal, "Decay");
-
-            EntityCollection results = service.RetrieveMultiple(query);
-            return results;
-        }
-        private static void CreateEffortPoints(EntityCollection contactList, EntityCollection decayItem, IOrganizationService service, ITracingService tracingService)
-        {
-            Entity decayItemLoot = decayItem.Entities[0];
-            
-            foreach (var a in contactList.Entities)
-            {
-                tracingService.Trace("Creating EP Decay record");
-                Entity effortPoint = new Entity("letter");
-
-                effortPoint["subject"] = decayItemLoot.Attributes["wowc_name"] + "-" + a.GetAttributeValue<string>("fullname");
-                effortPoint["wowc_raidmember"] = new EntityReference("contact", a.GetAttributeValue<Guid>("contactid"));
-                effortPoint["wowc_item"] = decayItemLoot.Attributes["wowc_itemid"];
-                effortPoint["wowc_efforttype"] = new OptionSetValue(Int32.Parse("257260006"));
-                effortPoint["wowc_category"] = decayItemLoot.Attributes["wowc_category"];
-                effortPoint["wowc_eprate"] = new Decimal(1);
-                effortPoint["wowc_epcount"] = new Decimal(1);
-                effortPoint["wowc_ep"] = a.GetAttributeValue<decimal>("wowc_totalep") * 10;
-
-                service.Create(effortPoint);
-            }
-        }
-        */
+        
     }
 }

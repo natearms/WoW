@@ -37,8 +37,7 @@ public sealed class CalculateRollupStatistics : CodeActivity
         try
         {
             EntityReference contactReference = iContact.Get(executionContext);
-            List<string> rollupAttributes = new List<string>() { "wowc_moltencoreep", "wowc_moltencoregp", "wowc_blackwinglairep", "wowc_blackwinglairep",
-                "wowc_templeofahnqirajep", "wowc_templeofahnqirajgp", "wowc_naxxramasep", "wowc_naxxramasgp",  "wowc_miscep" };
+            List<string> rollupAttributes = new List<string>() { "wowc_totalep", "wowc_totalgp"};
 
             foreach (string attribute in rollupAttributes)
             {

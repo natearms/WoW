@@ -110,6 +110,16 @@ namespace ClassicDB.Item.Scraper
                 || Int32.Parse(doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText) < 1 
                 //|| Int32.Parse(doc.GetElementsByTagName("inventorySlot")[0].Attributes[0].InnerText) == 0 
                 || Int32.Parse(doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText) == 6
+                || doc.GetElementsByTagName("name")[0].InnerText.Contains("[PH]")
+                || doc.GetElementsByTagName("name")[0].InnerText.Contains("deprecated")
+                || doc.GetElementsByTagName("name")[0].InnerText.Contains("Epic")
+                || doc.GetElementsByTagName("name")[0].InnerText.Contains("Test")
+                || ((doc.GetElementsByTagName("class")[0].InnerText.Contains("Armor") || doc.GetElementsByTagName("class")[0].InnerText.Contains("Weapons"))
+                    &&(Int32.Parse(doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText)) < 3)
+                || Int32.Parse(doc.GetElementsByTagName("inventorySlot")[0].Attributes[0].InnerText) == 24
+                || Int32.Parse(doc.GetElementsByTagName("class")[0].Attributes[0].InnerText) == 12
+                || Int32.Parse(doc.GetElementsByTagName("class")[0].Attributes[0].InnerText) == 15
+                || Int32.Parse(doc.GetElementsByTagName("class")[0].Attributes[0].InnerText) == 9
                 )
             {
                 itemStats.Add("Item not found or skipped!");
@@ -134,6 +144,7 @@ namespace ClassicDB.Item.Scraper
                 var crmSlot = "";
                 var slotType = xmlDoc?.DocumentNode?.SelectSingleNode("//span[@class='q1']")?.InnerText;
 
+                //Set Quality
                 switch (quality)
                 {
                     case "1":
@@ -156,6 +167,7 @@ namespace ClassicDB.Item.Scraper
                         break;
                 }
 
+                //Set Slot Type
                 if (inventorySlot == "17")
                 {
                     //2H weapon
@@ -191,6 +203,16 @@ namespace ClassicDB.Item.Scraper
                     //Ranged Weapon (without wand)
                     crmSlot = "257260006";
                 }
+                else if (inventorySlot == "0" && classId == "7")
+                {
+                    //Materials
+                    crmSlot = "257260008";
+                }
+                else if (inventorySlot == "0" && classId == "0")
+                {
+                    //Consumables
+                    crmSlot = "257260009";
+                }
                 else
                 {
                     //default to lowest value slot
@@ -212,51 +234,6 @@ namespace ClassicDB.Item.Scraper
                 itemStats.Add(slotType);
             }
             return itemStats;
-        }
-
-        static List<string> ParseClassicDB(int providedNumber)
-        {
-            int initializedNumber = providedNumber;
-            List<string> itemStats = new List<string>();
-
-            var html = @"https://classicdb.ch/?item=" + initializedNumber;
-            HtmlWeb web = new HtmlWeb();
-            var doc = web.Load(html);
-
-            var iLvl = doc.DocumentNode.SelectSingleNode("//table[@class='infobox']//tr//td//ul//li//div").InnerHtml.Replace("Level: ", "");
-            var rarity = doc.DocumentNode.SelectSingleNode("//div[@id='tooltip" + initializedNumber + "-generic']//*//b").Attributes["class"].Value;
-            var itemName = doc.DocumentNode.SelectSingleNode("//div[@id='tooltip" + initializedNumber + "-generic']//*//b").InnerText;
-            var slot = doc.DocumentNode.SelectSingleNode("//div[@id='tooltip" + initializedNumber + "-generic']//*//table[@width='100%']//td").InnerText;
-            var rarityText = "n/a";
-
-            if (rarity == "q2")
-            {
-                rarityText = "Uncommon";
-            }
-            else if (rarity == "q3")
-            {
-                rarityText = "Rare";
-            }
-            else if (rarity == "q4")
-            {
-                rarityText = "Epic";
-            }
-            else if (rarity == "q5")
-            {
-                rarityText = "Legendary";
-            }
-            else
-            {
-                Console.WriteLine("Rarity Value Not Set");
-            }
-
-            itemStats.Add(iLvl);
-            itemStats.Add(rarity);
-            itemStats.Add(itemName);
-            itemStats.Add(slot);
-            itemStats.Add(rarityText);
-            return itemStats;
-           
         }
 
         private static void InsertIntoCRM(int start, int end)
@@ -288,7 +265,7 @@ namespace ClassicDB.Item.Scraper
                     OptionSetValue slot = new OptionSetValue(Int32.Parse(itemStats[11]));
 
                     QueryExpression query = new QueryExpression("wowc_loot");
-                    query.ColumnSet.AddColumns("wowc_itemid", "wowc_lootid");
+                    query.ColumnSet.AddColumns("wowc_itemid","wowc_name", "wowc_lootid");
                     query.Criteria = new FilterExpression();
                     query.Criteria.AddCondition("wowc_itemid", ConditionOperator.Equal, itemStats[0]);
 
@@ -309,6 +286,8 @@ namespace ClassicDB.Item.Scraper
                             //loot["businessunitid"] = new EntityReference("businessunit", defaultBU);
                             //loot["timezonecode"] = 33;
                             crmService.Create(loot);
+
+                            Console.WriteLine("Created: Item:{0} Name:{1}", (string)itemStats[0], itemStats[1]);
                         }
                         catch (Exception ex)
                         {
@@ -322,7 +301,7 @@ namespace ClassicDB.Item.Scraper
                         {
                             if (a.Contains("wowc_itemid") && a["wowc_itemid"] != null)
                             {
-                                Console.WriteLine("{0} {1}", a.GetAttributeValue<string>("wowc_itemid"), a.GetAttributeValue<Guid>("wowc_lootid"));
+                                
                                 try
                                 {
                                     Entity loot = new Entity("wowc_loot");
@@ -334,7 +313,7 @@ namespace ClassicDB.Item.Scraper
                                     loot["wowc_slot"] = slot;
 
                                     crmService.Update(loot);
-                                    
+                                    Console.WriteLine("Updating: Item:{0} Name:{1} GUID:{2}", a.GetAttributeValue<string>("wowc_itemid"), a.GetAttributeValue<string>("wowc_name"), a.GetAttributeValue<Guid>("wowc_lootid"));
                                 }
                                 catch (Exception ex)
                                 {
@@ -352,6 +331,9 @@ namespace ClassicDB.Item.Scraper
                     
                 }
             }
+            Console.WriteLine("Done Processing");
+            Console.ReadLine();
+
         }
 
         private static void BuildCsvFile(int start, int end)
