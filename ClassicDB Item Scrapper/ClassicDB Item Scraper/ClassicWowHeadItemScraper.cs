@@ -13,7 +13,6 @@ namespace ClassicDB.Item.Scraper
 {
     class ClassicWowHeadItemScraper
     {
-        [STAThread] // Added to support UX
         static void Main(string[] args)
         {
            

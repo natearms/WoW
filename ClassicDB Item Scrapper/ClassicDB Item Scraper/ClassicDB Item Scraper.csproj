@@ -117,8 +117,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClassicWowHeadItemScraper.cs" />
-    <Compile Include="CrmAuthentication.cs" />
-    <Compile Include="LoginUX\ExampleLoginForm.xaml.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -127,12 +125,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Files\ClassicDb-Parse.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Page Include="LoginUX\ExampleLoginForm.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
