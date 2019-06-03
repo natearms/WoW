@@ -105,45 +105,53 @@ namespace ClassicDB.Item.Scraper
 
             XmlElement root = doc.DocumentElement;
             XmlNode nodeInfo = root.SelectSingleNode("descendant::item");
+
+            if (root.InnerText == "Item not found!")
+            {
+                itemStats.Add("Item not found or skipped!");
+                return itemStats;
+            }
+
+            var xmlDoc = new HtmlDocument();
+            xmlDoc.OptionEmptyCollection = true;
+            xmlDoc.LoadHtml(doc.GetElementsByTagName("htmlTooltip")[0].InnerText);
+
+            var itemId = doc.GetElementsByTagName("item")[0].Attributes[0].InnerText;
+            var itemName = doc.GetElementsByTagName("name")[0].InnerText.Replace(',', ' ');
+            var itemLvl = doc.GetElementsByTagName("level")[0].InnerText;
+            var quality = doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText;
+            var qualityName = doc.GetElementsByTagName("quality")[0].InnerText;
+            var classId = doc.GetElementsByTagName("class")[0].Attributes[0].InnerText;
+            var classIdName = doc.GetElementsByTagName("class")[0].InnerText;
+            var subClassId = doc.GetElementsByTagName("subclass")[0].Attributes[0].InnerText;
+            var inventorySlot = doc.GetElementsByTagName("inventorySlot")[0].Attributes[0].InnerText;
+            var inventorySlotName = doc.GetElementsByTagName("inventorySlot")[0].InnerText;
+            var crmRarity = "";
+            var crmSlot = "";
+            var slotType = xmlDoc?.DocumentNode?.SelectSingleNode("//span[@class='q1']")?.InnerText;
+
+
             if (root.InnerText == "Item not found!" 
-                || Int32.Parse(doc.GetElementsByTagName("level")[0].InnerText) < 40 
-                || Int32.Parse(doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText) < 1 
-                //|| Int32.Parse(doc.GetElementsByTagName("inventorySlot")[0].Attributes[0].InnerText) == 0 
-                || Int32.Parse(doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText) == 6
-                || doc.GetElementsByTagName("name")[0].InnerText.Contains("[PH]")
-                || doc.GetElementsByTagName("name")[0].InnerText.Contains("deprecated")
-                || doc.GetElementsByTagName("name")[0].InnerText.Contains("Epic")
-                || doc.GetElementsByTagName("name")[0].InnerText.Contains("Test")
-                || ((doc.GetElementsByTagName("class")[0].InnerText.Contains("Armor") || doc.GetElementsByTagName("class")[0].InnerText.Contains("Weapons"))
-                    &&(Int32.Parse(doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText)) < 3)
-                || Int32.Parse(doc.GetElementsByTagName("inventorySlot")[0].Attributes[0].InnerText) == 24
-                || Int32.Parse(doc.GetElementsByTagName("class")[0].Attributes[0].InnerText) == 12
-                || Int32.Parse(doc.GetElementsByTagName("class")[0].Attributes[0].InnerText) == 15
-                || Int32.Parse(doc.GetElementsByTagName("class")[0].Attributes[0].InnerText) == 9
+                || Int32.Parse(itemLvl) < 40 
+                || Int32.Parse(quality) < 1 
+                //|| Int32.Parse(inventorySlot) == 0 
+                || Int32.Parse(quality) == 6
+                || itemName.Contains("[PH]")
+                || itemName.ToLower().Contains("deprecated")
+                || itemName.ToLower().Contains("epic")
+                || itemName.ToLower().Contains("test")
+                || ((classIdName.ToLower().Contains("armor") || classIdName.ToLower().Contains("weapons"))
+                    &&(Int32.Parse(quality)) < 3)
+                || Int32.Parse(inventorySlot) == 24
+                || Int32.Parse(classId) == 12
+                || Int32.Parse(classId) == 15
+                || Int32.Parse(classId) == 9
                 )
             {
                 itemStats.Add("Item not found or skipped!");
             }
             else
             {
-                var xmlDoc = new HtmlDocument();
-                xmlDoc.OptionEmptyCollection = true;
-                xmlDoc.LoadHtml(doc.GetElementsByTagName("htmlTooltip")[0].InnerText);
-
-                var itemId = doc.GetElementsByTagName("item")[0].Attributes[0].InnerText;
-                var itemName = doc.GetElementsByTagName("name")[0].InnerText.Replace(',', ' ');
-                var itemLvl = doc.GetElementsByTagName("level")[0].InnerText;
-                var quality = doc.GetElementsByTagName("quality")[0].Attributes[0].InnerText;
-                var qualityName = doc.GetElementsByTagName("quality")[0].InnerText;
-                var classId = doc.GetElementsByTagName("class")[0].Attributes[0].InnerText;
-                var classIdName = doc.GetElementsByTagName("class")[0].InnerText;
-                var subClassId = doc.GetElementsByTagName("subclass")[0].Attributes[0].InnerText;
-                var inventorySlot = doc.GetElementsByTagName("inventorySlot")[0].Attributes[0].InnerText;
-                var inventorySlotName = doc.GetElementsByTagName("inventorySlot")[0].InnerText;
-                var crmRarity = "";
-                var crmSlot = "";
-                var slotType = xmlDoc?.DocumentNode?.SelectSingleNode("//span[@class='q1']")?.InnerText;
-
                 //Set Quality
                 switch (quality)
                 {
@@ -252,6 +260,7 @@ namespace ClassicDB.Item.Scraper
 
                 if (itemStats[0] == "Item not found or skipped!")
                 {
+                    //Console.WriteLine("Skipped");
                 }
                 else
                 {
