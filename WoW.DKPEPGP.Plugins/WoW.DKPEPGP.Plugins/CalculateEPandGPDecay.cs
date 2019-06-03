@@ -59,7 +59,8 @@ namespace WoW.DKPEPGP.Plugins
                     tracingService.Trace("Creating EP Decay record");
                     Entity effortPoint = new Entity("letter");
                     Entity gearPoint = new Entity("task");
-                    if(a.GetAttributeValue<Decimal>("wowc_totalgp") > 0)
+
+                    if(a.GetAttributeValue<Decimal>("wowc_totalep") > 0)
                     {
                         effortPoint["subject"] = decayItemLoot.Attributes["wowc_name"] + " - " + a.GetAttributeValue<string>("fullname") + " - " + DateTime.Today.ToShortDateString();
                         effortPoint["wowc_raidmember"] = new EntityReference("contact", a.GetAttributeValue<Guid>("contactid"));
