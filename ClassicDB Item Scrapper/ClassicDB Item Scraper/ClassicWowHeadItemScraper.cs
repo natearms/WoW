@@ -1,25 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Xaml;
-using System.Threading.Tasks;
-using System.Net;
 using System.IO;
-using System.Net.Http;
 using System.Xml;
-using System.Xml.XPath;
-using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using System.Configuration;
-using System.ServiceModel.Description;
-using Microsoft.Crm.Sdk.Messages;
 using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Tooling.Connector;
 using Microsoft.Xrm.Sdk.Query;
-using System.Windows.Markup;
-using AuthenticationType = Microsoft.Xrm.Tooling.Connector.AuthenticationType;
 
 namespace ClassicDB.Item.Scraper
 {
@@ -28,22 +16,7 @@ namespace ClassicDB.Item.Scraper
         [STAThread] // Added to support UX
         static void Main(string[] args)
         {
-            /*
-            CrmServiceClient service = null;
-            try
-            {
-                service = CrmAuthentication.Connect("Connect");
-                Console.WriteLine(service.IsReady);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-            */
-
-            
-
+           
             int startingNumber = 0;
             int endingNumber = 0;
             
@@ -61,10 +34,6 @@ namespace ClassicDB.Item.Scraper
                 }
                     
             } while (endingNumber <= startingNumber);
-
-            
-            //int startingNumber = 13500;
-            //int endingNumber = 13600;
 
             //BuildCsvFile(startingNumber, endingNumber);
             InsertIntoCRM(startingNumber, endingNumber);
@@ -91,6 +60,7 @@ namespace ClassicDB.Item.Scraper
             int initializedNumber = providedNumber;
             List<string> itemStats = new List<String>();
 
+            #region Load variables from WoWHead XML
             String URLString = @"https://classic.wowhead.com/item=" + initializedNumber + "&xml";
             XmlDocument doc = new XmlDocument();
             try
@@ -102,7 +72,6 @@ namespace ClassicDB.Item.Scraper
                 doc.Load(URLString);
             }
             
-
             XmlElement root = doc.DocumentElement;
             XmlNode nodeInfo = root.SelectSingleNode("descendant::item");
 
@@ -129,19 +98,17 @@ namespace ClassicDB.Item.Scraper
             var crmRarity = "";
             var crmSlot = "";
             var slotType = xmlDoc?.DocumentNode?.SelectSingleNode("//span[@class='q1']")?.InnerText;
-
+            #endregion
 
             if (root.InnerText == "Item not found!" 
                 || Int32.Parse(itemLvl) < 40 
                 || Int32.Parse(quality) < 1 
-                //|| Int32.Parse(inventorySlot) == 0 
                 || Int32.Parse(quality) == 6
                 || itemName.Contains("[PH]")
                 || itemName.ToLower().Contains("deprecated")
                 || itemName.ToLower().Contains("epic")
                 || itemName.ToLower().Contains("test")
-                || ((classIdName.ToLower().Contains("armor") || classIdName.ToLower().Contains("weapons"))
-                    &&(Int32.Parse(quality)) < 3)
+                || ((classIdName.ToLower().Contains("armor") || classIdName.ToLower().Contains("weapons")) &&(Int32.Parse(quality)) < 3)
                 || Int32.Parse(inventorySlot) == 24
                 || Int32.Parse(classId) == 12
                 || Int32.Parse(classId) == 15
@@ -152,7 +119,7 @@ namespace ClassicDB.Item.Scraper
             }
             else
             {
-                //Set Quality
+                #region Set quality variable to corresponding CRM option set value
                 switch (quality)
                 {
                     case "1":
@@ -174,8 +141,10 @@ namespace ClassicDB.Item.Scraper
 
                         break;
                 }
+                #endregion
 
-                //Set Slot Type
+                #region Set slot type variable to corresponding CRM option set value
+
                 if (inventorySlot == "17")
                 {
                     //2H weapon
@@ -226,6 +195,7 @@ namespace ClassicDB.Item.Scraper
                     //default to lowest value slot
                     crmSlot = "257260004";
                 }
+                #endregion
 
                 itemStats.Add(itemId);
                 itemStats.Add(itemName);
