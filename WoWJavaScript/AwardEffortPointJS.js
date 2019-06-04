@@ -62,13 +62,13 @@ function concatenateSubject() {
         var raidTeam = Xrm.Page.getAttribute("wowc_raidteam").getValue()[0].name;
         var standbyTeam = Xrm.Page.getAttribute("wowc_standbyteam").getValue()[0].name;
         var itemName = Xrm.Page.getAttribute("wowc_item").getValue()[0].name;
-        Xrm.Page.getAttribute("subject").setValue(raidTeam + "-" + standbyTeam + "-" + itemName);
+        Xrm.Page.getAttribute("subject").setValue(itemName + "-" + raidTeam + "-" + standbyTeam);
         Xrm.Page.getAttribute("subject").setSubmitMode("always");
     }
     else if (raidTeam != null && itemName != null) {
         var raidTeam = Xrm.Page.getAttribute("wowc_raidteam").getValue()[0].name;
         var itemName = Xrm.Page.getAttribute("wowc_item").getValue()[0].name;
-        Xrm.Page.getAttribute("subject").setValue(raidTeam + "-" + itemName);
+        Xrm.Page.getAttribute("subject").setValue(itemName + "-" + raidTeam);
         Xrm.Page.getAttribute("subject").setSubmitMode("always");
     }
     else {

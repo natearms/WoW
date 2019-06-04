@@ -60,7 +60,7 @@ function concatenateSubject() {
     if (raidMember != null && itemName != null) {
         var raidMember = Xrm.Page.getAttribute("wowc_raidmember").getValue()[0].name;
         var itemName = Xrm.Page.getAttribute("wowc_item").getValue()[0].name;
-        Xrm.Page.getAttribute("subject").setValue(raidMember + "-" + itemName);
+        Xrm.Page.getAttribute("subject").setValue(itemName + "-" + raidMember);
         Xrm.Page.getAttribute("subject").setSubmitMode("always");
     } else {
         Xrm.Page.getAttribute("subject").setValue("");

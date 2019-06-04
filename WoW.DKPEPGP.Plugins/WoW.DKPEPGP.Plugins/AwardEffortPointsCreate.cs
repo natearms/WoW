@@ -69,7 +69,7 @@ namespace WoW.DKPEPGP.Plugins
             foreach (var a in raidTeam.Entities)
             {
 
-                Entity effortPoint = new Entity("letter");
+                Entity effortPoint = new Entity("wowc_effortpoint");
                 
                 effortPoint["subject"] = ((EntityReference)entity.Attributes["wowc_item"]).Name + "-" + a.GetAttributeValue<string>("fullname");
                 effortPoint["wowc_raidmember"] = new EntityReference("contact", a.GetAttributeValue<Guid>("contactid"));

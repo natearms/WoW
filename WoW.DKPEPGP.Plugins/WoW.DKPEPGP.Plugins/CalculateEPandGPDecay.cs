@@ -57,8 +57,8 @@ namespace WoW.DKPEPGP.Plugins
                 foreach (var a in RaidMembers.Entities)
                 {
                     tracingService.Trace("Creating EP Decay record");
-                    Entity effortPoint = new Entity("letter");
-                    Entity gearPoint = new Entity("task");
+                    Entity effortPoint = new Entity("wowc_effortpoint");
+                    Entity gearPoint = new Entity("wowc_gearpoint");
 
                     if(a.GetAttributeValue<Decimal>("wowc_totalep") > 0)
                     {
