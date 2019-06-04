@@ -75,6 +75,7 @@
     <Compile Include="CalculateRollupStatistics.cs" />
     <Compile Include="GearPointCalculator.cs" />
     <Compile Include="GearPointCalculatorCreate.cs" />
+    <Compile Include="GuildBankUpkeepDelete.cs" />
     <Compile Include="GuildBankUpkeep.cs" />
     <Compile Include="GuildBankUpkeepCreate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

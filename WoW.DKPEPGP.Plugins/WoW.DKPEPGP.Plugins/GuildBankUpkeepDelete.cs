@@ -5,7 +5,7 @@ using Microsoft.Xrm.Sdk.Query;
 
 namespace WoW.DKPEPGP.Plugins
 {
-    public class GuildBankUpkeep : IPlugin
+    public class GuildBankUpkeepDelete : IPlugin
     {
         public void Execute(IServiceProvider serviceProvider)
         {
@@ -15,9 +15,9 @@ namespace WoW.DKPEPGP.Plugins
             IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
 
             if (context.InputParameters.Contains("Target") &&
-                context.InputParameters["Target"] is Entity)
+                context.InputParameters["Target"] is EntityReference)
             {
-                Entity entity = (Entity)context.InputParameters["Target"];
+                
                 Entity preImage = context.PreEntityImages["PreImage"];
                 
                 if (preImage.GetAttributeValue<OptionSetValue>("wowc_efforttype").Value.ToString() == "257260003")
@@ -28,37 +28,17 @@ namespace WoW.DKPEPGP.Plugins
 
                         EntityCollection guildBankRecordCollection = GetGuildBankRecord(((EntityReference)preImage.Attributes["wowc_item"]).Id, service);
                         
-                        if (guildBankRecordCollection.Entities.Count == 0)
-                        {
-                            Guid guildBankRecordGuid = Guid.NewGuid();
-
-                            tracingService.Trace("Guild Bank Record not found");
-                            Entity guildBankRecord = new Entity("wowc_guildbankrecord");
-
-                            guildBankRecord["wowc_name"] = ((EntityReference)preImage.Attributes["wowc_item"]).Name;
-                            guildBankRecord["wowc_item"] = preImage.Attributes["wowc_item"];
-                            guildBankRecord["wowc_inventory"] = (int)entity.GetAttributeValue<Decimal>("wowc_epcount");
-                            guildBankRecord["wowc_guildbankrecordid"] = guildBankRecordGuid;
-
-                            tracingService.Trace("Creating Guild Bank Record");
-                            service.Create(guildBankRecord);
-
-                            entity["wowc_guildbankrecord"] = new EntityReference("wowc_guildbankrecord", guildBankRecordGuid);
-                            service.Update(entity);
-                        }
-                        else if (guildBankRecordCollection.Entities.Count == 1)
+                        if (guildBankRecordCollection.Entities.Count == 1)
                         {
                             tracingService.Trace("Guild Bank Record found");
                             Entity guildBankRecord = new Entity("wowc_guildbankrecord");
 
                             guildBankRecord.Id = guildBankRecordCollection[0].GetAttributeValue<Guid>("wowc_guildbankrecordid");
-                            guildBankRecord["wowc_inventory"] = guildBankRecordCollection.Entities[0].GetAttributeValue<int>("wowc_inventory") - ((int)preImage.GetAttributeValue<Decimal>("wowc_epcount")-(int)entity.GetAttributeValue<Decimal>("wowc_epcount"));
+                            guildBankRecord["wowc_inventory"] = guildBankRecordCollection.Entities[0].GetAttributeValue<int>("wowc_inventory") - (int)preImage.GetAttributeValue<Decimal>("wowc_epcount");
 
                             tracingService.Trace("Updating GUild Bank Record");
                             service.Update(guildBankRecord);
 
-                            entity["wowc_guildbankrecord"] = new EntityReference("wowc_guildbankrecord", guildBankRecordCollection.Entities[0].GetAttributeValue<Guid>("wowc_guildbankrecordid"));
-                            service.Update(entity);
                         }
                         else
                         {

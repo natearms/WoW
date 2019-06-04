@@ -157,3 +157,48 @@ function overrideAEPValues() {
         Xrm.Page.getControl("wowc_category").setDisabled(true);
     }
 }
+function lockItemFieldForDonations() {
+    
+    var effortType = Xrm.Page.getAttribute("wowc_efforttype").getValue();
+
+    if (effortType == "257260003") {
+        Xrm.Page.getControl("wowc_item").setDisabled(true);
+        Xrm.Page.getControl("wowc_raidmember").setDisabled(true);
+    } else {
+        Xrm.Page.getControl("wowc_item").setDisabled(false);
+        Xrm.Page.getControl("wowc_raidmember").setDisabled(false);
+    }
+}
+function lockFieldsForDonationsOnLoad() {
+    var effortType = Xrm.Page.getAttribute("wowc_efforttype").getValue();
+    if (effortType == "257260003") {
+        Xrm.Page.getControl("wowc_item").setDisabled(true);
+        Xrm.Page.getControl("wowc_raidmember").setDisabled(true);
+        Xrm.Page.getControl("wowc_efforttype").setDisabled(true);
+    } else {
+        Xrm.Page.getControl("wowc_item").setDisabled(false);
+        Xrm.Page.getControl("wowc_raidmember").setDisabled(false);
+        Xrm.Page.getControl("wowc_efforttype").setDisabled(false);
+    }
+    
+}
+function roundNumberValidationOnSave(context) {
+    var effortType = Xrm.Page.getAttribute("wowc_efforttype").getValue();
+    var epValue = Xrm.Page.getAttribute("wowc_epcount").getValue();
+
+    var saveEvent = context.getEventArgs();
+
+    if (effortType == "257260003" && epValue % 1 != 0) {
+        Xrm.Page.ui.setFormNotification("Donations and Widthdrawls require a whole number in the EP Count field","ERROR")
+        saveEvent.preventDefault();
+    } 
+}
+function roundNumberValidation() {
+    var effortType = Xrm.Page.getAttribute("wowc_efforttype").getValue();
+    var epValue = Xrm.Page.getAttribute("wowc_epcount").getValue();
+
+    if (effortType == "257260003" && epValue % 1 != 0) {
+        Xrm.Page.ui.setFormNotification("Donations and Widthdrawls require a whole number in the EP Count field", "ERROR")
+        
+    }
+}
