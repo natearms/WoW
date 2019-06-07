@@ -1,0 +1,38 @@
+﻿<html lang=”en-us”><head>
+    <script src=”../ClientGlobalContext.js.aspx”></script>
+    <script type=”text/javascript” src=”SDK.REST.js”></script>
+    <script type=”text/javascript”></script>
+//check if document is loaded or not
+var imgControl = document.createElement(“IMG”);
+//Check if documented loaded fully
+document.onreadystatechange = function () {
+if (document.readyState == “complete”) {
+getnotesImages();
+}
+}
+//this function is used to get image from notes
+function getnotesImages()
+{ //get regarding object id
+var regardingObjectId=window.parent.Xrm.Page.data.entity.getId();
+//assign notes entity name
+var entitySchemaName=”Annotation”;
+var odataQuery = “?$top=1&$select=AnnotationId,DocumentBody,MimeType&” +
+“$filter=ObjectId/Id eq guid'” + regardingObjectId +
+“‘ and IsDocument eq true and startswith(MimeType,’image/’) “;
+//call retrieveMultipleRecords method in SDK.REST javascript script library
+SDK.REST.retrieveMultipleRecords(entitySchemaName, odataQuery, getnotesImagesCallback, function (error) { alert(error.message); }, function(){});
+}
+//process callbanck result
+function getnotesImagesCallback(resultSet)
+{
+if (resultSet.length > 0) {
+var mimeType = resultSet[0].MimeType;
+var body = resultSet[0].DocumentBody;
+imgControl.src=”data:” + mimeType + “;base64,” + body;
+document.getElementById(‘imagediv’).appendChild(imgControl);
+}
+}
+
+    <meta charset=”utf-8″></head><body style=”zoom: 1;”>
+<div style=”width: 100px;” id=”imagediv”></div>
+</body></html>

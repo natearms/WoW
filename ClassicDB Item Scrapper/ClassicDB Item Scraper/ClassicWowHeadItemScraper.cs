@@ -107,6 +107,12 @@ namespace ClassicDB.Item.Scraper
                 || itemName.ToLower().Contains("deprecated")
                 || itemName.ToLower().Contains("epic")
                 || itemName.ToLower().Contains("test")
+                || itemName.ToLower().Contains("Grand Marshal")
+                || itemName.ToLower().Contains("High Warlord")
+                || itemName.ToLower().Contains("Lieutenant Commander")
+                || itemName.ToLower().Contains("Champion")
+                || itemName.ToLower().Contains("Field Marshal")
+                || itemName.ToLower().Contains("Warlord")
                 || ((classIdName.ToLower().Contains("armor") || classIdName.ToLower().Contains("weapons")) &&(Int32.Parse(quality)) < 3)
                 || Int32.Parse(inventorySlot) == 24
                 || Int32.Parse(classId) == 12
