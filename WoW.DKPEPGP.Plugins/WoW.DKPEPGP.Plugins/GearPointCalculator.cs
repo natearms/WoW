@@ -37,25 +37,20 @@ namespace WoW.DKPEPGP.Plugins
                         Decimal ilvl = 0;
                         int rarityValue = 0;
                         Decimal slotModifier = 0;
-                        Decimal four = 4;
-                        Decimal twoFive = 2.5m;
-
-                        if (entity.Attributes.Contains("wowc_ilvl"))
-                            ilvl = (Decimal)entity.Attributes["wowc_ilvl"];
-                        else
-                            ilvl = (Decimal)image.Attributes["wowc_ilvl"];
-
-                        if (entity.Attributes.Contains("wowc_rarityvalue"))
-                            rarityValue = (int)entity.Attributes["wowc_rarityvalue"];
-                        else
-                            rarityValue = (int)image.Attributes["wowc_rarityvalue"];
-
-                        if (entity.Attributes.Contains("wowc_slotmodifier"))
-                            slotModifier = (Decimal)entity.Attributes["wowc_slotmodifier"];
-                        else
-                            slotModifier = (Decimal)image.Attributes["wowc_slotmodifier"];
+                        int wowc_farm = 1;
+                        int wowc_offSpec = 1;
                         
-                        Decimal total = ((ilvl / four) * (rarityValue * slotModifier)) / twoFive;
+                        
+                        ilvl = entity.Attributes.Contains("wowc_ilvl") ? (Decimal)entity.Attributes["wowc_ilvl"] : (Decimal)image.Attributes["wowc_ilvl"];
+                        rarityValue = entity.Attributes.Contains("wowc_rarityvalue") ? (int)entity.Attributes["wowc_rarityvalue"] : (int)image.Attributes["wowc_rarityvalue"];
+                        slotModifier = entity.Attributes.Contains("wowc_slotmodifier") ? (Decimal)entity.Attributes["wowc_slotmodifier"] : (Decimal)image.Attributes["wowc_slotmodifier"];
+
+                        tracingService.Trace("Getting Farm Option Set");
+                        wowc_farm = entity.Attributes.Contains("wowc_farm") ? (entity.GetAttributeValue<bool>("wowc_farm") ? 2 : 1) : (image.GetAttributeValue<bool>("wowc_farm") ? 2 : 1);
+                        tracingService.Trace("Getting Off Spec Option Set");
+                        wowc_offSpec = entity.Attributes.Contains("wowc_offspec") ? (entity.GetAttributeValue<bool>("wowc_offspec") ? 2 : 1) : (image.GetAttributeValue<bool>("wowc_offspec") ? 2 : 1);
+
+                        Decimal total = (Decimal)Math.Round((4 * Math.Pow(2, ((double)ilvl / 28 + (rarityValue - 4))) * (double)slotModifier / (double)wowc_offSpec) / (double)wowc_farm);
 
                         entity.Attributes.Add("wowc_gp",total);
                     }
