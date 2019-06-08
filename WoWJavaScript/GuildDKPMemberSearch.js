@@ -1,11 +1,11 @@
 function getMember() {
+
     var req = new XMLHttpRequest();
-    req.open("GET", Xrm.Page.context.getClientUrl() + "/api/data/v9.1/contacts?$select=lastname,wowc_class,wowc_totalep,wowc_totalgp,wowc_totalpr,wowc_trialend,wowc_trialstart&$filter=contains(lastname, 'oxnul')&$orderby=wowc_totalpr desc", true);
+    req.open("GET", Xrm.Page.context.getClientUrl() + "/api/data/v9.1/contacts?$select=lastname,wowc_class,wowc_totalep,wowc_totalgp,wowc_totalpr,wowc_trialend,wowc_trialstart&$filter=contains(lastname, 'oxnul') or contains(lastname, 'raume') or contains(lastname, 'randy')", true);
     req.setRequestHeader("OData-MaxVersion", "4.0");
     req.setRequestHeader("OData-Version", "4.0");
     req.setRequestHeader("Accept", "application/json");
     req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-    req.setRequestHeader("Prefer", "odata.include-annotations=\"*\"");
     req.onreadystatechange = function () {
         if (this.readyState === 4) {
             req.onreadystatechange = null;
@@ -14,13 +14,9 @@ function getMember() {
                 for (var i = 0; i < results.value.length; i++) {
                     var lastname = results.value[i]["lastname"];
                     var wowc_class = results.value[i]["wowc_class"];
-                    var wowc_class_formatted = results.value[i]["wowc_class@OData.Community.Display.V1.FormattedValue"];
                     var wowc_totalep = results.value[i]["wowc_totalep"];
-                    var wowc_totalep_formatted = results.value[i]["wowc_totalep@OData.Community.Display.V1.FormattedValue"];
                     var wowc_totalgp = results.value[i]["wowc_totalgp"];
-                    var wowc_totalgp_formatted = results.value[i]["wowc_totalgp@OData.Community.Display.V1.FormattedValue"];
                     var wowc_totalpr = results.value[i]["wowc_totalpr"];
-                    var wowc_totalpr_formatted = results.value[i]["wowc_totalpr@OData.Community.Display.V1.FormattedValue"];
                     var wowc_trialend = results.value[i]["wowc_trialend"];
                     var wowc_trialstart = results.value[i]["wowc_trialstart"];
                 }
