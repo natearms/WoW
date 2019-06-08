@@ -16,7 +16,7 @@ function getBankBounty() {
         req.setRequestHeader("Prefer", "odata.include-annotations=\"*\"");
         req.onreadystatechange = function () {
             if (this.readyState === 4) {
-                req.onreadystatechange = null;
+                req.onreadystatechange = null; 
                 if (this.status === 200) {
                     var results = JSON.parse(this.response);
                     for (var i = 0; i < results.value.length; i++) {
