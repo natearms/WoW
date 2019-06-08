@@ -209,7 +209,7 @@ function lockFieldsForDonationsOnLoad() {
     if (effortType == "257260003") {
         Xrm.Page.getControl("wowc_item").setDisabled(true);
         Xrm.Page.getControl("wowc_raidmember").setDisabled(true);
-        Xrm.Page.getControl("wowc_efforttype").setDisabled(true);
+        Xrm.Page.getControl("wowc_efforttype").setDisabled(true); 
     } else {
         Xrm.Page.getControl("wowc_item").setDisabled(false);
         Xrm.Page.getControl("wowc_raidmember").setDisabled(false);
