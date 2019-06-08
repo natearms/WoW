@@ -2,56 +2,78 @@
 <html>
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    
+
     <script type="text/javascript" src="./ClientGlobalContext.js.aspx"></script>
     
-    <script type="text/javascript" src="../Scripts/testing.js"></script>
-    
-    <script>
-        function myFunction() {
-            var input, filter, table, tr, td, i, txtValue;
-            input = document.getElementById("myInput");
+    <script type="text/javascript">
         
+        function getMember() {
 
-            var records = [["Unclebrother","Druid","0.07","6","0","",""],
-                    ["Test Raid Member","Hunter","0.03","7","169.4","08/26/2019","11/01/2019"],
-                    ["Samaedan","Mage","0.07","6","0","08/26/2019","11/01/2019"],
-                    ["Ichiruka","Mage","0.07","6","0","",""],
-                    ["Thiery","Mage","0.07","6","0","",""],
-                    ["Fortytwo","Priest","0.07","6","0","",""],
-                    ["Flarix","Priest","0.07","6","0","",""],
-                    ["Shomua","Priest","0.07","6","0","",""],
-                    ["Fuzzy","Rogue","0.07","6","0","",""],
-                    ["Oxnull","Shaman","0.09","8","0","",""],
-                    ["Dirigaaz","Shaman","0.07","6","0","",""],
-                    ["Swift","Warlock","0.07","6","0","",""],
-                    ["Yarimabear","Warlock","0.07","6","0","",""],
-                    ["Randy","Warrior","0.07","6","0","",""],
-                    ["Raumedrius","Warrior","0.05","8","95.74","",""]],
-
-                table = document.getElementById("myTable");
-
-            //addingtext
-            var members = getMember();
-            for (var i = 0; i < records.length; i++)
-            {
-                // create a new row
-                var newRow = table.insertRow(table.length);
-                for (var j = 0; j < records[i].length; j++)
-                {
-                    // create a new cell
-                    var cell = newRow.insertCell(j);
-                   
-                    // add value to the cell
-                    cell.innerHTML = records[i][j];
+            var table = document.getElementById("myTable");
+            var input = document.getElementById("myInput");
+            if (table.rows.length > 1) {
+                for (var i = table.rows.length; i > 1; i--) {
+                    table.deleteRow(i-1);
                 }
             }
+            
+            debugger;
+            var array = input.value.replace(/\s/g, '').split(";");
+            var memberFilter = [];
+            
+            for (var i = 0; i < array.length; i++) {
+                if (i == 0)
+                    memberFilter.push("contains(lastname, '" + array[i] + "')");
+                else
+                    memberFilter.push("or contains(lastname, '" + array[i] + "')");
+            }
+
+            var req = new XMLHttpRequest();
+            req.open("GET", Xrm.Page.context.getClientUrl() + "/api/data/v9.1/contacts?$select=lastname,wowc_class,wowc_totalep,wowc_totalgp,wowc_totalpr,wowc_trialend,wowc_trialstart&$filter=" + memberFilter.join(" ") + "&$orderby=wowc_totalpr desc", true);
+            req.setRequestHeader("OData-MaxVersion", "4.0");
+            req.setRequestHeader("OData-Version", "4.0");
+            req.setRequestHeader("Accept", "application/json");
+            req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+            req.setRequestHeader("Prefer", "odata.include-annotations=\"*\"");
+            req.onreadystatechange = function () {
+                if (this.readyState === 4) {
+                    req.onreadystatechange = null;
+                    if (this.status === 200) {
+                        var results = JSON.parse(this.response);
+
+                        for (var i = 0; i < results.value.length; i++) {
+                            var newRow = table.insertRow(i+1);
+
+                            var cell1 = newRow.insertCell(0);
+                            var cell2 = newRow.insertCell(1);
+                            var cell3 = newRow.insertCell(2);
+                            var cell4 = newRow.insertCell(3);
+                            var cell5 = newRow.insertCell(4);
+                            var cell6 = newRow.insertCell(5);
+                            var cell7 = newRow.insertCell(6);
+
+                            cell1.innerHTML = results.value[i]["lastname"];
+                            cell2.innerHTML = results.value[i]["wowc_class@OData.Community.Display.V1.FormattedValue"];
+                            cell3.innerHTML = results.value[i]["wowc_totalpr"];
+                            cell4.innerHTML = results.value[i]["wowc_totalep"];
+                            cell5.innerHTML = results.value[i]["wowc_totalgp"];
+                            cell6.innerHTML = results.value[i]["wowc_trialstart"];
+                            cell7.innerHTML = results.value[i]["wowc_trialend"];
+                        }
+                        
+                    } else {
+                        Xrm.Utility.alertDialog(this.statusText);
+                    }
+                }
+            };
+            req.send();
         }
     </script>
+    
 </head>
 <body>
 <h2>My Customers</h2>
-<input type="text" id="myInput" placeholder="Search for names.." title="Type in a name"><button onclick="myFunction()">Click Me</button>
+<input type="text" id="myInput" placeholder="Search for names.." title="Type in a name"><button onclick="getMember()">Click Me</button>
 
 <table id="myTable">
     <tr class="header">
