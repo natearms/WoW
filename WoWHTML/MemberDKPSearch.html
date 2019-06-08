@@ -1,5 +1,105 @@
 ﻿<!DOCTYPE html>
 <html>
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .topnav {
+        overflow: hidden;
+        background-color: #e9e9e9;
+    }
+
+        .topnav a {
+            float: left;
+            display: block;
+            color: black;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            font-size: 17px;
+
+        }
+
+            .topnav a:hover {
+                background-color: #ddd;
+                color: black;
+            }
+
+            .topnav a.active {
+                background-color: #2196F3;
+                color: white;
+            }
+
+        .topnav .search-container {
+            float: right;
+            
+        }
+
+        .topnav input[type=text] {
+            padding: 6px;
+            margin-top: 8px;
+            font-size: 17px;
+            border: none;
+            width: 500px;
+        }
+
+        .topnav .search-container button {
+            float: right;
+            padding: 6px 5px;
+            margin-top: 8px;
+            margin-right: 10px;
+            background: #ddd;
+            font-size: 17px;
+            border: none;
+            cursor: pointer;
+            
+            
+        }
+
+            .topnav .search-container button:hover {
+                background: #ccc;
+            }
+
+    #guildMembers {
+        font-family: "Segoe UI", Arial, sans-serif;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 400;
+        border-collapse: collapse;
+        width: 100%;
+
+    }
+
+        #guildMembers td, #guildMembers th {
+            border-bottom: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        #guildMembers tr:nth-child(even) {
+            background-color: #ffffff;
+        }
+
+        #guildMembers tr:hover {
+            background-color: #f8fafc;
+        }
+
+        #guildMembers th {
+            padding-top: 12px;
+            padding-bottom: 12px;
+            text-align: left;
+            background-color: #f5f5f5;
+            color: #505050;
+            font-size: 15px;
+            font-style: normal;
+            font-weight: 600;
+        }
+</style>
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -9,7 +109,7 @@
         
         function getMember() {
 
-            var table = document.getElementById("myTable");
+            var table = document.getElementById("guildMembers");
             var input = document.getElementById("myInput");
             if (table.rows.length > 1) {
                 for (var i = table.rows.length; i > 1; i--) {
@@ -52,13 +152,15 @@
                             var cell6 = newRow.insertCell(5);
                             var cell7 = newRow.insertCell(6);
 
-                            cell1.innerHTML = results.value[i]["lastname"];
+                            cell1.innerHTML = "<a href=https://dreamdaddies.crm.dynamics.com/main.aspx?etc=2&extraqs=&histKey=266859510&id={" + results.value[i]["contactid"] +"}&newWindow=true&pagetype=entityrecord#688792006 target=\"_blank\">"+results.value[i]["lastname"]+"</a>";
                             cell2.innerHTML = results.value[i]["wowc_class@OData.Community.Display.V1.FormattedValue"];
                             cell3.innerHTML = results.value[i]["wowc_totalpr"];
                             cell4.innerHTML = results.value[i]["wowc_totalep"];
                             cell5.innerHTML = results.value[i]["wowc_totalgp"];
-                            cell6.innerHTML = results.value[i]["wowc_trialstart"];
-                            cell7.innerHTML = results.value[i]["wowc_trialend"];
+                            cell6.innerHTML = results.value[i]["wowc_trialstart"] == null ? "" : results.value[i]["wowc_trialstart"];
+                            cell7.innerHTML = results.value[i]["wowc_trialend"] == null ? "" : results.value[i]["wowc_trialend"];
+
+                            
                         }
                         
                     } else {
@@ -72,20 +174,34 @@
     
 </head>
 <body>
-<h2>My Customers</h2>
-<input type="text" id="myInput" placeholder="Search for names.." title="Type in a name"><button onclick="getMember()">Click Me</button>
+    <div class="topnav">
+        <a class="search-container">
+            <input type="text" placeholder="Search.." name="search" id="myInput" />
+            <button type="submit" onclick="getMember()" id="myBtn">
+                <i class="fa fa-search"></i>
+            </button>
+        </a>
+    </div>
+    <script>
+        var input = document.getElementById("myInput");
+        input.addEventListener("keyup", function (event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();
+                document.getElementById("myBtn").click();
+            }
+        });
+    </script>
 
-<table id="myTable">
-    <tr class="header">
-        <th style="width:100;">Guild Member Name</th>
-        <th style="width:100;">Class</th>
-        <th style="width:100;">Total PR</th>
-        <th style="width:100;">Total EP</th>
-        <th style="width:100;">Total GP</th>
-        <th style="width:100;">Trial Start</th>
-        <th style="width:100;">Trial End</th>
-    </tr>
-    
-</table>
+    <table id="guildMembers" class="sortable">
+        <tr class="header">
+            <th>Guild Member Name</th>
+            <th>Class</th>
+            <th>Total PR</th>
+            <th>Total EP</th>
+            <th>Total GP</th>
+            <th>Trial Start</th>
+            <th>Trial End</th>
+        </tr>
+    </table>
 </body>
 </html>
