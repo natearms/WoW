@@ -152,7 +152,7 @@
                             var cell6 = newRow.insertCell(5);
                             var cell7 = newRow.insertCell(6);
 
-                            cell1.innerHTML = "<a href=https://dreamdaddies.crm.dynamics.com/main.aspx?etc=2&extraqs=&histKey=266859510&id={" + results.value[i]["contactid"] +"}&newWindow=true&pagetype=entityrecord#688792006 target=\"_blank\">"+results.value[i]["lastname"]+"</a>";
+                            cell1.innerHTML = "<a href=" + Xrm.Page.context.getClientUrl()+"/main.aspx?etc=2&extraqs=&histKey=266859510&id={" + results.value[i]["contactid"] +"}&newWindow=true&pagetype=entityrecord#688792006 target=\"_blank\">"+results.value[i]["lastname"]+"</a>";
                             cell2.innerHTML = results.value[i]["wowc_class@OData.Community.Display.V1.FormattedValue"];
                             cell3.innerHTML = results.value[i]["wowc_totalpr"];
                             cell4.innerHTML = results.value[i]["wowc_totalep"];
