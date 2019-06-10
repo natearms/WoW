@@ -10,7 +10,7 @@ function overrideValues() {
         Xrm.Page.getControl("wowc_rarity").setDisabled(false);
         Xrm.Page.getControl("wowc_slot").setDisabled(false);
         Xrm.Page.getControl("wowc_category").setDisabled(false);
-        
+        Xrm.Page.getControl("wowc_efforttype").setDisabled(true);
     }
     else {
         Xrm.Page.getControl("wowc_name").setDisabled(true);
@@ -21,6 +21,7 @@ function overrideValues() {
         Xrm.Page.getControl("wowc_rarity").setDisabled(true);
         Xrm.Page.getControl("wowc_slot").setDisabled(true);
         Xrm.Page.getControl("wowc_category").setDisabled(true);
+        Xrm.Page.getControl("wowc_efforttype").setDisabled(true);
     }
 }
 function fieldLockUnlock() {
@@ -33,9 +34,9 @@ function fieldLockUnlock() {
         Xrm.Page.getControl("wowc_ilvl").setDisabled(false);
         Xrm.Page.getControl("wowc_itemid").setDisabled(false);
         Xrm.Page.getControl("wowc_rarity").setDisabled(false);
-        Xrm.Page.getControl("wowc_slot").setDisabled(trufalsee);
+        Xrm.Page.getControl("wowc_slot").setDisabled(false);
         Xrm.Page.getControl("wowc_category").setDisabled(false);
-        
+        Xrm.Page.getControl("wowc_efforttype").setDisabled(false);
     }
     else {
         Xrm.Page.getControl("wowc_name").setDisabled(true);
@@ -47,6 +48,7 @@ function fieldLockUnlock() {
         Xrm.Page.getControl("wowc_slot").setDisabled(true);
         Xrm.Page.getControl("wowc_category").setDisabled(true);
         Xrm.Page.getAttribute("wowc_overridevalues").setValue(false);
+        Xrm.Page.getControl("wowc_efforttype").setDisabled(false);
     }
 
 }
