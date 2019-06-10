@@ -87,7 +87,6 @@ function setLookupItemFields() {
     }
 
 }
-
 function concatenateSubject() {
     var raidMember = Xrm.Page.getAttribute("wowc_raidmember").getValue();
     var itemName = Xrm.Page.getAttribute("wowc_item").getValue();
@@ -171,17 +170,35 @@ function updateItemInfoFromEP() {
         
     }
 }
-
 function calculateEP() {
     var epRate = Xrm.Page.getAttribute("wowc_eprate").getValue();
     var epCount = Xrm.Page.getAttribute("wowc_epcount").getValue();
     var effortType = Xrm.Page.getAttribute("wowc_efforttype").getValue();
     var effortRate = 1;
+    var highNeedFlag = Xrm.Page.getAttribute("wowc_highneedflag").getValue();
+    var createdOn = Xrm.Page.getAttribute("wowc_created").getValue();
+
+    if (highNeedFlag == true && bountyTotal == 1 && createdOn == true)
+        bountyTotal = 2;
+    else if (highNeedFlag == true && bountyTotal == 2 && createdOn == true)
+        bountyTotal = 2;
+    else if (highNeedFlag == false && bountyTotal == 2 && createdOn == true)
+        bountyTotal = 1;
+    else if (highNeedFlag == false && bountyTotal == 1 && createdOn == true)
+        bountyTotal = 1;
+
+    if (bountyTotal == 2 && createdOn != true) {
+        Xrm.Page.getAttribute("wowc_highneedflag").setValue(1);
+        Xrm.Page.getAttribute("wowc_highneedflag").setSubmitMode("always");
+        
+    }
+    
     effortRate = effortType == 257260001? .20:1
     
     Xrm.Page.getAttribute("wowc_ep").setValue(((epRate * epCount)*effortRate)*bountyTotal);
     Xrm.Page.getAttribute("wowc_ep").setSubmitMode("always");
     Xrm.Page.getAttribute("wowc_overridevalues").setValue("0");
+
 }
 function overrideAEPValues() {
     var overrideCheckbox = Xrm.Page.getAttribute("wowc_overridevalues").getValue();

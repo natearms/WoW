@@ -43,6 +43,7 @@ namespace WoW.DKPEPGP.Plugins
                             service.Create(guildBankRecord);
 
                             entity["wowc_guildbankrecord"] = new EntityReference("wowc_guildbankrecord", guildBankRecordGuid);
+                            entity["wowc_created"] = true;
                             service.Update(entity);
                         }
                         else if (guildBankRecordCollection.Entities.Count == 1)
@@ -57,6 +58,7 @@ namespace WoW.DKPEPGP.Plugins
                             service.Update(guildBankRecord);
 
                             entity["wowc_guildbankrecord"] = new EntityReference("wowc_guildbankrecord", guildBankRecordCollection.Entities[0].GetAttributeValue<Guid>("wowc_guildbankrecordid"));
+                            entity["wowc_created"] = true;
                             service.Update(entity);
                         }
                         else
