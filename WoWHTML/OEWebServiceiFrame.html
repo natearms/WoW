@@ -1,0 +1,257 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<!--https://stackoverflow.com/questions/19797064/show-hide-table-rows-using-javascript-classes-->
+    <style>
+        ul, #primaryOrderGrid {
+            list-style-type: none;
+        }
+
+        #primaryOrderGrid {
+            margin: 0;
+            padding: 0;
+        }
+
+        .caret {
+            cursor: pointer;
+            -webkit-user-select: none; /* Safari 3.1+ */
+            -moz-user-select: none; /* Firefox 2+ */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none;
+        }
+
+            .caret::before {
+                content: "\25B6";
+                color: black;
+                display: inline-block;
+                margin-right: 6px;
+            }
+
+        .caret-down::before {
+            -ms-transform: rotate(90deg); /* IE 9 */
+            -webkit-transform: rotate(90deg); /* Safari */
+            ' transform: rotate(90deg);
+        }
+
+        .nested {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+    </style>
+    <script type="text/javascript">
+        function customerOrderData() {
+            var table = document.getElementById("orderGridDetails");
+
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 &&
+                    this.status == 200) {
+                    var results = JSON.parse(this.responseText);
+
+
+                    for (var i = 0; i < results.CustOrders.length; i++) {
+                        var newRow = table.insertRow(i + 1);
+
+                        var cell1 = newRow.insertCell(0);
+                        var cell2 = newRow.insertCell(1);
+                        var cell3 = newRow.insertCell(2);
+                        var cell4 = newRow.insertCell(3);
+
+                        debugger;
+                        cell1.innerHTML = "" + results.CustOrders[i]["ORDERNUMBER"] + "</br>" + results.CustOrders[i]["PROJECTNAME"];
+                        cell2.innerHTML = results.CustOrders[i]["ORDERISFOR"];
+                        cell3.innerHTML = results.CustOrders[i]["Status"];
+                        cell4.innerHTML = results.CustOrders[i]["ReceivedDate"];
+
+
+                    }
+                    return myObj;
+                }
+            };
+            xmlhttp.open("GET", "https://nextgen-crmapi.ncigroupwstest.com/api/GetCustomerOrders/67865/50", true);
+            xmlhttp.send();
+
+        }
+    </script>
+    <script type="text/javascript">
+        function onRun() {
+            $('table table').hide();
+            $('td').on('click', function (e) {
+                e.preventDefault();
+                $(this).closest('tr').next().find('table:first').toggle();
+            });
+        }
+
+    </script>
+
+</head>
+<!--onload="customerOrderData()"-->
+<body>
+
+
+<!--
+        <table id="orderGrid">
+        <tbody>
+        <ul id="primaryOrderGrid">
+            <li class="caret">
+                <div class="detail"></div>
+                <div class="detail detail-main">
+                    <div>
+                        <table class="orderGridDetails" id="orderGridDetails">
+                            <tr class="orderEntryGrid">
+                                <th>Orders</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Order Date</th>
+                            </tr>
+
+                            <tr>
+                                <td>16-P-93922<br/>4 Walk Doors & Trim</td>
+                                <td>Component</td>
+                                <td>Active</td>
+                                <td>3/8/2019</td>
+                            </tr>
+                            <ul class="nested">
+                                <li>
+                                    <div>
+                                        <table class="orderDetails" id="orderDetails">
+                                            <tr>
+                                                <th>Basic Order Information</th>
+                                            </tr>
+                                            <tr>
+                                                <th>Job #:</th>
+                                                <td>16-8-75813</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Order Name:</th>
+                                                <td>Stanton Energy</td>
+                                            </tr>
+                                            <tr></tr>
+                                            <tr>
+                                                <th>Order Date:</th>
+                                                <td>10/12/2018</td>
+                                                <th>Order Is For:</th>
+                                                <td>Approval</td>
+                                                <th>Customer P.O.:</th>
+                                                <td>8804</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Order Type:</th>
+                                                <td>Building</td>
+                                                <th>Credit Approval:</th>
+                                                <td>no</td>
+                                                <th>Ship By: Shared Ride (Piggy Back)</th>
+                                            </tr>
+                                            <tr>
+                                                <th>Order Status:</th>
+                                                <td>Approval</td>
+                                                <th>Total Price:</th>
+                                                <td>$11,056.59</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </li>
+                            </ul>
+                            <ul class="nested">
+                                <li>
+                                    <div>
+                                        <table class="phaseDetails" id="phaseDetails">
+                                            <tr>
+                                                <th>Phase</th>
+                                                <th>Stage</th>
+                                                <th>AB Date</th>
+                                                <th>DWG Date</th>
+                                                <th>Ship Week</th>
+                                            </tr>
+                                            <tr>
+                                                <td>1</td>
+                                                <td>Detailing</td>
+                                                <td>2/4/2019</td>
+                                                <td>2/4/2019</td>
+                                                <td></td>
+                                            </tr>
+                                            <tr>
+                                                <td>3</td>
+                                                <td>Detailing</td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </li>
+                            </ul>
+
+                            <tr>
+                                <td>16-P-88936<br/>Brite Red for 16-B-57990 SA i</td>
+                                <td>Component</td>
+                                <td>Active</td>
+                                <td>1/23/2019</td>
+                            </tr>
+                            <ul class="nested">
+                                <li>
+                                    <div>
+                                        <table class="orderDetails" id="orderDetails">
+                                            <tr>
+                                                <th>Basic Order Information</th>
+                                            </tr>
+                                            <tr>
+                                                <th>Job #:</th>
+                                                <td>16-8-75813</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Order Name:</th>
+                                                <td>Stanton Energy</td>
+                                            </tr>
+                                            <tr></tr>
+                                            <tr>
+                                                <th>Order Date:</th>
+                                                <td>10/12/2018</td>
+                                                <th>Order Is For:</th>
+                                                <td>Approval</td>
+                                                <th>Customer P.O.:</th>
+                                                <td>8804</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Order Type:</th>
+                                                <td>Building</td>
+                                                <th>Credit Approval:</th>
+                                                <td>no</td>
+                                                <th>Ship By: Shared Ride (Piggy Back)</th>
+                                            </tr>
+                                            <tr>
+                                                <th>Order Status:</th>
+                                                <td>Approval</td>
+                                                <th>Total Price:</th>
+                                                <td>$11,056.59</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </li>
+                            </ul>
+                        </table>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        </tbody>
+    </table>
+    -->
+
+    <script>
+        var toggler = document.getElementsByClassName("caret");
+        var i;
+
+        for (i = 0; i < toggler.length; i++) {
+            toggler[i].addEventListener("click",
+                function () {
+                    this.parentElement.querySelector(".nested").classList.toggle("active");
+                    this.classList.toggle("caret-down");
+                });
+        }
+    </script>
+</body>
+</html>
