@@ -59,9 +59,23 @@ namespace The_House_Bot
             await Client.SetGameAsync("The House Bot", "https://google.com", ActivityType.Streaming);
         }
 
-        private async Task Client_MessageReceived(SocketMessage arg)
+        private async Task Client_MessageReceived(SocketMessage MessageParam)
         {
-            //configure the commands
+            var Message = MessageParam as SocketUserMessage;
+            var Context = new SocketCommandContext(Client, Message);
+
+            if (Context.Message == null || Context.Message.Content == "") return;
+            if (Context.User.IsBot) return;
+
+            int ArgPos = 0;
+
+            if (!(Message.HasStringPrefix("a!", ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos))) return;
+
+            var Result = await Commands.ExecuteAsync(Context, ArgPos, services: null);
+            if (!Result.IsSuccess)
+            {
+                Console.WriteLine($"{DateTime.Now} at Commands] Something went wrong with executing a command. Text: {Context.Message.Content} | Error: {Result.ErrorReason}");
+            }
         }
 
     }

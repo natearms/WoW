@@ -11,4 +11,11 @@
     <PackageReference Include="Discord.Net" Version="2.1.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Core\Data\" />
+    <Folder Include="Resources\Database\" />
+    <Folder Include="Resources\Datatypes\" />
+    <Folder Include="Resources\Extentions\" />
+  </ItemGroup>
+
 </Project>
