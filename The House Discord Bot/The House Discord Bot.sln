@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2046
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "The House Bot", "The House Bot\The House Bot.csproj", "{175F582E-DAE6-474C-B015-CF32C6A9F0F6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "The House Discord Bot", "The House Discord Bot\The House Discord Bot.csproj", "{E680853A-809E-430B-B2CE-0532A5BD2736}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{175F582E-DAE6-474C-B015-CF32C6A9F0F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{175F582E-DAE6-474C-B015-CF32C6A9F0F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{175F582E-DAE6-474C-B015-CF32C6A9F0F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{175F582E-DAE6-474C-B015-CF32C6A9F0F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E680853A-809E-430B-B2CE-0532A5BD2736}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E680853A-809E-430B-B2CE-0532A5BD2736}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E680853A-809E-430B-B2CE-0532A5BD2736}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E680853A-809E-430B-B2CE-0532A5BD2736}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {90A4C51A-B7DD-41A2-B7D6-1DBB76120023}
+		SolutionGuid = {699B8989-610F-4C56-A779-EDC612421F7C}
 	EndGlobalSection
 EndGlobal

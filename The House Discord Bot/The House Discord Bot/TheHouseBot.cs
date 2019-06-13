@@ -1,50 +1,59 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.IO;
+using System.Xml;
+using System.Configuration;
 using System.Reflection;
 using System.Threading.Tasks;
-
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Tooling.Connector;
+using Microsoft.Xrm.Sdk.Query;
 
-
-namespace The_House_Bot
+namespace The_House_Discord_Bot
 {
-    class Program
+    class TheHouseBot
     {
-        private DiscordSocketClient Client;
-        private CommandService Commands;
-    
+        
+        private DiscordSocketClient _client;
+        private CommandService _command;
+
         static void Main(string[] args)
-            => new Program().MainAsync().GetAwaiter().GetResult();
+            => new TheHouseBot().MainAsync().GetAwaiter().GetResult();
 
         private async Task MainAsync()
         {
-            Client = new DiscordSocketClient(new DiscordSocketConfig
+            
+            _client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 LogLevel = LogSeverity.Debug
             });
-            Commands = new CommandService(new CommandServiceConfig
+            _command = new CommandService(new CommandServiceConfig
             {
                 CaseSensitiveCommands = true,
                 DefaultRunMode = RunMode.Async,
-                LogLevel =  LogSeverity.Debug
+                LogLevel = LogSeverity.Debug
             });
 
-            Client.MessageReceived += Client_MessageReceived;
-            await Commands.AddModulesAsync(Assembly.GetEntryAssembly(), services: null);
+            _client.MessageReceived += Client_MessageReceived;
+            await _command.AddModulesAsync(Assembly.GetEntryAssembly(), services: null);
 
-            Client.Ready += Client_Ready;
-            Client.Log += Client_Log;
-
+            _client.Ready += Client_Ready;
+            _client.Log += Client_Log;
+            /*
             string Token = "";
             using (var Stream = new FileStream(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location).Replace(@"bin\Debug\netcoreapp2.0", @"Data\Token.txt"), FileMode.Open, FileAccess.Read))
             using (var ReadToken = new StreamReader(Stream))
             {
                 Token = ReadToken.ReadToEnd();
             }
-            await Client.LoginAsync(TokenType.Bot, Token);
-            await Client.StartAsync();
+            */
+            await _client.LoginAsync(TokenType.Bot, "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y");
+            await _client.StartAsync();
 
             await Task.Delay(-1);
         }
@@ -56,27 +65,26 @@ namespace The_House_Bot
 
         private async Task Client_Ready()
         {
-            await Client.SetGameAsync("The House Bot", "https://google.com", ActivityType.Streaming);
+            await _client.SetGameAsync("The House Bot", "https://google.com", ActivityType.Streaming);
         }
 
         private async Task Client_MessageReceived(SocketMessage MessageParam)
         {
             var Message = MessageParam as SocketUserMessage;
-            var Context = new SocketCommandContext(Client, Message);
+            var Context = new SocketCommandContext(_client, Message);
 
             if (Context.Message == null || Context.Message.Content == "") return;
             if (Context.User.IsBot) return;
 
             int ArgPos = 0;
 
-            if (!(Message.HasStringPrefix("a!", ref ArgPos) || Message.HasMentionPrefix(Client.CurrentUser, ref ArgPos))) return;
+            if (!(Message.HasStringPrefix("thb! ", ref ArgPos) || Message.HasMentionPrefix(_client.CurrentUser, ref ArgPos))) return;
 
-            var Result = await Commands.ExecuteAsync(Context, ArgPos, services: null);
+            var Result = await _command.ExecuteAsync(Context, ArgPos, services: null);
             if (!Result.IsSuccess)
             {
                 Console.WriteLine($"{DateTime.Now} at Commands] Something went wrong with executing a command. Text: {Context.Message.Content} | Error: {Result.ErrorReason}");
             }
         }
-
     }
 }
