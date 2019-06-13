@@ -14,9 +14,20 @@ namespace The_House_Discord_Bot.Commands
     public class Help : ModuleBase<SocketCommandContext>
     {
         [Command("help"), Alias("helpme, plzhalp"), Summary("Help command")]
-        public async Task Nate()
+        public async Task HelpDetails()
         {
-            await Context.Channel.SendMessageAsync("Here's your help");
+            var embed = new EmbedBuilder();
+            var theHouseBotTrigger = "**thb! ";
+            embed.WithTitle("The House Bot help file")
+                .WithDescription("below are commands that I currently understand\n " +
+                                 "__**The House DKP commands**__\n " +
+                                 ""+theHouseBotTrigger+"dkp**\n" +
+                                 "`this command will attempt to parse the DKP system using your current nickname on the server and return your PR, EP, and GP values`"
+                                 );
+                
+
+            await ReplyAsync("This bot is currently under construction.  If you have any suggestions on bot features you'd like to see, please let "+ Context.Guild.Owner.Mention +" know.");
+            await Context.Message.Author.SendMessageAsync(null,false,embed.Build());
         }
 
         [Command("embed")]

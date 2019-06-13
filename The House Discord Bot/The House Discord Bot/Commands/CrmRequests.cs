@@ -20,17 +20,32 @@ namespace The_House_Discord_Bot.Commands
     {
          
 
-        [Command("help2"), Alias("helpme, plzhalp"), Summary("Help command")]
-        public async Task Nate()
+        [Command("dkp"), Alias("pr, ep, gp"), Summary("Users DKP breakdown by PR/EP/GP")]
+        public async Task PrEpGp()
         {
             CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
             IOrganizationService crmService = crmConn.OrganizationServiceProxy;
             Console.WriteLine(crmConn.IsReady);
 
-            string userName = Context.Guild.GetUser(Context.User.Id).Nickname;
+            string guildNickname = Context.Guild.GetUser(Context.Message.Author.Id).Nickname;
+            string userNickname = Context.Message.Author.Username;
+
+            string userName = guildNickname == null ? userNickname : guildNickname;
+            var userNameMention = Context.Message.Author.Mention;
+            var currentUser = Context.Client.CurrentUser;
+
             EntityCollection userInfo = GetUserEpGp(userName, crmService);
 
-            await ReplyAsync(userInfo.Entities[0].GetAttributeValue<Decimal>("wowc_totalpr").ToString());
+            EmbedBuilder prBuilder = new EmbedBuilder();
+
+            prBuilder.WithDescription("**Here is your DKP breakdown** " + userNameMention +
+                                 Environment.NewLine+ Environment.NewLine + "**PR: **" + userInfo.Entities[0].GetAttributeValue<Decimal>("wowc_totalpr").ToString("0.##") +
+                                 Environment.NewLine + "**EP: **" + userInfo.Entities[0].GetAttributeValue<Decimal>("wowc_totalep").ToString("0.##") +
+                                 Environment.NewLine + "**GP: **" + userInfo.Entities[0].GetAttributeValue<Decimal>("wowc_totalgp").ToString("0.##")+ Environment.NewLine
+                                 )
+                
+                .WithCurrentTimestamp();
+            await ReplyAsync(null, false, prBuilder.Build());
         }
 
         private EntityCollection GetUserEpGp(string userName, IOrganizationService crmService)

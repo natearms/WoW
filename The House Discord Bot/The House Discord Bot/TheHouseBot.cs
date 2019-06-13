@@ -34,7 +34,7 @@ namespace The_House_Discord_Bot
             });
             _command = new CommandService(new CommandServiceConfig
             {
-                CaseSensitiveCommands = true,
+                CaseSensitiveCommands = false,
                 DefaultRunMode = RunMode.Async,
                 LogLevel = LogSeverity.Debug
             });
@@ -44,14 +44,7 @@ namespace The_House_Discord_Bot
 
             _client.Ready += Client_Ready;
             _client.Log += Client_Log;
-            /*
-            string Token = "";
-            using (var Stream = new FileStream(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location).Replace(@"bin\Debug\netcoreapp2.0", @"Data\Token.txt"), FileMode.Open, FileAccess.Read))
-            using (var ReadToken = new StreamReader(Stream))
-            {
-                Token = ReadToken.ReadToEnd();
-            }
-            */
+            
             await _client.LoginAsync(TokenType.Bot, "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y");
             await _client.StartAsync();
 
@@ -65,7 +58,7 @@ namespace The_House_Discord_Bot
 
         private async Task Client_Ready()
         {
-            await _client.SetGameAsync("The House Bot", "https://google.com", ActivityType.Streaming);
+            await _client.SetGameAsync("thb! help", "", ActivityType.Listening);
         }
 
         private async Task Client_MessageReceived(SocketMessage MessageParam)
@@ -78,9 +71,10 @@ namespace The_House_Discord_Bot
 
             int ArgPos = 0;
 
-            if (!(Message.HasStringPrefix("thb! ", ref ArgPos) || Message.HasMentionPrefix(_client.CurrentUser, ref ArgPos))) return;
+            if (!(Message.HasStringPrefix("thb! ", ref ArgPos) || Message.HasMentionPrefix(_client.CurrentUser, ref ArgPos) || Message.Author.IsBot)) return;
 
             var Result = await _command.ExecuteAsync(Context, ArgPos, services: null);
+            
             if (!Result.IsSuccess)
             {
                 Console.WriteLine($"{DateTime.Now} at Commands] Something went wrong with executing a command. Text: {Context.Message.Content} | Error: {Result.ErrorReason}");
