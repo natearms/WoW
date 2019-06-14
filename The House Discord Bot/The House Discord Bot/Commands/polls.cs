@@ -10,7 +10,6 @@ using Discord.Rest;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Tooling.Connector;
 using Microsoft.Xrm.Sdk.Query;
-using Char = System.Char;
 using System.Timers;
 
 namespace The_House_Discord_Bot.Commands
@@ -53,6 +52,7 @@ namespace The_House_Discord_Bot.Commands
                 RestUserMessage msg = await Context.Channel.SendMessageAsync("", false, embed.Build());
                 CreateReactions(msg, stringArray.Length-1);   
             }
+
         }
 
         private static void CreateReactions(RestUserMessage msg, int reactions)

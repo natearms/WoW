@@ -37,9 +37,12 @@ namespace The_House_Discord_Bot
                 CaseSensitiveCommands = false,
                 DefaultRunMode = RunMode.Async,
                 LogLevel = LogSeverity.Debug
+                
             });
 
             _client.MessageReceived += Client_MessageReceived;
+            _command.AddTypeReader(typeof(IUser[]), new IUserArray());
+
             await _command.AddModulesAsync(Assembly.GetEntryAssembly(), services: null);
 
             _client.Ready += Client_Ready;

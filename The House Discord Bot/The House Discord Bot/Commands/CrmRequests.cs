@@ -18,34 +18,25 @@ namespace The_House_Discord_Bot.Commands
 {
     public class CrmRequests : ModuleBase<SocketCommandContext> 
     {
-         
-
         [Command("dkp"), Alias("pr, ep, gp"), Summary("Users DKP breakdown by PR/EP/GP")]
         public async Task PrEpGp()
         {
-            CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
-            IOrganizationService crmService = crmConn.OrganizationServiceProxy;
-            Console.WriteLine(crmConn.IsReady);
+            await ReplyAsync(null, false, BuildUsersDKP(Context.Message.Author));
+        }
 
-            string guildNickname = Context.Guild.GetUser(Context.Message.Author.Id).Nickname;
-            string userNickname = Context.Message.Author.Username;
-
-            string userName = guildNickname == null ? userNickname : guildNickname;
-            var userNameMention = Context.Message.Author.Mention;
-            var currentUser = Context.Client.CurrentUser;
-
-            EntityCollection userInfo = GetUserEpGp(userName, crmService);
-
-            EmbedBuilder prBuilder = new EmbedBuilder();
-
-            prBuilder.WithDescription("**Here is your DKP breakdown** " + userNameMention +
-                                 Environment.NewLine+ Environment.NewLine + "**PR: **" + userInfo.Entities[0].GetAttributeValue<Decimal>("wowc_totalpr").ToString("0.##") +
-                                 Environment.NewLine + "**EP: **" + userInfo.Entities[0].GetAttributeValue<Decimal>("wowc_totalep").ToString("0.##") +
-                                 Environment.NewLine + "**GP: **" + userInfo.Entities[0].GetAttributeValue<Decimal>("wowc_totalgp").ToString("0.##")+ Environment.NewLine
-                                 )
-                
-                .WithCurrentTimestamp();
-            await ReplyAsync(null, false, prBuilder.Build());
+        [Command("dkp"), Alias("pr, ep, gp"), Summary("Users DKP breakdown by PR/EP/GP")]
+        public async Task PrEpGpMention(IUser mentionedUser)
+        {
+            await ReplyAsync(null, false, BuildUsersDKP(mentionedUser));
+        }
+        [Command("dkp"), Alias("pr, ep, gp"), Summary("Users DKP breakdown by PR/EP/GP")]
+        public async Task PrEpGpMention([Remainder] IUser[] mentionedUsers )
+        {
+            for (int i = 0; i < mentionedUsers.Length; i++)
+            {
+                await ReplyAsync(null, false, BuildUsersDKP(mentionedUsers[i]));
+            }
+            
         }
 
         private EntityCollection GetUserEpGp(string userName, IOrganizationService crmService)
@@ -58,6 +49,31 @@ namespace The_House_Discord_Bot.Commands
             EntityCollection results = crmService.RetrieveMultiple(query);
 
             return results;
+        }
+        private Embed BuildUsersDKP(IUser providedUser)
+        {
+            CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
+            IOrganizationService crmService = crmConn.OrganizationServiceProxy;
+            Console.WriteLine(crmConn.IsReady);
+
+            string guildNickname = Context.Guild.GetUser(providedUser.Id).Nickname;
+            string userNickname = providedUser.Username;
+
+            string userName = guildNickname == null ? userNickname : guildNickname;
+            var userNameMention = providedUser.Mention;
+            
+            EntityCollection userInfo = GetUserEpGp(userName, crmService);
+
+            EmbedBuilder prBuilder = new EmbedBuilder();
+
+            prBuilder.WithDescription("**Here is the DKP breakdown for** " + userNameMention +
+                                      Environment.NewLine + Environment.NewLine + "**PR: **" + userInfo.Entities[0].GetAttributeValue<Decimal>("wowc_totalpr").ToString("0.##") +
+                                      Environment.NewLine + "**EP: **" + userInfo.Entities[0].GetAttributeValue<Decimal>("wowc_totalep").ToString("0.##") +
+                                      Environment.NewLine + "**GP: **" + userInfo.Entities[0].GetAttributeValue<Decimal>("wowc_totalgp").ToString("0.##") + Environment.NewLine
+                )
+
+                .WithCurrentTimestamp();
+            return prBuilder.Build();
         }
     }
 }
