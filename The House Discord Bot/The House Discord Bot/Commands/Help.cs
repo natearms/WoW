@@ -17,12 +17,17 @@ namespace The_House_Discord_Bot.Commands
         public async Task HelpDetails()
         {
             var embed = new EmbedBuilder();
-            var theHouseBotTrigger = "**thb! ";
+            var theHouseBotTrigger = "```thb! ";
             embed.WithTitle("The House Bot help file")
-                .WithDescription("below are commands that I currently understand\n " +
+                .WithDescription("Below are commands that I currently understand:\n " +
                                  "__**The House DKP commands**__\n " +
-                                 ""+theHouseBotTrigger+"dkp**\n" +
-                                 "`this command will attempt to parse the DKP system using your current nickname on the server and return your PR, EP, and GP values`"
+                                 ""+theHouseBotTrigger+"dkp```\n" +
+                                 "This command will attempt to parse the DKP system using your current nickname on the server and return your PR, EP, and GP values."+
+
+                                 "\n\n__**Poll commands**__\n " +
+                                 "" + theHouseBotTrigger + "poll: [title] {Option1} {Option2} {Option3}```\n" +
+                                 "This will genearte a poll with reactions and up to 26 options."
+
                                  );
                 
 

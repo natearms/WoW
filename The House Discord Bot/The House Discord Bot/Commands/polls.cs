@@ -23,8 +23,11 @@ namespace The_House_Discord_Bot.Commands
             [Command(""), Summary("Poll builder")]
             public async Task pollBuilder([Remainder] string messageContent)
             {
-                string[] stringArray = messageContent.Split(' ');
-                string[] stringArray2 = Regex.Split(messageContent, @"\[(.*?)\]|\{(.*?)\}");
+                string[] stringArray2 = messageContent.Split(' ');
+                string[] stringArray = Regex.Split(messageContent, @"\[(.*?)\]|\{(.*?)\}");
+
+                stringArray = stringArray.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+
                 string pollHeader = "";
                 string pollDetails = string.Empty;
                 char c1 = 'a';
@@ -33,11 +36,14 @@ namespace The_House_Discord_Bot.Commands
                 {
                     if (i == 0)
                     {
-                        pollHeader += "**" + stringArray.GetValue(i).ToString().Replace("[", "").Replace("]", "").Replace("{", "").Replace("}", "") + "**\n\n";
+                        pollHeader += "**" + stringArray.GetValue(i).ToString() + "**\n\n";
                     }
-
-                    pollDetails += ":regional_indicator_" + c1 + ": " + stringArray.GetValue(i).ToString().Replace("[", "").Replace("]", "").Replace("{", "").Replace("}", "") + "\n\n";
-                    c1++;
+                    else
+                    {
+                        pollDetails += ":regional_indicator_" + c1 + ": " + stringArray.GetValue(i).ToString() + "\n\n";
+                        c1++;
+                    }
+                    
                 }
 
                 var embed = new EmbedBuilder();
@@ -45,7 +51,7 @@ namespace The_House_Discord_Bot.Commands
                 embed.WithDescription(pollDetails);
 
                 RestUserMessage msg = await Context.Channel.SendMessageAsync("", false, embed.Build());
-                CreateReactions(msg, stringArray.Length);   
+                CreateReactions(msg, stringArray.Length-1);   
             }
         }
 
