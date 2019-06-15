@@ -7,6 +7,7 @@ using System.Xml;
 using System.Configuration;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Threading;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -41,7 +42,7 @@ namespace The_House_Discord_Bot
             });
 
             _client.MessageReceived += Client_MessageReceived;
-            _command.AddTypeReader(typeof(IUser[]), new IUserArray());
+           // _command.AddTypeReader(typeof(IUser[]), new IUserArray());
 
             await _command.AddModulesAsync(Assembly.GetEntryAssembly(), services: null);
 
@@ -57,6 +58,7 @@ namespace The_House_Discord_Bot
         private async Task Client_Log(LogMessage Message)
         {
             Console.WriteLine($"{DateTime.Now} at {Message.Source}] {Message.Message}");
+            
         }
 
         private async Task Client_Ready()

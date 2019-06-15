@@ -19,16 +19,20 @@ namespace The_House_Discord_Bot.Commands
             var embed = new EmbedBuilder();
             var theHouseBotTrigger = "```thb! ";
             embed.WithTitle("The House Bot help file")
-                .WithDescription("Below are commands that I currently understand:\n " +
-                                 "__**The House DKP commands**__\n " +
-                                 ""+theHouseBotTrigger+"dkp```\n" +
-                                 "This command will attempt to parse the DKP system using your current nickname on the server and return your PR, EP, and GP values."+
-
-                                 "\n\n__**Poll commands**__\n " +
-                                 "" + theHouseBotTrigger + "poll: [title] {Option1} {Option2} {Option3}```\n" +
-                                 "This will genearte a poll with reactions and up to 26 options."
-
-                                 );
+                .WithDescription("Below are commands that I currently understand:\n\n " +
+                //DKP Commands help descriptions
+                "__**The House DKP commands**__\n\n " +
+                "Parse <The House> DKP system using your current server nickname or username to return your PR, EP, and GP values." +
+                "" +theHouseBotTrigger+"dkp```\n" +
+                "Parse <The House> DKP system using the mentioned user servers nickname or username to return their PR, EP, and GP values." +
+                "" + theHouseBotTrigger + "dkp <@usermention>```\n" +
+                "Parse <The House> DKP system using the mentioned users servers nickname or username to return their PR, EP, and GP values. You can mention up to 10 users at a time." +
+                "" + theHouseBotTrigger + "dkp <@usermention1> <@usermention2> <@usermention3>```\n" +
+                //Poll Commands help descriptions
+                "\n__**Poll commands**__\n\n " +
+                "This will genearte a poll with reactions with up to 26 options." +
+                "" + theHouseBotTrigger + "poll: [title] {Option1} {Option2} {Option3}```\n"
+                );
                 
 
             await ReplyAsync("This bot is currently under construction.  If you have any suggestions on bot features you'd like to see, please let "+ Context.Guild.Owner.Mention +" know.");

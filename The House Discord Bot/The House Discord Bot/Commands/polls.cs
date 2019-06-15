@@ -66,6 +66,7 @@ namespace The_House_Discord_Bot.Commands
 
             for (int i = 0; i < reactions; i++)
             {
+               
                 System.Threading.Thread.Sleep(1000);
                 msg.AddReactionAsync(new Emoji(emojiArray.GetValue(i).ToString()));
             }
