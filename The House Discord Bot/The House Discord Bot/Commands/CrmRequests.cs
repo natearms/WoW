@@ -21,6 +21,7 @@ namespace The_House_Discord_Bot.Commands
         [Group("dkp"), Alias("pr, ep, gp"), Summary("Users DKP breakdown by PR/EP/GP")]
         public class DkpModule : ModuleBase<SocketCommandContext>
         {
+            public IOrganizationService crmService { get; set; }
             [Command("")]
             public async Task PrEpGp()
             {
@@ -67,8 +68,8 @@ namespace The_House_Discord_Bot.Commands
             }
             private Embed BuildUsersDKP(IUser providedUser)
             {
-                CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
-                IOrganizationService crmService = crmConn.OrganizationServiceProxy;
+                //CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
+                //IOrganizationService crmService = crmConn.OrganizationServiceProxy;
                 
                 string guildNickname = Context.Guild.GetUser(providedUser.Id).Nickname;
                 string userNickname = providedUser.Username;
@@ -102,11 +103,13 @@ namespace The_House_Discord_Bot.Commands
         [Group("gb")]
         public class GuildBankModule : ModuleBase<SocketCommandContext>
         {
+
+            public IOrganizationService crmService { get; set; }
             [Command("!d"), Summary("Searches the guild bank with string criteria")]
             public async Task guildBank()
             {
-                CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
-                IOrganizationService crmService = crmConn.OrganizationServiceProxy;
+                //CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
+                //IOrganizationService crmService = crmConn.OrganizationServiceProxy;
 
                 await ReplyAsync(null, false, BuildGuildBankHighNeedList(crmService));
                 //await ReplyAsync(BuildGuildBankList(itemSearch), false, null);
@@ -115,8 +118,8 @@ namespace The_House_Discord_Bot.Commands
             [Command("!s"), Summary("Searches the guild bank with string criteria")]
             public async Task guildBank([Remainder] string itemSearch)
             {
-                CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
-                IOrganizationService crmService = crmConn.OrganizationServiceProxy;
+                //CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
+                //IOrganizationService crmService = crmConn.OrganizationServiceProxy;
 
                 await ReplyAsync(null, false, BuildGuildBankList(itemSearch, crmService));
                 //await ReplyAsync(BuildGuildBankList(itemSearch), false, null);
@@ -159,8 +162,8 @@ namespace The_House_Discord_Bot.Commands
 
             private EmbedBuilder GuildBankEmbedBuilder(EntityCollection guildBankRecords)
             {
-                CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
-                IOrganizationService crmService = crmConn.OrganizationServiceProxy;
+                //CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
+                //IOrganizationService crmService = crmConn.OrganizationServiceProxy;
 
                 EmbedBuilder prBuilder = new EmbedBuilder();
 
