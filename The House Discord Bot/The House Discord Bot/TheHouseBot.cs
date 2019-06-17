@@ -55,8 +55,7 @@ namespace The_House_Discord_Bot
                 
 
             _client.MessageReceived += Client_MessageReceived;
-           // _command.AddTypeReader(typeof(IUser[]), new IUserArray());
-
+           
             await _command.AddModulesAsync(Assembly.GetEntryAssembly(), _servicePriveProvider);
 
             _client.Ready += Client_Ready;

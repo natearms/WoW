@@ -105,6 +105,7 @@ namespace The_House_Discord_Bot.Commands
         {
 
             public IOrganizationService crmService { get; set; }
+
             [Command("!d"), Summary("Searches the guild bank with string criteria")]
             public async Task guildBank()
             {
