@@ -26,7 +26,6 @@ namespace The_House_Discord_Bot.Commands
             public async Task SingleQuestionPoll([Remainder] string messageContent)
             {
                 string pollHeader = "**" + messageContent + "**\n\n";
-                string pollDetails = ":thumbsup: :thumbsdown: :shrug:";
                 string[] emojiArray = new string[] { "\U0001F44D", "\U0001F44E", "\U0001F937" };
 
                 var embed = new EmbedBuilder();

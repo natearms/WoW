@@ -7,28 +7,17 @@ function setLookupRaidMemberFields() {
     }
     else {
         var lookupId = Xrm.Page.getAttribute("wowc_raidmember").getValue()[0].id.replace("{", "").replace("}", "");
-        var req = new XMLHttpRequest();
-        req.open("GET", Xrm.Page.context.getClientUrl() + "/api/data/v8.2/contacts(" + lookupId + ")?$select=wowc_class", true);
-        req.setRequestHeader("OData-MaxVersion", "4.0");
-        req.setRequestHeader("OData-Version", "4.0");
-        req.setRequestHeader("Accept", "application/json");
-        req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-        req.setRequestHeader("Prefer", "odata.include-annotations=\"*\"");
-        req.onreadystatechange = function () {
-            if (this.readyState === 4) {
-                req.onreadystatechange = null;
-                if (this.status === 200) {
-                    var result = JSON.parse(this.response);
-                    var wowc_class = result["wowc_class"];
-                    Xrm.Page.getAttribute("wowc_class").setValue(wowc_class);
-                } else {
-                    Xrm.Utility.alertDialog(this.statusText);
-                }
+        Xrm.WebApi.online.retrieveRecord("contact", lookupId, "?$select=wowc_class").then(
+            function success(result) {
+                var wowc_class = result["wowc_class"];
+                
+                Xrm.Page.getAttribute("wowc_class").setValue(wowc_class);
+            },
+            function (error) {
+                Xrm.Utility.alertDialog(error.message);
             }
-        };
-        req.send();
+        );
     }
-
 }
 
 function setLookupItemFields() {
@@ -48,48 +37,34 @@ function setLookupItemFields() {
     else {
         var lookupId = Xrm.Page.getAttribute("wowc_item").getValue()[0].id.replace("{", "").replace("}", "");
 
-        var req = new XMLHttpRequest();
-        req.open("GET", Xrm.Page.context.getClientUrl() + "/api/data/v8.2/wowc_loots(" + lookupId + ")?$select=wowc_ilvl,wowc_rarity,wowc_slot,wowc_classspecmodifier,wowc_category", true);
-        req.setRequestHeader("OData-MaxVersion", "4.0");
-        req.setRequestHeader("OData-Version", "4.0");
-        req.setRequestHeader("Accept", "application/json");
-        req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-        req.setRequestHeader("Prefer", "odata.include-annotations=\"*\"");
-        req.onreadystatechange = function () {
-            if (this.readyState === 4) {
-                req.onreadystatechange = null;
-                if (this.status === 200) {
-                    var result = JSON.parse(this.response);
-                    var wowc_ilvl = result["wowc_ilvl"];
-                    var wowc_rarity = result["wowc_rarity"];
-                    var wowc_slot = result["wowc_slot"];
-                    var wowc_classspecmodifier = result["wowc_classspecmodifier"];
-                    var wowc_category = result["wowc_category"];
-                    
-                    Xrm.Page.getAttribute("wowc_slot").setValue(wowc_slot);
-                    Xrm.Page.getAttribute("wowc_rarity").setValue(wowc_rarity);
-                    Xrm.Page.getAttribute("wowc_ilvl").setValue(wowc_ilvl);
-                    Xrm.Page.getAttribute("wowc_classspec").setValue(wowc_classspecmodifier);
+        Xrm.WebApi.online.retrieveRecord("wowc_loot", lookupId , "?$select=wowc_category,wowc_classspecmodifier,wowc_ilvl,wowc_rarity,wowc_slot").then(
+            function success(result) {
+                var wowc_category = result["wowc_category"];
+                var wowc_classspecmodifier = result["wowc_classspecmodifier"];
+                var wowc_ilvl = result["wowc_ilvl"];
+                var wowc_rarity = result["wowc_rarity"];
+                var wowc_slot = result["wowc_slot"];
+                
+                Xrm.Page.getAttribute("wowc_slot").setValue(wowc_slot);
+                Xrm.Page.getAttribute("wowc_rarity").setValue(wowc_rarity);
+                Xrm.Page.getAttribute("wowc_ilvl").setValue(wowc_ilvl);
+                Xrm.Page.getAttribute("wowc_classspec").setValue(wowc_classspecmodifier);
 
-                    setSlotModifierFromItemChange(wowc_slot, wowc_classspecmodifier);
-                    
-                    setRarityValue(wowc_rarity);
-                    if (wowc_category != null) {
-                        Xrm.Page.getAttribute("wowc_category").setValue(wowc_category);
-                        Xrm.Page.getControl("wowc_category").setDisabled(true);
-                    } else {
-                        Xrm.Page.getControl("wowc_category").setDisabled(false);
-                    }
-                    
+                setSlotModifierFromItemChange(wowc_slot, wowc_classspecmodifier);
+
+                setRarityValue(wowc_rarity);
+                if (wowc_category != null) {
+                    Xrm.Page.getAttribute("wowc_category").setValue(wowc_category);
+                    Xrm.Page.getControl("wowc_category").setDisabled(true);
                 } else {
-                    Xrm.Utility.alertDialog(this.statusText);
+                    Xrm.Page.getControl("wowc_category").setDisabled(false);
                 }
+            },
+            function (error) {
+                Xrm.Utility.alertDialog(error.message);
             }
-        };
-        req.send();
-        
+        );   
     }
-
 }
 
 function concatenateSubject() {
@@ -107,62 +82,41 @@ function concatenateSubject() {
     }
 }
 function setMissingItemCategory() {
-    debugger;
+    
     var gpCategory = Xrm.Page.getAttribute("wowc_category").getValue();
     var itemCategory = 0;
     
     var lookupId = Xrm.Page.getAttribute("wowc_item").getValue()[0].id.replace("{", "").replace("}", "");
 
-    var req = new XMLHttpRequest();
-    req.open("GET", Xrm.Page.context.getClientUrl() + "/api/data/v9.1/wowc_loots(" + lookupId + ")?$select=wowc_category", true);
-    req.setRequestHeader("OData-MaxVersion", "4.0");
-    req.setRequestHeader("OData-Version", "4.0");
-    req.setRequestHeader("Accept", "application/json");
-    req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-    req.setRequestHeader("Prefer", "odata.include-annotations=\"*\"");
-    req.onreadystatechange = function () {
-        if (this.readyState === 4) {
-            req.onreadystatechange = null;
-            if (this.status === 200) {
-                var result = JSON.parse(this.response);
-                
-                var wowc_category = result["wowc_category"];
-                itemCategory = wowc_category;
-                
-            } else {
-                Xrm.Utility.alertDialog(this.statusText);
-            }
+    Xrm.WebApi.online.retrieveRecord("wowc_loot", lookupId, "?$select=wowc_category").then(
+        function success(result) {
+            var wowc_category = result["wowc_category"];
+            itemCategory = wowc_category;
+        },
+        function (error) {
+            Xrm.Utility.alertDialog(error.message);
         }
-    };
-    req.send();
+    );
 
     if (itemCategory != gpCategory) {
+        
         var entity = {};
         entity.wowc_category = gpCategory;
 
-        var req = new XMLHttpRequest();
-        req.open("PATCH", Xrm.Page.context.getClientUrl() + "/api/data/v9.1/wowc_loots(" + lookupId + ")", true);
-        req.setRequestHeader("OData-MaxVersion", "4.0");
-        req.setRequestHeader("OData-Version", "4.0");
-        req.setRequestHeader("Accept", "application/json");
-        req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-        req.onreadystatechange = function () {
-            if (this.readyState === 4) {
-                req.onreadystatechange = null;
-                if (this.status === 204) {
-                    //Success - No Return Data - Do Something
-                } else {
-                    Xrm.Utility.alertDialog(this.statusText);
-                }
+        Xrm.WebApi.online.updateRecord("wowc_loot", lookupId, entity).then(
+            function success(result) {
+                var updatedEntityId = result.id;
+            },
+            function (error) {
+                Xrm.Utility.alertDialog(error.message);
             }
-        };
-        req.send(JSON.stringify(entity));
+        );
         Xrm.Page.getControl("wowc_category").setDisabled(true);
     }
 }
 
 function setSlotModifierFromItemChange(wowc_slot, wowc_classspec) {
-    debugger;
+    
     var lootId = Xrm.Page.getAttribute("wowc_item").getValue();
     var raiderClass = Xrm.Page.getAttribute("wowc_class").getValue();
     var itemSlot = wowc_slot;
@@ -179,11 +133,10 @@ function setSlotModifierFromClassSpecChange() {
     setSlotModifier(lootId, raiderClass, itemSlot, classSpec);
 }
 function setSlotModifier(wowc_lootid, wowc_class, wowc_slot, wowc_classspec) {
-    debugger;
+
     if (wowc_lootid == null) {
         Xrm.Page.getAttribute("wowc_slotmodifier").setValue();
-        //Xrm.Page.getControl("wowc_slotmodifier").setDisabled(false);
-       
+        
     } else {
         //Item Slot == 2H Weapon && Raider Class != Hunter
         if (wowc_slot == 257260000 && wowc_class != 257260001) {
@@ -249,7 +202,7 @@ function setSlotModifier(wowc_lootid, wowc_class, wowc_slot, wowc_classspec) {
 function setRarityValue(wowc_rarity) {
     
     var lootId = Xrm.Page.getAttribute("wowc_item").getValue();
-    var rarityValue = wowc_rarity; //Xrm.Page.getAttribute("wowc_rarity").getValue();
+    var rarityValue = wowc_rarity;
 
     if (lootId == null) {
         Xrm.Page.getAttribute("wowc_rarityvalue").setValue();
