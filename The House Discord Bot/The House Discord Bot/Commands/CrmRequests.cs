@@ -18,7 +18,7 @@ namespace The_House_Discord_Bot.Commands
 {
     public class CrmRequests : ModuleBase<SocketCommandContext> 
     {
-        [Group("dkp"), Alias("pr, ep, gp"), Summary("Users DKP breakdown by PR/EP/GP")]
+        [Group("-dkp"), Summary("Users DKP breakdown by PR/EP/GP")]
         public class DkpModule : ModuleBase<SocketCommandContext>
         {
             public IOrganizationService crmService { get; set; }
@@ -68,9 +68,6 @@ namespace The_House_Discord_Bot.Commands
             }
             private Embed BuildUsersDKP(IUser providedUser)
             {
-                //CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
-                //IOrganizationService crmService = crmConn.OrganizationServiceProxy;
-                
                 string guildNickname = Context.Guild.GetUser(providedUser.Id).Nickname;
                 string userNickname = providedUser.Username;
 
@@ -81,7 +78,7 @@ namespace The_House_Discord_Bot.Commands
                 EmbedBuilder prBuilder = new EmbedBuilder();
                 if (userInfo.Entities.Count == 0)
                 {
-                    prBuilder.WithDescription("I could not find a DKP record for " + userNameMention + " in The House CRM.  Please contact " +
+                    prBuilder.WithDescription("I could not find a DKP record for " + userNameMention + " in <The House> CRM.  Please contact " +
                         Context.Guild.Owner.Mention + " to create a record for this user.");
                 }
                 else
@@ -91,8 +88,6 @@ namespace The_House_Discord_Bot.Commands
                     "\n**EP: **" + userInfo.Entities[0].GetAttributeValue<Decimal>("wowc_totalep").ToString("0.##") +
                     "\n**GP: **" + userInfo.Entities[0].GetAttributeValue<Decimal>("wowc_totalgp").ToString("0.##") + "\n"
                     )
-
-                    //.WithCurrentTimestamp()
                     ;
                 }
 
@@ -100,48 +95,35 @@ namespace The_House_Discord_Bot.Commands
             }
         }
         
-        [Group("gb")]
+        [Group("-gb")]
         public class GuildBankModule : ModuleBase<SocketCommandContext>
         {
-
             public IOrganizationService crmService { get; set; }
 
-            [Command("!d"), Summary("Searches the guild bank with string criteria")]
+            [Command("-highneed"), Summary("Searches the guild bank for high need mats.")]
             public async Task guildBank()
             {
-                //CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
-                //IOrganizationService crmService = crmConn.OrganizationServiceProxy;
-
                 await ReplyAsync(null, false, BuildGuildBankHighNeedList(crmService));
-                //await ReplyAsync(BuildGuildBankList(itemSearch), false, null);
             }
 
-            [Command("!s"), Summary("Searches the guild bank with string criteria")]
+            [Command("-search"), Summary("Searches the guild bank with string criteria.")]
             public async Task guildBank([Remainder] string itemSearch)
             {
-                //CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
-                //IOrganizationService crmService = crmConn.OrganizationServiceProxy;
-
                 await ReplyAsync(null, false, BuildGuildBankList(itemSearch, crmService));
-                //await ReplyAsync(BuildGuildBankList(itemSearch), false, null);
             }
 
             private Embed BuildGuildBankList(string itemSearch, IOrganizationService crmService)
             {
-                
-
                 EntityCollection guildBankRecord = GetGuildBankRecords(itemSearch, crmService);
-
                 EmbedBuilder prBuilder = GuildBankEmbedBuilder(guildBankRecord);
 
-                
                 if (guildBankRecord.Entities.Count == 0)
                 {
                     prBuilder.WithDescription("I could not find a guild bank record matching criteria " + itemSearch +
-                        " in the guild bank.  Please make sure you spelt the item name or part of the item name correctly and try again.");
+                        " in the guild bank.  Please make sure you spelled the item name or part of the item name correctly and try again.");
                     return prBuilder.Build();
                 }
-                prBuilder.WithTitle("Here is what we found with your search criteria **\""+itemSearch+"\"**");
+                prBuilder.WithTitle("Here is what I found with your search criteria **\""+itemSearch+"\"**");
                 return prBuilder.Build();
                 
             }
@@ -153,7 +135,7 @@ namespace The_House_Discord_Bot.Commands
 
                 if (guildBankRecord.Entities.Count == 0)
                 {
-                    prBuilder.WithDescription("There doesn't seem to be any guild bank records in high demand right now, please check back later.");
+                    prBuilder.WithDescription("There doesn't seem to be any guild bank records in high need right now, please check back later.");
                     return prBuilder.Build();
                 }
                 prBuilder.WithTitle("Below is a list of high need items for the guild bank.");
@@ -163,9 +145,6 @@ namespace The_House_Discord_Bot.Commands
 
             private EmbedBuilder GuildBankEmbedBuilder(EntityCollection guildBankRecords)
             {
-                //CrmServiceClient crmConn = new CrmServiceClient(ConfigurationManager.ConnectionStrings["CRM"].ConnectionString);
-                //IOrganizationService crmService = crmConn.OrganizationServiceProxy;
-
                 EmbedBuilder prBuilder = new EmbedBuilder();
 
                 string commentString = "```" + "Item Name".PadRight(35) + "Inventory".PadRight(13) + "High Need";
@@ -175,17 +154,16 @@ namespace The_House_Discord_Bot.Commands
                         string inventory = guildBankRecords.Entities[i].GetAttributeValue<int>("wowc_inventory").ToString();
                         string highNeed = guildBankRecords.Entities[i].GetAttributeValue<bool>("wowc_highneed") ? "Yes" : "No";
 
+                        itemName = itemName.Length > 35 ? itemName.Substring(0, 35) : itemName;
+
                         commentString += "\n" + itemName.PadRight(39, '.') + inventory.ToString() + highNeed.PadLeft(18 - inventory.Length, '.');
 
                     }
                     commentString += "```";
                     prBuilder.WithDescription(commentString)
-                    
                     ;
 
-
                 return prBuilder;
-                //return commentString; 
             }
             private static EntityCollection GetGuildBankRecords(string itemSearch, IOrganizationService service)
             {
@@ -193,6 +171,7 @@ namespace The_House_Discord_Bot.Commands
                 query.ColumnSet.AddColumns("wowc_name", "wowc_inventory", "wowc_highneed");
                 query.Criteria = new FilterExpression();
                 query.Criteria.AddCondition("wowc_name", ConditionOperator.Like, "%"+itemSearch+"%");
+                query.Orders.Add(new OrderExpression("wowc_name", OrderType.Ascending));
 
                 EntityCollection results = service.RetrieveMultiple(query);
                 return results;
@@ -204,6 +183,7 @@ namespace The_House_Discord_Bot.Commands
                 query.ColumnSet.AddColumns("wowc_name", "wowc_inventory", "wowc_highneed");
                 query.Criteria = new FilterExpression();
                 query.Criteria.AddCondition("wowc_highneed", ConditionOperator.Equal, true);
+                query.Orders.Add(new OrderExpression("wowc_name",OrderType.Ascending));
 
                 EntityCollection results = service.RetrieveMultiple(query);
                 return results;

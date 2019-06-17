@@ -182,7 +182,6 @@
     <Compile Include="Commands\CrmRequests.cs" />
     <Compile Include="Commands\Help.cs" />
     <Compile Include="Commands\polls.cs" />
-    <Compile Include="Commands\Testing.cs" />
     <Compile Include="TheHouseBot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

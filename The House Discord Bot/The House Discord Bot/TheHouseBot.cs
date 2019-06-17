@@ -27,13 +27,13 @@ namespace The_House_Discord_Bot
         private CommandService _command;
         private IServiceProvider _servicePriveProvider;
         private IOrganizationService _crmConn;
+        private string botTrigger = "thb! ";
 
         static void Main(string[] args)
             => new TheHouseBot().MainAsync().GetAwaiter().GetResult();
 
         private async Task MainAsync()
-        {
-            
+        {   
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
                 LogLevel = LogSeverity.Debug
@@ -51,50 +51,45 @@ namespace The_House_Discord_Bot
                .AddSingleton(_client)
                .AddSingleton(_command)
                .AddSingleton(_crmConn)
+               .AddSingleton(botTrigger)
                .BuildServiceProvider();
-                
-
+            
             _client.MessageReceived += Client_MessageReceived;
-           
-            await _command.AddModulesAsync(Assembly.GetEntryAssembly(), _servicePriveProvider);
-
             _client.Ready += Client_Ready;
             _client.Log += Client_Log;
-            
+
+            await _command.AddModulesAsync(Assembly.GetEntryAssembly(), _servicePriveProvider);
             await _client.LoginAsync(TokenType.Bot, "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y");
             await _client.StartAsync();
-
             await Task.Delay(-1);
         }
 
         private async Task Client_Log(LogMessage Message)
         {
             Console.WriteLine($"{DateTime.Now} at {Message.Source}] {Message.Message}");
-            
         }
 
         private async Task Client_Ready()
         {
-            await _client.SetGameAsync("thb! help", "", ActivityType.Listening);
+            await _client.SetGameAsync(botTrigger + " -help", "", ActivityType.Listening);
         }
 
         private async Task Client_MessageReceived(SocketMessage MessageParam)
         {
             var Message = MessageParam as SocketUserMessage;
             var Context = new SocketCommandContext(_client, Message);
-            
-            if (Context.Message == null || Context.Message.Content == "") return;
-            if (Context.User.IsBot) return;
-
             int ArgPos = 0;
 
-            if (!(Message.HasStringPrefix("thb! ", ref ArgPos) || Message.HasMentionPrefix(_client.CurrentUser, ref ArgPos) || Message.Author.IsBot)) return;
+            if (Context.User.IsBot) return;
+            if (Context.Message == null || Context.Message.Content == "") return;
+            if (!(Message.HasStringPrefix(botTrigger, ref ArgPos) || Message.HasMentionPrefix(_client.CurrentUser, ref ArgPos))) return;
 
             var Result = await _command.ExecuteAsync(Context, ArgPos, _servicePriveProvider);
             
             if (!Result.IsSuccess)
             {
                 Console.WriteLine($"{DateTime.Now} at Commands] Something went wrong with executing a command. Text: {Context.Message.Content} | Error: {Result.ErrorReason}");
+                await Context.Channel.SendMessageAsync("Sorry but I did not recognize this command, please type **" + botTrigger + " -help** for a list of available commands that I understand.", false, null);
             }
         }
     }

@@ -18,11 +18,11 @@ namespace The_House_Discord_Bot.Commands
 {
     public class Polls : ModuleBase<SocketCommandContext>
     {
-        [Group("poll:"), Alias("polls:"), Summary("Poll generator")]
+        [Group("poll:"), Summary("Poll generator")]
         public class PollGroup : ModuleBase<SocketCommandContext>
         {
-            /*
-            [Command(""), Summary("Poll builder")]
+            
+            [Command("-single"), Summary("Poll builder")]
             public async Task SingleQuestionPoll([Remainder] string messageContent)
             {
                 string pollHeader = "**" + messageContent + "**\n\n";
@@ -41,15 +41,20 @@ namespace The_House_Discord_Bot.Commands
                 }
                 
             }
-            */
+            
 
-            [Command("straw"), Summary("Poll builder")]
-            public async Task StrawPoll([Remainder] string messageContent)
+            [Command("-straw"), Summary("Poll builder")]
+            public async Task StrawPoll(bool multiValue, [Remainder] string messageContent)
             {
-
                 string[] stringArray = Regex.Split(messageContent, @"\[(.*?)\]|\{(.*?)\}");
 
                 stringArray = stringArray.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+
+                if (stringArray.Length > 31)
+                {
+                    await Context.Channel.SendMessageAsync("Straw Polls only accept 30 options, please retry with fewer options.", false, null);
+                    return;
+                }
 
                 string pollHeader = "";
                 string pollDetails = string.Empty;
@@ -63,32 +68,22 @@ namespace The_House_Discord_Bot.Commands
                     }
                     else
                     {
-                        pollDetails += "\"" + stringArray.GetValue(i).ToString() + "\",";
+                        pollDetails += "\"" + stringArray.GetValue(i) + "\",";
                         c1++;
                     }
 
                 }
-
-                var client = new RestClient("https://www.strawpoll.me/api/v2");
                 
+                var client = new RestClient("https://www.strawpoll.me/api/v2");
                 var request = new RestRequest("polls", Method.POST);
-
-                request.AddParameter("application/json", "{\"title\": \""+pollHeader+"\",\"options\": ["+pollDetails+"],\"multi\": true}", ParameterType.RequestBody);
-        
-                // execute the request
+                request.AddParameter("application/json", "{\"title\": \""+pollHeader+"\",\"options\": ["+pollDetails+"],\"multi\": \""+multiValue+"\"}", ParameterType.RequestBody);
                 IRestResponse response = client.Execute(request);
-                var content = response.Content; // raw content as string
 
-                string responseId = Regex.Match(content, @"\:(.*?)\,").ToString().Trim(':',',');
-                /*
-                var embed = new EmbedBuilder();
-                embed.WithTitle(pollHeader);
-                embed.WithDescription(pollDetails);
-                */
-                RestUserMessage msg = await Context.Channel.SendMessageAsync("https://www.strawpoll.me/"+responseId, false, null);
+                string responseId = Regex.Match(response.Content, @"\:(.*?)\,").ToString().Trim(':',',');
+                await Context.Channel.SendMessageAsync("https://www.strawpoll.me/"+responseId, false, null);
             }
 
-            [Command("multi"), Summary("Poll builder")]
+            [Command("-multi"), Summary("Poll builder")]
             public async Task MultiOptionPoll([Remainder] string messageContent)
             {
                 
