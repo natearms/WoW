@@ -6,33 +6,9 @@ function getBankBounty() {
 
     } else {
         var lookupId = Xrm.Page.getAttribute("wowc_item").getValue()[0].id.replace("{", "").replace("}", "");
-        /*
-        var req = new XMLHttpRequest();
-        req.open("GET", Xrm.Page.context.getClientUrl() + "/api/data/v9.1/wowc_guildbankrecords?$select=wowc_highneed&$filter=_wowc_item_value eq " + lookupId + "", true);
-        req.setRequestHeader("OData-MaxVersion", "4.0");
-        req.setRequestHeader("OData-Version", "4.0");
-        req.setRequestHeader("Accept", "application/json");
-        req.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-        req.setRequestHeader("Prefer", "odata.include-annotations=\"*\"");
-        req.onreadystatechange = function () {
-            if (this.readyState === 4) {
-                req.onreadystatechange = null; 
-                if (this.status === 200) {
-                    var results = JSON.parse(this.response);
-                    for (var i = 0; i < results.value.length; i++) {
-                        var wowc_highneed = results.value[i]["wowc_highneed"];
-                        var wowc_highneed_formatted = results.value[i]["wowc_highneed@OData.Community.Display.V1.FormattedValue"];
-                        bountyTotal = wowc_highneed ? 2 : 1;
-                    }
-                } else {
-                    Xrm.Utility.alertDialog(this.statusText);
-                }
-            }
-        };
-        req.send();
-        */
-        Xrm.WebApi.online.retrieveMultipleRecords("wowc_guildbankrecord", "?$select=wowc_highneed&$filter=_wowc_item_value eq " + lookupId + "").then(
-            function success(result) {
+        
+        Xrm.WebApi.online.retrieveMultipleRecords("wowc_guildbankrecord", "?$select=wowc_highneed&$filter=_wowc_item_value eq "+lookupId+"").then(
+            function success(results) {
                 for (var i = 0; i < results.entities.length; i++) {
                     var wowc_highneed = results.entities[i]["wowc_highneed"];
                     var wowc_highneed_formatted = results.entities[i]["wowc_highneed@OData.Community.Display.V1.FormattedValue"];
