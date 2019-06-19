@@ -71,7 +71,7 @@ namespace The_House_Discord_Bot
 
         private async Task Client_Ready()
         {
-            await _client.SetGameAsync(botTrigger + " -help", "", ActivityType.Listening);
+            await _client.SetGameAsync(botTrigger + "-help", "", ActivityType.Listening);
         }
 
         private async Task Client_MessageReceived(SocketMessage MessageParam)
@@ -89,7 +89,7 @@ namespace The_House_Discord_Bot
             if (!Result.IsSuccess)
             {
                 Console.WriteLine($"{DateTime.Now} at Commands] Something went wrong with executing a command. Text: {Context.Message.Content} | Error: {Result.ErrorReason}");
-                await Context.Channel.SendMessageAsync("Sorry but I did not recognize this command, please type **" + botTrigger + " -help** for a list of available commands that I understand.", false, null);
+                await Context.Channel.SendMessageAsync("Sorry but I did not recognize this command, please type **" + botTrigger + "-help** for a list of available commands that I understand.", false, null);
             }
         }
     }

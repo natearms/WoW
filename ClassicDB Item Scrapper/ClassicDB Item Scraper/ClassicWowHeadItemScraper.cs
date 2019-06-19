@@ -117,7 +117,7 @@ namespace ClassicDB.Item.Scraper
                 || Int32.Parse(inventorySlot) == 24
                 || Int32.Parse(classId) == 12
                 || Int32.Parse(classId) == 15
-                || Int32.Parse(classId) == 9
+                //|| Int32.Parse(classId) != 9
                 )
             {
                 itemStats.Add("Item not found or skipped!");
@@ -194,6 +194,11 @@ namespace ClassicDB.Item.Scraper
                 {
                     //Consumables
                     crmSlot = "257260009";
+                }
+                else if (inventorySlot == "0" && classId == "9")
+                {
+                    //Recipie
+                    crmSlot = "257260010";
                 }
                 else
                 {

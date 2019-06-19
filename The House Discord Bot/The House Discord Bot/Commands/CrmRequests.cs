@@ -5,12 +5,14 @@ using System.Text;
 using System.IO;
 using System.Xml;
 using System.Configuration;
+using System.IdentityModel.Metadata;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Tooling.Connector;
 using Microsoft.Xrm.Sdk.Query;
 
@@ -95,7 +97,7 @@ namespace The_House_Discord_Bot.Commands
             }
         }
         
-        [Group("-gb")]
+        [Group("-gb"), Summary("Guild Bank record commands")]
         public class GuildBankModule : ModuleBase<SocketCommandContext>
         {
             public IOrganizationService crmService { get; set; }
@@ -191,7 +193,129 @@ namespace The_House_Discord_Bot.Commands
             }
         }
 
-        
+        [Group("-recipe"), Summary("User recipe database")]
+        public class UserRecipes : ModuleBase<SocketCommandContext>
+        {
+            public IOrganizationService crmService { get; set; }
 
+            [Command("-add"), Summary("Add's a recipe to the current user.")]
+            public async Task addRecipe([Remainder] string itemSearch)
+            {
+                var author = Context.Message.Author;
+                string guildNickname = Context.Guild.GetUser(author.Id).Nickname;
+                string userNickname = author.Username;
+                string userName = guildNickname == null ? userNickname : guildNickname;
+
+                AssociateRecords(crmService, GetUserInformation(userName, crmService),GetItemInformation(itemSearch, crmService));
+                await ReplyAsync("test", false, null);
+            }
+
+            [Command("-remove"), Summary("Removes a recipe to the current user.")]
+            public async Task removeRecipe([Remainder] string itemSearch)
+            {
+                var author = Context.Message.Author;
+                string guildNickname = Context.Guild.GetUser(author.Id).Nickname;
+                string userNickname = author.Username;
+                string userName = guildNickname == null ? userNickname : guildNickname;
+
+                DisassociateRecords(crmService, GetUserInformation(userName, crmService),GetItemInformation(itemSearch, crmService));
+                await ReplyAsync("test", false, null);
+            }
+
+            
+            [Command("-search"), Summary("Searches users that know this recipe.")]
+            public async Task searchRecipe([Remainder] string itemSearch)
+            {
+                RetrieveUsersWithRecipe(crmService, itemSearch);
+                await ReplyAsync("test", false, null);
+            }
+            
+            private static EntityCollection GetItemInformation(string itemSearch, IOrganizationService crmService)
+            {
+                QueryExpression query = new QueryExpression("wowc_loot");
+                query.ColumnSet.AddColumns("wowc_lootid");
+                query.Criteria = new FilterExpression();
+                query.Criteria.AddCondition("wowc_name", ConditionOperator.Like, "%" + itemSearch + "%");
+                query.Criteria.AddCondition("wowc_slot", ConditionOperator.Equal, 257260010);
+
+                EntityCollection results = crmService.RetrieveMultiple(query);
+                return results;
+            }
+
+            private static EntityCollection GetUserInformation(string userName, IOrganizationService crmService)
+            {
+                QueryExpression query = new QueryExpression("contact");
+                query.ColumnSet.AddColumns("lastname", "wowc_primaryprofession", "wowc_secondaryprofession");
+                query.Criteria = new FilterExpression();
+                query.Criteria.AddCondition("lastname", ConditionOperator.Like, "%" + userName + "%");
+                query.Orders.Add(new OrderExpression("lastname", OrderType.Ascending));
+
+                EntityCollection results = crmService.RetrieveMultiple(query);
+                return results;
+            }
+
+            private static void AssociateRecords(IOrganizationService crmService, EntityCollection contact, EntityCollection wowc_loot)
+            {
+                var contactRef = new EntityReference("contact", contact.Entities[0].GetAttributeValue<Guid>("contactid"));
+                var wowc_lootRef = new EntityReference("wowc_loot", wowc_loot.Entities[0].GetAttributeValue<Guid>("wowc_lootid"));
+                var wowc_lootCollection = new EntityReferenceCollection();
+                wowc_lootCollection.Add(wowc_lootRef);
+
+
+                var relationship = new Relationship("wowc_contact_wowc_loot");
+
+                crmService.Associate(contactRef.LogicalName, contactRef.Id, relationship, wowc_lootCollection);
+            }
+
+            private static void DisassociateRecords(IOrganizationService crmService, EntityCollection contact,
+                EntityCollection wowc_loot)
+            {
+                var contactRef = new EntityReference("contact", contact.Entities[0].GetAttributeValue<Guid>("contactid"));
+                var wowc_lootRef = new EntityReference("wowc_loot", wowc_loot.Entities[0].GetAttributeValue<Guid>("wowc_lootid"));
+                var wowc_lootCollection = new EntityReferenceCollection();
+                wowc_lootCollection.Add(wowc_lootRef);
+
+                var relationship = new Relationship("wowc_contact_wowc_loot");
+
+                crmService.Disassociate(contactRef.LogicalName, contactRef.Id, relationship, wowc_lootCollection);
+            }
+
+            private static EntityCollection RetrieveUsersWithRecipe(IOrganizationService crmService, string itemSearch)
+            {
+                /*
+                string entity1 = ""
+                QueryExpression query = new QueryExpression("wowc_loot");
+                LinkEntity linkEntity1 = new LinkEntity("wowc_loot", "wowc_contact_wowc_loot",);
+                query.ColumnSet.AddColumns("wowc_lootid");
+                query.Criteria = new FilterExpression();
+                query.Criteria.AddCondition("wowc_name", ConditionOperator.Like, "%" + itemSearch + "%");
+                query.Criteria.AddCondition("wowc_slot", ConditionOperator.Equal, 257260010);
+
+                EntityCollection results = crmService.RetrieveMultiple(query);
+                return results;
+                */
+
+                string entity1 = "wowc_loot";
+                string entity2 = "contact";
+                string relationshipEntityName = "wowc_contact_wowc_loot";
+
+                QueryExpression query = new QueryExpression(entity1);
+
+                query.ColumnSet = new ColumnSet(true);
+
+                LinkEntity linkEntity1 = new LinkEntity(entity1, relationshipEntityName, "wowc_lootid", "wowc_lootid", JoinOperator.Inner);
+                LinkEntity linkEntity2 = new LinkEntity(entity2, relationshipEntityName, "contactid", "contactid", JoinOperator.Inner);
+                linkEntity1.LinkEntities.Add(linkEntity2);
+                query.LinkEntities.Add(linkEntity1);
+                linkEntity2.LinkCriteria = new FilterExpression();
+                linkEntity2.LinkCriteria.AddCondition(new ConditionExpression("wowc_name", ConditionOperator.Like, "%" + itemSearch + "%"));
+                linkEntity2.LinkCriteria.AddCondition(new ConditionExpression("wowc_slot", ConditionOperator.Equal, 257260010));
+
+                EntityCollection results = crmService.RetrieveMultiple(query);
+                return results;
+
+                https://docs.microsoft.com/en-us/previous-versions/dynamicscrm-2016/developers-guide/gg328446(v=crm.8)
+            }
+        }
     }
 }
