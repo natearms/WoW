@@ -12,9 +12,11 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Tooling.Connector;
 using Microsoft.Xrm.Sdk.Query;
+using Microsoft.Crm.Sdk.Messages;
 
 namespace The_House_Discord_Bot.Commands
 {
@@ -267,8 +269,7 @@ namespace The_House_Discord_Bot.Commands
                 crmService.Associate(contactRef.LogicalName, contactRef.Id, relationship, wowc_lootCollection);
             }
 
-            private static void DisassociateRecords(IOrganizationService crmService, EntityCollection contact,
-                EntityCollection wowc_loot)
+            private static void DisassociateRecords(IOrganizationService crmService, EntityCollection contact, EntityCollection wowc_loot)
             {
                 var contactRef = new EntityReference("contact", contact.Entities[0].GetAttributeValue<Guid>("contactid"));
                 var wowc_lootRef = new EntityReference("wowc_loot", wowc_loot.Entities[0].GetAttributeValue<Guid>("wowc_lootid"));
@@ -282,39 +283,23 @@ namespace The_House_Discord_Bot.Commands
 
             private static EntityCollection RetrieveUsersWithRecipe(IOrganizationService crmService, string itemSearch)
             {
-                /*
-                string entity1 = ""
-                QueryExpression query = new QueryExpression("wowc_loot");
-                LinkEntity linkEntity1 = new LinkEntity("wowc_loot", "wowc_contact_wowc_loot",);
-                query.ColumnSet.AddColumns("wowc_lootid");
-                query.Criteria = new FilterExpression();
-                query.Criteria.AddCondition("wowc_name", ConditionOperator.Like, "%" + itemSearch + "%");
-                query.Criteria.AddCondition("wowc_slot", ConditionOperator.Equal, 257260010);
-
-                EntityCollection results = crmService.RetrieveMultiple(query);
-                return results;
-                */
-
                 string entity1 = "wowc_loot";
                 string entity2 = "contact";
                 string relationshipEntityName = "wowc_contact_wowc_loot";
 
                 QueryExpression query = new QueryExpression(entity1);
-
-                query.ColumnSet = new ColumnSet(true);
+                query.ColumnSet = new ColumnSet("wowc_name","wowc_lootid","wowc_slot");
 
                 LinkEntity linkEntity1 = new LinkEntity(entity1, relationshipEntityName, "wowc_lootid", "wowc_lootid", JoinOperator.Inner);
-                LinkEntity linkEntity2 = new LinkEntity(entity2, relationshipEntityName, "contactid", "contactid", JoinOperator.Inner);
+                LinkEntity linkEntity2 = new LinkEntity(relationshipEntityName, entity2, "contactid", "contactid", JoinOperator.Inner);
+                linkEntity2.Columns.AddColumns("lastname");
                 linkEntity1.LinkEntities.Add(linkEntity2);
                 query.LinkEntities.Add(linkEntity1);
-                linkEntity2.LinkCriteria = new FilterExpression();
-                linkEntity2.LinkCriteria.AddCondition(new ConditionExpression("wowc_name", ConditionOperator.Like, "%" + itemSearch + "%"));
-                linkEntity2.LinkCriteria.AddCondition(new ConditionExpression("wowc_slot", ConditionOperator.Equal, 257260010));
-
+                query.Criteria.AddCondition("wowc_name", ConditionOperator.Like, "%" + itemSearch + "%");
+                query.Criteria.AddCondition("wowc_slot", ConditionOperator.Equal, 257260010);
+                 
                 EntityCollection results = crmService.RetrieveMultiple(query);
                 return results;
-
-                https://docs.microsoft.com/en-us/previous-versions/dynamicscrm-2016/developers-guide/gg328446(v=crm.8)
             }
         }
     }
