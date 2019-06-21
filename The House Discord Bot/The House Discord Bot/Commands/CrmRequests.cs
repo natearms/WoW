@@ -141,13 +141,13 @@ namespace The_House_Discord_Bot.Commands
         {
             public IOrganizationService crmService { get; set; }
 
-            [Command("-highneed"), Summary("Searches the guild bank for high need mats.")]
+            [Command("-hn"), Summary("Searches the guild bank for high need mats.")]
             public async Task guildBank()
             {
                 await ReplyAsync(null, false, BuildGuildBankHighNeedList(crmService));
             }
 
-            [Command("-search"), Summary("Searches the guild bank with string criteria.")]
+            [Command("-s"), Summary("Searches the guild bank with string criteria.")]
             public async Task guildBank([Remainder] string itemSearch)
             {
                 await ReplyAsync(null, false, BuildGuildBankList(itemSearch, crmService));
@@ -232,12 +232,12 @@ namespace The_House_Discord_Bot.Commands
             }
         }
 
-        [Group("-recipe"), Summary("User recipe database")]
+        [Group("-prof"), Summary("User recipe database")]
         public class UserRecipes : ModuleBase<SocketCommandContext>
         {
             public IOrganizationService crmService { get; set; }
 
-            [Command("-add"), Summary("Add's a recipe to the current user.")]
+            [Command("-a"), Summary("Add's a recipe to the current user.")]
             public async Task addRecipe([Remainder] string itemSearch)
             {
                 var author = Context.Message.Author;
@@ -248,7 +248,7 @@ namespace The_House_Discord_Bot.Commands
                 await ReplyAsync(AssociateRecords(crmService, GetUserInformation(userName, crmService), GetItemInformation(itemSearch, crmService), userName,Context.Guild.Owner), false, null);
             }
 
-            [Command("-remove"), Summary("Removes a recipe to the current user.")]
+            [Command("-r"), Summary("Removes a recipe to the current user.")]
             public async Task removeRecipe([Remainder] string itemSearch)
             {
                 var author = Context.Message.Author;
@@ -258,13 +258,13 @@ namespace The_House_Discord_Bot.Commands
 
                 await ReplyAsync(DisassociateRecords(crmService, GetUserInformation(userName, crmService), GetItemInformation(itemSearch, crmService), userName, Context.Guild.Owner), false, null);
             }
-            [Command("-search"), Summary("Searches users that know this recipe.")]
+            [Command("-s"), Summary("Searches users that know this recipe.")]
             public async Task searchRecipe([Remainder] string itemSearch)
             {
                 //RetrieveUsersWithRecipe(crmService, itemSearch);
                 await ReplyAsync(null, false, RecipeSearchEmbedBuilder(crmService,itemSearch, Context.Guild.Owner).Build());
             }
-            [Command("-search"), Summary("Returns recipes that this user knows.")]
+            [Command("-s"), Summary("Returns recipes that this user knows.")]
             public async Task searchRecipe(IUser providedUser)
             {
                 string guildNickname = Context.Guild.GetUser(providedUser.Id).Nickname;
@@ -350,7 +350,7 @@ namespace The_House_Discord_Bot.Commands
                     return results = "Hmm, this shouldn't have happened...";
             }
 
-            private EmbedBuilder RecipeSearchEmbedBuilder(IOrganizationService crmService, string itemSearch, IUser guildOwner)
+            private static EmbedBuilder RecipeSearchEmbedBuilder(IOrganizationService crmService, string itemSearch, IUser guildOwner)
             {
                 EmbedBuilder prBuilder = new EmbedBuilder();
 
@@ -397,6 +397,7 @@ namespace The_House_Discord_Bot.Commands
 
                 return prBuilder;
             }
+
             private static EmbedBuilder UserRecipeResults(IOrganizationService crmService, EntityCollection contact, string mentionedUser, IUser guildOwner)
             {
                 EmbedBuilder prBuilder = new EmbedBuilder();

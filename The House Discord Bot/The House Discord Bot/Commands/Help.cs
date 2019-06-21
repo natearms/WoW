@@ -25,51 +25,45 @@ namespace The_House_Discord_Bot.Commands
                 .WithDescription("If you have any issues or have suggestions on bot features you'd like to see, please let " + Context.Guild.Owner.Mention + " know. \n\n Below are commands that I currently understand:\n\n " +
                 //Poll Commands help descriptions
                 "\n__**Poll commands**__\n\n " +
-                "This will generate a simple poll with :thumbsup: :thumbsdown: :shrug:." +
-                "" + theHouseBotTrigger + "poll: -single <title>```\n" +
-                "This will generate a poll with reactions with up to 26 options." +
-                "" + theHouseBotTrigger + "poll: -multi [title] {Option1} {Option2} {Option3}```\n" +
-                "This will generate a straw poll with up to 30 options. \n  " +
+                "Create a simple poll with :thumbsup: :thumbsdown: :shrug:." +
+                "" + theHouseBotTrigger + "-poll -s <title>```\n" +
+                "Create a reaction poll with up to 26 options." +
+                "" + theHouseBotTrigger + "-poll -m [title] {Option1} {Option2} {Option3}```\n" +
+                "Create a straw poll with up to 30 options. \n  " +
                                  "true = multi select\n" +
                                  "false = single select\n" +
-                "" + theHouseBotTrigger + "poll: -straw <true or false> [title] {Option1} {Option2} {Option3}```\n"+
+                "" + theHouseBotTrigger + "-poll -st <true or false> [title] {Option1} {Option2} {Option3}```\n"+
 
                 //DKP Commands help descriptions
                 "__**<The House> DKP commands**__\n\n " +
-                "Parse <The House> DKP system to return your PR, EP, and GP values." +
+                "Return your PR, EP, and GP." +
                 "" +theHouseBotTrigger+"-dkp```\n" +
-                "Parse <The House> DKP system using the mentioned user to return their PR, EP, and GP values." +
+                "Return PR, EP, and GP values for mentioned user." +
                 "" + theHouseBotTrigger + "-dkp <@usermention>```\n" +
-                "Parse <The House> DKP system using the mentioned users to return their PR, EP, and GP values. You can mention up to 10 users at a time." +
+                "Return PR, EP, and GP values for mentioned users. You can mention up to 10 users at a time." +
                 "" + theHouseBotTrigger + "-dkp <@usermention1> <@usermention2> <@usermention3>```\n" +
 
                 //Guild Bank Commands help descriptions
                 "__**<The House> Guild Bank commands**__\n\n " +
-                "Parse <The House> Guild Bank system for a specific item. The search will always search with wildcard behavior. Using \"%\" will return all records." +
-                "" + theHouseBotTrigger + "-gb -search <item name>```\n" +
+                "Search Guild Bank records. Using \"%\" will return all records." +
+                "" + theHouseBotTrigger + "-gb -s <item name>```\n" +
                 "Parse <The House> Guild Bank system for a high need mats." +
-                "" + theHouseBotTrigger + "-gb -highneed```\n"
+                "" + theHouseBotTrigger + "-gb -hn```\n" +
+
+                //Profession Commands help descriptions
+                "__**<The House> Profession management commands**__\n\n " +
+                "Add a recipe to your record in CRM." +
+                "" + theHouseBotTrigger + "-prof -a <item name>```\n" +
+                "Remove a recipe from your record in CRM." +
+                "" + theHouseBotTrigger + "-prof -r <item name>```\n" +
+                "Search for guild members that know this recpie." +
+                "" + theHouseBotTrigger + "-prof -s <item name>```\n" +
+                "Return recipes this guild member knows." +
+                "" + theHouseBotTrigger + "-prof -s <@usermention>```\n"
                 );
 
             await Context.Message.Author.SendMessageAsync(null, false, embed.Build());
             await ReplyAsync("Please see your DM's for help using this bot.");
-        }
-
-        [Command("embed")]
-        public async Task SendRichEmbedAsync()
-        {
-            var embed = new EmbedBuilder();
-            // Or with methods
-            embed.AddField("Field title",
-                "Field value. I also support [hyperlink markdown](https://example.com)!")
-                .WithAuthor(Context.Client.CurrentUser)
-                .WithFooter(footer => footer.Text = "I am a footer.")
-                .WithColor(Color.Blue)
-                .WithTitle("I overwrote \"Hello world!\"")
-                .WithDescription("I am a description.")
-                .WithUrl("https://example.com")
-                .WithCurrentTimestamp();
-            await ReplyAsync("",false, embed.Build(), RequestOptions.Default);
         }
     }
 }

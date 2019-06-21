@@ -270,6 +270,7 @@ namespace ClassicDB.Item.Scraper
                             loot["wowc_name"] = itemStats[1];
                             loot["wowc_ilvl"] = Int32.Parse(itemStats[2]);
                             loot["wowc_itemid"] = itemStats[0];
+                            loot["wowc_itemidnum"] = Int32.Parse(itemStats[0]);
                             loot["wowc_rarity"] = rarity;
                             loot["wowc_slot"] = slot;
                             //loot["businessunitid"] = new EntityReference("businessunit", defaultBU);
@@ -298,6 +299,7 @@ namespace ClassicDB.Item.Scraper
                                     loot["wowc_name"] = itemStats[1];
                                     loot["wowc_ilvl"] = Int32.Parse(itemStats[2]);
                                     loot["wowc_itemid"] = itemStats[0];
+                                    loot["wowc_itemidnum"] = Int32.Parse(itemStats[0]);
                                     loot["wowc_rarity"] = rarity;
                                     loot["wowc_slot"] = slot;
 

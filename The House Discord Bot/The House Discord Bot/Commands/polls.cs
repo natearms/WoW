@@ -18,11 +18,11 @@ namespace The_House_Discord_Bot.Commands
 {
     public class Polls : ModuleBase<SocketCommandContext>
     {
-        [Group("poll:"), Summary("Poll generator")]
+        [Group("-poll"), Summary("Poll generator")]
         public class PollGroup : ModuleBase<SocketCommandContext>
         {
             
-            [Command("-single"), Summary("Poll builder")]
+            [Command("-s"), Summary("Poll builder")]
             public async Task SingleQuestionPoll([Remainder] string messageContent)
             {
                 string pollHeader = "**" + messageContent + "**\n\n";
@@ -42,7 +42,7 @@ namespace The_House_Discord_Bot.Commands
             }
             
 
-            [Command("-straw"), Summary("Poll builder")]
+            [Command("-st"), Summary("Poll builder")]
             public async Task StrawPoll(bool multiValue, [Remainder] string messageContent)
             {
                 string[] stringArray = Regex.Split(messageContent, @"\[(.*?)\]|\{(.*?)\}");
@@ -82,7 +82,7 @@ namespace The_House_Discord_Bot.Commands
                 await Context.Channel.SendMessageAsync("https://www.strawpoll.me/"+responseId, false, null);
             }
 
-            [Command("-multi"), Summary("Poll builder")]
+            [Command("-m"), Summary("Poll builder")]
             public async Task MultiOptionPoll([Remainder] string messageContent)
             {
                 
