@@ -200,9 +200,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Commands\CrmRequests.cs" />
+    <Compile Include="Commands\CrmDkp.cs" />
+    <Compile Include="Commands\CrmGuildBank.cs" />
     <Compile Include="Commands\Help.cs" />
     <Compile Include="Commands\polls.cs" />
+    <Compile Include="Commands\CrmProfessions.cs" />
     <Compile Include="TheHouseBot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -227,7 +229,5 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    
   </Target>
-  
 </Project>

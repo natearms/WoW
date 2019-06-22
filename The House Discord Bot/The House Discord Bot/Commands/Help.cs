@@ -42,13 +42,18 @@ namespace The_House_Discord_Bot.Commands
                 "" + theHouseBotTrigger + "-dkp <@usermention>```\n" +
                 "Return PR, EP, and GP values for mentioned users. You can mention up to 10 users at a time." +
                 "" + theHouseBotTrigger + "-dkp <@usermention1> <@usermention2> <@usermention3>```\n" +
+                "Return top list of users and their DKP." +
+                "" + theHouseBotTrigger + "-dkp -top <number>```\n" +
 
                 //Guild Bank Commands help descriptions
                 "__**<The House> Guild Bank commands**__\n\n " +
                 "Search Guild Bank records. Using \"%\" will return all records." +
                 "" + theHouseBotTrigger + "-gb -s <item name>```\n" +
-                "Parse <The House> Guild Bank system for a high need mats." +
+                "Return audit history for a specific item." +
+                "" + theHouseBotTrigger + "-gb -a <item name>```\n" +
+                "Search the guild bank for high need mats." +
                 "" + theHouseBotTrigger + "-gb -hn```\n" +
+                
 
                 //Profession Commands help descriptions
                 "__**<The House> Profession management commands**__\n\n " +
