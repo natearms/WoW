@@ -29,7 +29,7 @@ namespace The_House_Discord_Bot.Commands
             public IOrganizationService crmService { get; set; }
 
             [Command("-a"), Summary("Add's a recipe to the current user.")]
-            public async Task addRecipe([Remainder] string itemSearch)
+            public async Task AddRecipe([Remainder] string itemSearch)
             {
                 var author = Context.Message.Author;
                 string guildNickname = Context.Guild.GetUser(author.Id).Nickname;
@@ -40,7 +40,7 @@ namespace The_House_Discord_Bot.Commands
             }
 
             [Command("-r"), Summary("Removes a recipe to the current user.")]
-            public async Task removeRecipe([Remainder] string itemSearch)
+            public async Task RemoveRecipe([Remainder] string itemSearch)
             {
                 var author = Context.Message.Author;
                 string guildNickname = Context.Guild.GetUser(author.Id).Nickname;
@@ -50,13 +50,13 @@ namespace The_House_Discord_Bot.Commands
                 await ReplyAsync(DisassociateRecords(crmService, GetUserInformation(userName, crmService), GetItemInformation(itemSearch, crmService), userName, Context.Guild.Owner), false, null);
             }
             [Command("-s"), Summary("Searches users that know this recipe.")]
-            public async Task searchRecipe([Remainder] string itemSearch)
+            public async Task SearchRecipe([Remainder] string itemSearch)
             {
                 //RetrieveUsersWithRecipe(crmService, itemSearch);
                 await ReplyAsync(null, false, RecipeSearchEmbedBuilder(crmService, itemSearch, Context.Guild.Owner).Build());
             }
             [Command("-s"), Summary("Returns recipes that this user knows.")]
-            public async Task searchRecipe(IUser providedUser)
+            public async Task SearchRecipe(IUser providedUser)
             {
                 string guildNickname = Context.Guild.GetUser(providedUser.Id).Nickname;
                 string userNickname = providedUser.Username;

@@ -69,7 +69,7 @@ namespace The_House_Discord_Bot.Commands
             }
             
             [Command("-top")]
-            public async Task PrEpGpMentions(int returnRange)
+            public async Task ReturnTopPrEpGp(int returnRange)
             {
                 await ReplyAsync(null, false, BuildUsersDKP(GetTopUserEpGp(returnRange,crmService),Context.Message.Author).Build());
             }
