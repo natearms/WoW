@@ -27,30 +27,29 @@ namespace The_House_Discord_Bot.Commands
         {
             public IOrganizationService crmService { get; set; }
 
-            [Command("")]
+            [Command("-s")]
             public async Task ReturnPlayersPrEpGP()
             {
                 List<SocketUser> list = new List<SocketUser>();
                 list.Add(Context.Message.Author);
-                list.AsReadOnly();
-
                 IReadOnlyCollection<SocketUser> mentionedUsers = list;
+
                 EntityCollection sortedEntityCollection = GetUsersFromIReadOnlyCollection(mentionedUsers, crmService);
 
-                await ReplyAsync(null, false, BuildUsersDKP(sortedEntityCollection, Context.Message.Author).Build());
+                await ReplyAsync(null, false, BuildUsersDKP(sortedEntityCollection, mentionedUsers, Context.Message.Author).Build());
             }
 
 
-            [Command("")]
+            [Command("-s")]
             public async Task ReturnMentionPrEpGp(IUser mentionedUser)
             {
                 IReadOnlyCollection<SocketUser> mentionedUsers = Context.Message.MentionedUsers;
                 EntityCollection sortedEntityCollection = GetUsersFromIReadOnlyCollection(mentionedUsers, crmService);
 
-                await ReplyAsync(null, false, BuildUsersDKP(sortedEntityCollection, Context.Message.Author).Build());
+                await ReplyAsync(null, false, BuildUsersDKP(sortedEntityCollection, mentionedUsers, Context.Message.Author).Build());
             }
 
-            [Command("")]
+            [Command("-s")]
             public async Task ReturnMentionsPrEpGp([Remainder]string test)
             {
                 IReadOnlyCollection<SocketUser> mentionedUsers = Context.Message.MentionedUsers;
@@ -64,16 +63,97 @@ namespace The_House_Discord_Bot.Commands
                 }
                 else
                 {
-                    await ReplyAsync(null, false, BuildUsersDKP(sortedEntityCollection, Context.Message.Author).Build());
+                    await ReplyAsync(null, false, BuildUsersDKP(sortedEntityCollection, mentionedUsers, Context.Message.Author).Build());
                 }
             }
             
             [Command("-top")]
             public async Task ReturnTopPrEpGp(int returnRange)
             {
-                await ReplyAsync(null, false, BuildUsersDKP(GetTopUserEpGp(returnRange,crmService),Context.Message.Author).Build());
+                IReadOnlyCollection<SocketUser> mentionedUsers = new List<SocketUser>();
+
+                await ReplyAsync(null, false, BuildUsersDKP(GetTopUserEpGp(returnRange,crmService), mentionedUsers, Context.Message.Author).Build());
             }
-            
+
+            [Command("-class")]
+            public async Task ReturnClassPrEpGp([Remainder]string classSpecified)
+            {
+                string lowerClassSpecified = classSpecified.ToLower();
+                IReadOnlyCollection<SocketUser> mentionedUsers = new List<SocketUser>();
+
+                if (lowerClassSpecified == "druid" || lowerClassSpecified == "hunter" || lowerClassSpecified == "mage" || 
+                    lowerClassSpecified == "priest" || lowerClassSpecified == "rogue" || lowerClassSpecified == "shaman" || 
+                    lowerClassSpecified == "warlock" || lowerClassSpecified == "warrior")
+                {
+                    Int32 classOptionSetValue = 0;
+                    switch (lowerClassSpecified)
+                    {
+                        case "druid":
+                            classOptionSetValue = 257260000;
+                            break;
+                        case "hunter":
+                            classOptionSetValue = 257260001;
+                            break;
+                        case "mage":
+                            classOptionSetValue = 257260002;
+                            break;
+                        case "priest":
+                            classOptionSetValue = 257260004;
+                            break;
+                        case "rogue":
+                            classOptionSetValue = 257260005;
+                            break;
+                        case "shaman":
+                            classOptionSetValue = 257260006;
+                            break;
+                        case "warlock":
+                            classOptionSetValue = 257260007;
+                            break;
+                        case "warrior":
+                            classOptionSetValue = 257260008;
+                            break;
+                    }
+                        
+
+                    await ReplyAsync(null, false, BuildUsersDKP(GetClassEpGp(classOptionSetValue, crmService), mentionedUsers, Context.Message.Author).Build());
+                }
+                    
+                else
+                    await ReplyAsync("Sorry but " + classSpecified + " is not a valid class.");
+                
+            }
+            private EntityCollection GetUsersFromIReadOnlyCollection(IReadOnlyCollection<SocketUser> mentionedUsers, IOrganizationService service)
+            {
+                EntityCollection results;
+                string[] userSearch = new string[mentionedUsers.Count];
+                for (int i = 0; i < mentionedUsers.Count; i++)
+                {
+                    string guildNickname = Context.Guild.GetUser(mentionedUsers.ElementAt(i).Id).Nickname;
+                    string userNickname = mentionedUsers.ElementAt(i).Username;
+
+                    string userName = guildNickname == null ? userNickname : guildNickname;
+
+                    userSearch[i] = userName;
+
+                }
+                results = GetUserEpGp(userSearch, crmService);
+
+                return results;
+            }
+            private EntityCollection GetUserEpGp(string[] userName, IOrganizationService crmService)
+            {
+                QueryExpression query = new QueryExpression("contact");
+                query.ColumnSet.AddColumns("lastname", "wowc_totalpr", "wowc_totalep", "wowc_totalgp");
+                query.Criteria = new FilterExpression();
+                query.Criteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
+                query.Criteria.AddCondition("lastname", ConditionOperator.In, userName);
+                query.Orders.Add(new OrderExpression("wowc_totalpr", OrderType.Descending));
+                query.Orders.Add(new OrderExpression("wowc_totalep", OrderType.Descending));
+
+                EntityCollection results = crmService.RetrieveMultiple(query);
+
+                return results;
+            }
             private EntityCollection GetTopUserEpGp(int returnCount, IOrganizationService crmService)
             {
                 QueryExpression query = new QueryExpression("contact");
@@ -90,13 +170,13 @@ namespace The_House_Discord_Bot.Commands
 
                 return results;
             }
-            private EntityCollection GetUserEpGp(string[] userName, IOrganizationService crmService)
+            private EntityCollection GetClassEpGp(Int32 classSpecified, IOrganizationService crmService)
             {
                 QueryExpression query = new QueryExpression("contact");
-                query.ColumnSet.AddColumns("lastname","wowc_totalpr", "wowc_totalep", "wowc_totalgp");
+                query.ColumnSet.AddColumns("lastname", "wowc_totalpr", "wowc_totalep", "wowc_totalgp");
                 query.Criteria = new FilterExpression();
                 query.Criteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
-                query.Criteria.AddCondition("lastname", ConditionOperator.In, userName);
+                query.Criteria.AddCondition("wowc_class", ConditionOperator.Equal, classSpecified);
                 query.Orders.Add(new OrderExpression("wowc_totalpr", OrderType.Descending));
                 query.Orders.Add(new OrderExpression("wowc_totalep", OrderType.Descending));
                 
@@ -104,60 +184,81 @@ namespace The_House_Discord_Bot.Commands
 
                 return results;
             }
-            private EmbedBuilder BuildUsersDKP(EntityCollection providedUser, IUser initializedUser)
+            
+            private EmbedBuilder BuildUsersDKP(EntityCollection providedUser, IReadOnlyCollection<SocketUser> mentionedCollection, IUser author)
             {
+                bool usersFound = false;
+
+                string authorGuildNickname = Context.Guild.GetUser(author.Id).Nickname;
+                string authorNickname = author.Username;
+                string authorUserName = authorGuildNickname == null ? authorNickname : authorGuildNickname;
 
                 EmbedBuilder prBuilder = new EmbedBuilder();
 
-                string guildNickname = Context.Guild.GetUser(initializedUser.Id).Nickname;
-                string userNickname = initializedUser.Username;
-                string userName = guildNickname == null ? userNickname : guildNickname;
-
+                string missingUsers = null;
                 string commentString = "```" + "Name".PadRight(15) + "Total PR".PadLeft(12) + "Total EP".PadLeft(12) + "Total GP".PadLeft(12);
-                string mentionGuildOwner = "";
+                string missingUserCommentString = null;
 
-                if (providedUser.Entities.Count == 0)
+                for (int i = 0; i < providedUser.Entities.Count; i++)
                 {
-                    return prBuilder.WithDescription(Context.Guild.Owner.Mention + ", this user doesn't exist, can you look into this?");
+                    string guildMember = providedUser.Entities[i].GetAttributeValue<string>("lastname");
+                    string totalPr = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalpr").ToString("0.##");
+                    string totalEp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalep").ToString("0.##");
+                    string TotalGp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalgp").ToString("0.##");
+                    if (guildMember == authorUserName)
+                        guildMember = "*" + guildMember;
+
+                    commentString += "\n" + guildMember.PadRight(15, '.') + totalPr.ToString().PadLeft(12, '.') + totalEp.ToString().PadLeft(12, '.') + TotalGp.ToString().PadLeft(12, '.');
+
                 }
-                else
+
+                for (int iMentions = 0; iMentions < mentionedCollection.Count; iMentions++)
                 {
-                    for (int i = 0; i < providedUser.Entities.Count; i++)
+                    bool userFound = false;
+
+                    string guildNickname = Context.Guild.GetUser(mentionedCollection.ElementAt(iMentions).Id).Nickname;
+                    string userNickname = mentionedCollection.ElementAt(iMentions).Username;
+                    string userName = guildNickname == null ? userNickname : guildNickname;
+
+                    for (int iEntities = 0; iEntities < providedUser.Entities.Count; iEntities++)
                     {
-                        string guildMember = providedUser.Entities[i].GetAttributeValue<string>("lastname");
-                        string totalPr = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalpr").ToString("0.##");
-                        string totalEp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalep").ToString("0.##");
-                        string TotalGp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalgp").ToString("0.##");
-                        if (guildMember == userName)
-                            guildMember = "*" + guildMember;
+                        string providedUserResult = providedUser.Entities[iEntities].GetAttributeValue<string>("lastname");
 
-                        commentString += "\n" + guildMember.PadRight(15, '.') + totalPr.ToString().PadLeft(12, '.') + totalEp.ToString().PadLeft(12, '.') + TotalGp.ToString().PadLeft(12, '.');
-
+                        if (userName.ToLower() == providedUserResult.ToLower())
+                        {
+                            userFound = true;
+                            usersFound = true;
+                            break;
+                        }
+                    }
+                    if (!userFound)
+                    {
+                        if (missingUsers == null)
+                        {
+                            missingUsers += userName;
+                            missingUserCommentString += "\n **" + userName + "** was not found in CRM.";
+                        }
+                        
+                        else
+                        {
+                            missingUsers += ", " + userName;
+                            missingUserCommentString += "\n **" + userName + "** was not found in CRM.";
+                        }
+                            
                     }
                 }
-                
                 commentString += "```";
-                prBuilder.WithDescription(mentionGuildOwner + "\n" + commentString);
-                return prBuilder;
-            }
-            private EntityCollection GetUsersFromIReadOnlyCollection(IReadOnlyCollection<SocketUser> mentionedUsers, IOrganizationService service)
-            {
-                EntityCollection results;
-                string[] userSearch= new string[mentionedUsers.Count];
-                for (int i = 0; i < mentionedUsers.Count; i++)
-                {
-                    string guildNickname = Context.Guild.GetUser(mentionedUsers.ElementAt(i).Id).Nickname;
-                    string userNickname = mentionedUsers.ElementAt(i).Username;
 
-                    string userName = guildNickname == null ? userNickname : guildNickname;
-                    
-                    userSearch[i] = userName;
-                        
-                }
-                results = GetUserEpGp(userSearch, crmService);
-                
-                return results;
+                if (usersFound && missingUsers != null)
+                    prBuilder.WithDescription(commentString + missingUserCommentString + "\n\n" + Context.Guild.Owner.Mention +", could you please look into this.");
+                else if (providedUser.Entities.Count > 0 && missingUsers == null)
+                    prBuilder.WithDescription(commentString);
+                else
+                    prBuilder.WithDescription(Context.Guild.Owner.Mention +" **"+ missingUsers + "** was not found in CRM.");
+
+                    return prBuilder;
             }
+            
         }
         
     }

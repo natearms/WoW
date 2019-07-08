@@ -252,6 +252,7 @@ namespace ClassicDB.Item.Scraper
                     Guid defaultBU = new Guid("{FDF40AEB-1C6E-E911-A99F-000D3A1ABFB7}");
                     OptionSetValue rarity = new OptionSetValue(Int32.Parse(itemStats[10]));
                     OptionSetValue slot = new OptionSetValue(Int32.Parse(itemStats[11]));
+                    OptionSetValue recordType = new OptionSetValue(257260000);
 
                     QueryExpression query = new QueryExpression("wowc_loot");
                     query.ColumnSet.AddColumns("wowc_itemid","wowc_name", "wowc_lootid");
@@ -273,6 +274,7 @@ namespace ClassicDB.Item.Scraper
                             loot["wowc_itemidnum"] = Int32.Parse(itemStats[0]);
                             loot["wowc_rarity"] = rarity;
                             loot["wowc_slot"] = slot;
+                            loot["wowc_type"] = recordType;
                             //loot["businessunitid"] = new EntityReference("businessunit", defaultBU);
                             //loot["timezonecode"] = 33;
                             crmService.Create(loot);
@@ -302,6 +304,7 @@ namespace ClassicDB.Item.Scraper
                                     loot["wowc_itemidnum"] = Int32.Parse(itemStats[0]);
                                     loot["wowc_rarity"] = rarity;
                                     loot["wowc_slot"] = slot;
+                                    loot["wowc_type"] = recordType;
 
                                     crmService.Update(loot);
                                     Console.WriteLine("Updating: Item:{0} Name:{1} GUID:{2}", a.GetAttributeValue<string>("wowc_itemid"), a.GetAttributeValue<string>("wowc_name"), a.GetAttributeValue<Guid>("wowc_lootid"));

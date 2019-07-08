@@ -49,6 +49,55 @@ namespace The_House_Discord_Bot.Commands
 
                 await ReplyAsync(DisassociateRecords(crmService, GetUserInformation(userName, crmService), GetItemInformation(itemSearch, crmService), userName, Context.Guild.Owner), false, null);
             }
+            [Command("-set"), Summary("Sets professions for current user.")]
+            public async Task SetProfessions(int primaryProfession, int primaryProfessionLevel, int secondaryProfession, int secondaryProfessionLevel)
+            {
+                if (primaryProfession < 0 || primaryProfession > 8)
+                {
+                    await ReplyAsync("Please use a numeric value of 0-8 in order to set the Primary Profession.", false, null);
+                    return;
+                }
+                    
+                if (secondaryProfession < 0 || secondaryProfession > 8)
+                {
+                    await ReplyAsync("Please use a numeric value of 0-8 in order to set the Secondary Profession.", false, null);
+                    return;
+                }
+                    
+                if (primaryProfessionLevel < 0 || primaryProfessionLevel > 300)
+                {
+                    await ReplyAsync("Please use a numeric value of 0-300 in order to set the Primary Profession Level.", false, null);
+                    return;
+                }
+                    
+                if (secondaryProfessionLevel < 0 || secondaryProfessionLevel > 300)
+                {
+                    await ReplyAsync("Please use a numeric value of 0-300 in order to set the Secondary Profession Level.", false, null);
+                    return;
+                }
+                
+                var author = Context.Message.Author;
+                string guildNickname = Context.Guild.GetUser(author.Id).Nickname;
+                string userNickname = author.Username;
+                string userName = guildNickname == null ? userNickname : guildNickname;
+
+                int primaryOptionSetValue = ProfessionOptionSetValues(primaryProfession).Item2;
+                int secondaryOptionSetValue = ProfessionOptionSetValues(secondaryProfession).Item2;
+
+                int[] professionInfo = { primaryOptionSetValue, primaryProfessionLevel, secondaryOptionSetValue, secondaryProfessionLevel };
+
+                await ReplyAsync(SetProfession(crmService, GetUserInformation(userName, crmService), userName, professionInfo, Context.Guild.Owner), false, null);
+            }
+            [Command("-get"), Summary("Gets professions for current user.")]
+            public async Task GetProfessions()
+            {
+                var author = Context.Message.Author;
+                string guildNickname = Context.Guild.GetUser(author.Id).Nickname;
+                string userNickname = author.Username;
+                string userName = guildNickname == null ? userNickname : guildNickname;
+
+                await ReplyAsync(null, false, CurrentUserProfession(crmService, GetUserInformation(userName, crmService), userName, Context.Guild.Owner).Build());
+            }
             [Command("-s"), Summary("Searches users that know this recipe.")]
             public async Task SearchRecipe([Remainder] string itemSearch)
             {
@@ -64,6 +113,93 @@ namespace The_House_Discord_Bot.Commands
 
                 await ReplyAsync(null, false, UserRecipeResults(crmService, GetUserInformation(userName, crmService), userName, Context.Guild.Owner).Build());
             }
+            [Command("-p"), Summary("Returns players who know this profession.")]
+            public async Task SearchForProfession(int profession)
+            {
+                
+                string professionText = ProfessionOptionSetValues(profession).Item1;
+                int professionOptionSetValue = ProfessionOptionSetValues(profession).Item2;
+                #region
+                /*
+                //Alchemy
+                if (profession == "alchemy" || profession == "alch" || profession == "alc")
+                {
+                    professionOptionSetValue = 257260000;
+                    professionText = "Alchemy";
+                }
+                //Blacksmithing
+                else if (profession == "blacksmithing" || profession == "bs")
+                {
+                    professionOptionSetValue = 257260001;
+                    professionText = "Blacksmithing";
+                }
+                //Enchanting
+                else if (profession == "enchanting" || profession == "en" || profession == "enc" || profession == "ench")
+                {
+                    professionOptionSetValue = 257260002;
+                    professionText = "Enchanting";
+                }
+                //Engineer
+                else if (profession == "engineering" || profession == "eng" || profession == "engi" || profession == "engy")
+                {
+                    professionOptionSetValue = 257260003;
+                    professionText = "Engineering";
+                }
+                //Herbalism
+                else if (profession == "herbalism" || profession == "he" || profession == "herb")
+                {
+                    professionOptionSetValue = 257260004;
+                    professionText = "Herbalism";
+                }
+                //Leatherworking
+                else if (profession == "leatherworking" || profession == "lw")
+                {
+                    professionOptionSetValue = 257260005;
+                    professionText = "Leatherworking";
+                }
+                //Mining
+                else if (profession == "mining" || profession == "mi")
+                {
+                    professionOptionSetValue = 257260006;
+                    professionText = "Mining";
+                }
+                //Skinning
+                else if (profession == "skinning" || profession == "sk")
+                {
+                    professionOptionSetValue = 257260007;
+                    professionText = "Skinning";
+                }
+                //Tailoring
+                else if (profession == "tailoring" || profession == "ta" || profession == "tail" || profession == "tailor")
+                {
+                    professionOptionSetValue = 257260008;
+                    professionText = "Tailoring";
+                }
+                //Default
+                else
+                    professionOptionSetValue = 0;
+                    */
+                #endregion
+                if (professionOptionSetValue == 0)
+                    await ReplyAsync("Sorry but I could not find anyone with profession **" + professionText + "**.");
+                else
+                    await ReplyAsync(null, false, ProfessionUserResults(crmService, GetUsersWithProfession(professionOptionSetValue, crmService), professionText, Context.Guild.Owner).Build());
+            }
+            private static EntityCollection GetUsersWithProfession(Int32 profession, IOrganizationService crmService)
+            {
+                QueryExpression query = new QueryExpression("contact");
+                query.ColumnSet.AddColumns("lastname", "wowc_primaryprofession", "wowc_secondaryprofession");
+                query.Criteria = new FilterExpression();
+                query.Criteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
+                FilterExpression profFilter = query.Criteria.AddFilter(LogicalOperator.Or);
+                profFilter.AddCondition("wowc_primaryprofession", ConditionOperator.Equal, profession);
+                profFilter.AddCondition("wowc_secondaryprofession", ConditionOperator.Equal, profession);
+
+                query.Orders.Add(new OrderExpression("lastname", OrderType.Ascending));
+
+                EntityCollection results = crmService.RetrieveMultiple(query);
+                return results;
+            }
             private static EntityCollection GetItemInformation(string itemSearch, IOrganizationService crmService)
             {
                 QueryExpression query = new QueryExpression("wowc_loot");
@@ -75,11 +211,10 @@ namespace The_House_Discord_Bot.Commands
                 EntityCollection results = crmService.RetrieveMultiple(query);
                 return results;
             }
-
             private static EntityCollection GetUserInformation(string userName, IOrganizationService crmService)
             {
                 QueryExpression query = new QueryExpression("contact");
-                query.ColumnSet.AddColumns("lastname", "wowc_primaryprofession", "wowc_secondaryprofession");
+                query.ColumnSet.AddColumns("lastname", "wowc_primaryprofession", "wowc_secondaryprofession", "wowc_primaryprofessionlevel","wowc_secondaryprofessionlevel");
                 query.Criteria = new FilterExpression();
                 query.Criteria.AddCondition("lastname", ConditionOperator.Equal, userName);
                 query.Orders.Add(new OrderExpression("lastname", OrderType.Ascending));
@@ -87,7 +222,6 @@ namespace The_House_Discord_Bot.Commands
                 EntityCollection results = crmService.RetrieveMultiple(query);
                 return results;
             }
-
             private static string AssociateRecords(IOrganizationService crmService, EntityCollection contact, EntityCollection wowc_loot, string mentionedUser, IUser guildOwner)
             {
                 string results = "";
@@ -113,7 +247,6 @@ namespace The_House_Discord_Bot.Commands
                 else
                     return results = "Hmm, this shouldn't have happened...";
             }
-
             private static string DisassociateRecords(IOrganizationService crmService, EntityCollection contact, EntityCollection wowc_loot, string mentionedUser, IUser guildOwner)
             {
                 string results = "";
@@ -140,7 +273,25 @@ namespace The_House_Discord_Bot.Commands
                 else
                     return results = "Hmm, this shouldn't have happened...";
             }
+            private static string SetProfession(IOrganizationService crmService, EntityCollection contact, string mentionedUser, int[] professionInfo, IUser guildOwner)
+            {
+                string results = "";
+                if (contact.Entities.Count < 1)
+                    return results = "Sorry, I could not find you in CRM, please make sure that your server nickname matches your WoW character name and try again. " + guildOwner.Mention + ", can you make sure " + mentionedUser + " exists?";
+                else if (contact.Entities.Count > 1)
+                    return results = "There seems to be more than one of you in CRM... " + guildOwner.Mention + ", could you look into this?";
+                
+                Entity entity = new Entity("contact");
+                entity.Id = contact.Entities[0].GetAttributeValue<Guid>("contactid");
+                entity["wowc_primaryprofession"] = new OptionSetValue(professionInfo[0]);
+                entity["wowc_primaryprofessionlevel"] = professionInfo[1];
+                entity["wowc_secondaryprofession"] = new OptionSetValue(professionInfo[2]);
+                entity["wowc_secondaryprofessionlevel"] = professionInfo[3];
 
+                crmService.Update(entity);
+                return results = "Updated your profession information in CRM.";
+                    
+            }
             private static EmbedBuilder RecipeSearchEmbedBuilder(IOrganizationService crmService, string itemSearch, IUser guildOwner)
             {
                 EmbedBuilder prBuilder = new EmbedBuilder();
@@ -155,6 +306,7 @@ namespace The_House_Discord_Bot.Commands
                 LinkEntity linkEntity1 = new LinkEntity(entity1, relationshipEntityName, "wowc_lootid", "wowc_lootid", JoinOperator.Inner);
                 LinkEntity linkEntity2 = new LinkEntity(relationshipEntityName, entity2, "contactid", "contactid", JoinOperator.Inner);
                 linkEntity2.Columns.AddColumns("lastname");
+                linkEntity2.LinkCriteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
                 linkEntity2.Orders.Add(new OrderExpression("lastname", OrderType.Ascending));
                 linkEntity1.LinkEntities.Add(linkEntity2);
                 query.LinkEntities.Add(linkEntity1);
@@ -188,7 +340,6 @@ namespace The_House_Discord_Bot.Commands
 
                 return prBuilder;
             }
-
             private static EmbedBuilder UserRecipeResults(IOrganizationService crmService, EntityCollection contact, string mentionedUser, IUser guildOwner)
             {
                 EmbedBuilder prBuilder = new EmbedBuilder();
@@ -234,6 +385,99 @@ namespace The_House_Discord_Bot.Commands
                         .WithTitle(contact.Entities[0].GetAttributeValue<string>("lastname") + " has listed the following recipes as known.");
                 }
                 return prBuilder;
+            }
+            private static EmbedBuilder ProfessionUserResults(IOrganizationService crmSerivce, EntityCollection contact, string professionName, IUser guildOwner)
+            {
+                EmbedBuilder prBuilder = new EmbedBuilder();
+
+                string commentString = "The following users have **" + professionName + "**\n```";
+
+                if (contact.Entities.Count < 1)
+                    prBuilder.WithDescription("I could not find anyone in CRM with profession " + professionName + ".");
+                else
+                    for (int i = 0; i < contact.Entities.Count; i++)
+                    {
+                        commentString += "\n" + contact.Entities[i].GetAttributeValue<string>("lastname").ToString();
+                    }
+                commentString += "```";
+                prBuilder.WithDescription(commentString);
+                return prBuilder;
+            }
+            private static EmbedBuilder CurrentUserProfession(IOrganizationService crmService, EntityCollection contact, string mentionedUser, IUser guildOwner)
+            {
+                EmbedBuilder prBuilder = new EmbedBuilder();
+                string primaryProfession = contact.Entities[0].Contains("wowc_primaryprofession") ? contact.Entities[0].FormattedValues["wowc_primaryprofession"] : "not set";
+                int primaryProfessionLevel = contact.Entities[0].Contains("wowc_primaryprofessionlevel") ? contact.Entities[0].GetAttributeValue<int>("wowc_primaryprofessionlevel") : 0 ;
+                string secondaryProfession = contact.Entities[0].Contains("wowc_secondaryprofession") ? contact.Entities[0].FormattedValues["wowc_secondaryprofession"] : "not set";
+                int secondaryProfessionLevel = contact.Entities[0].Contains("wowc_secondaryprofessionlevel") ? contact.Entities[0].GetAttributeValue<int>("wowc_secondaryprofessionlevel") : 0;
+
+                if (contact.Entities.Count < 1)
+                    return prBuilder.WithDescription("Sorry, I could not find you in CRM, please make sure that your server nickname matches your WoW character name and try again. " + guildOwner.Mention + ", can you make sure " + mentionedUser + " exists?");
+                else if (contact.Entities.Count > 1)
+                    return prBuilder.WithDescription("There seems to be more than one of you in CRM... " + guildOwner.Mention + " could you look into this?");
+                prBuilder.WithTitle("Here are the professions for " + mentionedUser + ".");
+                prBuilder.WithDescription("**Primary Profession:** " + primaryProfession + " - "+primaryProfessionLevel+ "\n**Secondary Profession:** " + secondaryProfession + " - " + secondaryProfessionLevel);
+
+                return prBuilder;
+            }
+            private static Tuple<string,int> ProfessionOptionSetValues(int professionValue)
+            {
+                string professionName = "";
+                int optionSetValue = 0;
+                switch (professionValue)
+                {
+                    //Alchemy
+                    case 0:
+                        optionSetValue = 257260000;
+                        professionName = "Alchemy";
+                        break;
+                    //Blacksmithing
+                    case 1:
+                        optionSetValue = 257260001;
+                        professionName = "Blacksmithing";
+                        break;
+                    //Enchanting
+                    case 2:
+                        optionSetValue = 257260002;
+                        professionName = "Enchanting";
+                        break;
+                    //Engineering
+                    case 3:
+                        optionSetValue = 257260003;
+                        professionName = "Engineering";
+                        break;
+                    //Herbalism
+                    case 4:
+                        optionSetValue = 257260004;
+                        professionName = "Herbalism";
+                        break;
+                    //Leatherworking
+                    case 5:
+                        optionSetValue = 257260005;
+                        professionName = "Leatherworking";
+                        break;
+                    //Mining
+                    case 6:
+                        optionSetValue = 257260006;
+                        professionName = "Mining";
+                        break;
+                    //Skinning
+                    case 7:
+                        optionSetValue = 257260007;
+                        professionName = "Skinning";
+                        break;
+                    //Tailoring
+                    case 8:
+                        optionSetValue = 257260008;
+                        professionName = "Tailoring";
+                        break;
+
+                    default:
+                        optionSetValue = 0;
+                        professionName = "N/A";
+                        break;
+                }
+                return new Tuple<string, int>(professionName, optionSetValue);
             }
         }
     }

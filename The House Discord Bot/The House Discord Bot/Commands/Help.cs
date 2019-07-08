@@ -37,11 +37,11 @@ namespace The_House_Discord_Bot.Commands
                 //DKP Commands help descriptions
                 "__**<The House> DKP commands**__\n\n " +
                 "Return your PR, EP, and GP." +
-                "" +theHouseBotTrigger+"-dkp```\n" +
+                "" +theHouseBotTrigger+"-dkp -s```\n" +
                 "Return PR, EP, and GP values for mentioned user." +
-                "" + theHouseBotTrigger + "-dkp <@usermention>```\n" +
+                "" + theHouseBotTrigger + "-dkp -s <@usermention>```\n" +
                 "Return PR, EP, and GP values for mentioned users. You can mention up to 10 users at a time." +
-                "" + theHouseBotTrigger + "-dkp <@usermention1> <@usermention2> <@usermention3>```\n" +
+                "" + theHouseBotTrigger + "-dkp -s <@usermention1> <@usermention2> <@usermention3>```\n" +
                 "Return top list of users and their DKP." +
                 "" + theHouseBotTrigger + "-dkp -top <number>```\n" +
 

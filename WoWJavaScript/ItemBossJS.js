@@ -1,54 +1,55 @@
 function overrideValues() {
     var overrideValues = Xrm.Page.getAttribute("wowc_overridevalues").getValue();
-    
+    var overrideFields = ["wowc_name", "wowc_epvalue", "wowc_classspecmodifier", "wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_rarity", "wowc_slot", "wowc_category"];
+
     if (overrideValues == 1) {
-        Xrm.Page.getControl("wowc_name").setDisabled(false);
-        Xrm.Page.getControl("wowc_epvalue").setDisabled(false);
-        Xrm.Page.getControl("wowc_classspecmodifier").setDisabled(false);
-        Xrm.Page.getControl("wowc_ilvl").setDisabled(false);
-        Xrm.Page.getControl("wowc_itemid").setDisabled(false);
-        Xrm.Page.getControl("wowc_rarity").setDisabled(false);
-        Xrm.Page.getControl("wowc_slot").setDisabled(false);
-        Xrm.Page.getControl("wowc_category").setDisabled(false);
-        Xrm.Page.getControl("wowc_efforttype").setDisabled(true);
+        for (var i = 0; i < overrideFields.length; i++) {
+            Xrm.Page.getControl(overrideFields[i]).setDisabled(false);
+        }
     }
     else {
-        Xrm.Page.getControl("wowc_name").setDisabled(true);
-        Xrm.Page.getControl("wowc_epvalue").setDisabled(true);
-        Xrm.Page.getControl("wowc_classspecmodifier").setDisabled(true);
-        Xrm.Page.getControl("wowc_ilvl").setDisabled(true);
-        Xrm.Page.getControl("wowc_itemid").setDisabled(true);
-        Xrm.Page.getControl("wowc_rarity").setDisabled(true);
-        Xrm.Page.getControl("wowc_slot").setDisabled(true);
-        Xrm.Page.getControl("wowc_category").setDisabled(true);
-        Xrm.Page.getControl("wowc_efforttype").setDisabled(true);
+        for (var i = 0; i < overrideFields.length; i++) {
+            Xrm.Page.getControl(overrideFields[i]).setDisabled(true);
+        }
     }
 }
 function fieldLockUnlock() {
     var name = Xrm.Page.getAttribute("wowc_name").getValue();
+    var lockUnlockFields = ["wowc_name", "wowc_epvalue", "wowc_classspecmodifier", "wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_rarity", "wowc_slot", "wowc_category"];
 
     if (name == null) {
-        Xrm.Page.getControl("wowc_name").setDisabled(false);
-        Xrm.Page.getControl("wowc_epvalue").setDisabled(false);
-        Xrm.Page.getControl("wowc_classspecmodifier").setDisabled(false);
-        Xrm.Page.getControl("wowc_ilvl").setDisabled(false);
-        Xrm.Page.getControl("wowc_itemid").setDisabled(false);
-        Xrm.Page.getControl("wowc_rarity").setDisabled(false);
-        Xrm.Page.getControl("wowc_slot").setDisabled(false);
-        Xrm.Page.getControl("wowc_category").setDisabled(false);
-        Xrm.Page.getControl("wowc_efforttype").setDisabled(false);
+        for (var i = 0; i < lockUnlockFields.length; i++) {
+            Xrm.Page.getControl(lockUnlockFields[i]).setDisabled(false);
+        }
     }
     else {
-        Xrm.Page.getControl("wowc_name").setDisabled(true);
-        Xrm.Page.getControl("wowc_epvalue").setDisabled(true);
-        Xrm.Page.getControl("wowc_classspecmodifier").setDisabled(true);
-        Xrm.Page.getControl("wowc_ilvl").setDisabled(true);
-        Xrm.Page.getControl("wowc_itemid").setDisabled(true);
-        Xrm.Page.getControl("wowc_rarity").setDisabled(true);
-        Xrm.Page.getControl("wowc_slot").setDisabled(true);
-        Xrm.Page.getControl("wowc_category").setDisabled(true);
+        for (var i = 0; i < lockUnlockFields.length; i++) {
+            Xrm.Page.getControl(lockUnlockFields[i]).setDisabled(true);
+        }
         Xrm.Page.getAttribute("wowc_overridevalues").setValue(false);
-        Xrm.Page.getControl("wowc_efforttype").setDisabled(false);
     }
+}
+function showHideFields() {
+    var recordType = Xrm.Page.getAttribute("wowc_type").getValue();
+    var setVisableFields = ["wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_classspecmodifier", "wowc_rarity", "wowc_slot", "wowc_defaultgp", "wowc_huntergpvalue", "wowc_tankgpvalue", "wowc_efforttype"];
+    var setRequiredFields = ["wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_rarity", "wowc_slot", "wowc_efforttype"];
 
+    if (recordType == 257260001) {
+        
+        for (var i = 0; i < setVisableFields.length; i++) {
+            Xrm.Page.getControl(setVisableFields[i]).setVisible(false);
+        }
+        for (var i = 0; i < setRequiredFields.length; i++) {
+            Xrm.Page.getAttribute(setRequiredFields[i]).setRequiredLevel("none");
+        }
+    }
+    else {
+
+        for (var i = 0; i < setVisableFields.length; i++) {
+            Xrm.Page.getControl(setVisableFields[i]).setVisible(true);
+        }
+        for (var i = 0; i < setRequiredFields.length; i++) {
+            Xrm.Page.getAttribute(setRequiredFields[i]).setRequiredLevel("required");
+        }
+    }
 }
