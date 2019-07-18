@@ -72,6 +72,7 @@
   <ItemGroup>
     <Compile Include="AwardEffortPointsCreate.cs" />
     <Compile Include="CalculateEPandGPDecay.cs" />
+    <Compile Include="CalculateMembersDaysActive.cs" />
     <Compile Include="CalculateRollupStatistics.cs" />
     <Compile Include="GearPointCalculator.cs" />
     <Compile Include="GearPointCalculatorCreate.cs" />
