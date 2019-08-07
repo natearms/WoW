@@ -33,6 +33,7 @@ function showHideFields() {
     var recordType = Xrm.Page.getAttribute("wowc_type").getValue();
     var setVisableFields = ["wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_classspecmodifier", "wowc_rarity", "wowc_slot", "wowc_defaultgp", "wowc_huntergpvalue", "wowc_tankgpvalue", "wowc_efforttype"];
     var setRequiredFields = ["wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_rarity", "wowc_slot", "wowc_efforttype"];
+    var slotType = Xrm.Page.getAttribute("wowc_slot").getValue();
 
     if (recordType == 257260001) {
         
@@ -50,6 +51,9 @@ function showHideFields() {
         }
         for (var i = 0; i < setRequiredFields.length; i++) {
             Xrm.Page.getAttribute(setRequiredFields[i]).setRequiredLevel("required");
+        }
+        if (slotType != 257260008 && slotType != 257260009 && slotType != 257260007) {
+            Xrm.Page.getAttribute("wowc_efforttype").setRequiredLevel("none");
         }
     }
 }
