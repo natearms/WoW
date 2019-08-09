@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Attendance.cs" />
+    <Compile Include="AttendanceCalculations.cs" />
     <Compile Include="AwardEffortPointsCreate.cs" />
     <Compile Include="CalculateEPandGPDecay.cs" />
     <Compile Include="CalculateMembersDaysActive.cs" />

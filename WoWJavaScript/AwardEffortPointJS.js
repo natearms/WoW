@@ -119,7 +119,7 @@ function calculateEP() {
     var epCount = Xrm.Page.getAttribute("wowc_epcount").getValue();
     var effortType = Xrm.Page.getAttribute("wowc_efforttype").getValue();
     var effortRate = 1;
-    effortRate = effortType == 257260001 ? .20 : 1
+    //effortRate = effortType == 257260001 ? .20 : 1
 
     Xrm.Page.getAttribute("wowc_ep").setValue((epRate * epCount) * effortRate);
     Xrm.Page.getAttribute("wowc_ep").setSubmitMode("always");

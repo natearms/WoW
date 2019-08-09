@@ -33,31 +33,46 @@ function setLookupItemFields() {
         Xrm.Page.getControl("wowc_category").setDisabled(false);
         Xrm.Page.getAttribute("wowc_rarityvalue").setValue();
         Xrm.Page.getAttribute("wowc_slotmodifier").setValue();
+        Xrm.Page.getAttribute("wowc_dropsfrom").setValue();
+        Xrm.Page.getControl("wowc_dropsfrom").setDisabled(false);
     }
     else {
         var lookupId = Xrm.Page.getAttribute("wowc_item").getValue()[0].id.replace("{", "").replace("}", "");
 
-        Xrm.WebApi.online.retrieveRecord("wowc_loot", lookupId , "?$select=wowc_category,wowc_classspecmodifier,wowc_ilvl,wowc_rarity,wowc_slot").then(
+        Xrm.WebApi.online.retrieveRecord("wowc_loot", lookupId, "?$select=wowc_category,wowc_classspecmodifier,wowc_ilvl,wowc_rarity,wowc_slot,_wowc_dropsfrom_value").then(
             function success(result) {
                 var wowc_category = result["wowc_category"];
                 var wowc_classspecmodifier = result["wowc_classspecmodifier"];
                 var wowc_ilvl = result["wowc_ilvl"];
                 var wowc_rarity = result["wowc_rarity"];
                 var wowc_slot = result["wowc_slot"];
+                var wowc_dropsfrom = result["_wowc_dropsfrom_value"];
+                var setLookup = new Array();
+                setLookup[0] = new Object();
+                setLookup[0].id = result["_wowc_dropsfrom_value"];
+                setLookup[0].name = result["_wowc_dropsfrom_value@OData.Community.Display.V1.FormattedValue"];
+                setLookup[0].entityType = result["_wowc_dropsfrom_value@Microsoft.Dynamics.CRM.lookuplogicalname"];
                 
                 Xrm.Page.getAttribute("wowc_slot").setValue(wowc_slot);
                 Xrm.Page.getAttribute("wowc_rarity").setValue(wowc_rarity);
                 Xrm.Page.getAttribute("wowc_ilvl").setValue(wowc_ilvl);
                 Xrm.Page.getAttribute("wowc_classspec").setValue(wowc_classspecmodifier);
-
+                
                 setSlotModifierFromItemChange(wowc_slot, wowc_classspecmodifier);
-
                 setRarityValue(wowc_rarity);
+
                 if (wowc_category != null) {
                     Xrm.Page.getAttribute("wowc_category").setValue(wowc_category);
                     Xrm.Page.getControl("wowc_category").setDisabled(true);
                 } else {
                     Xrm.Page.getControl("wowc_category").setDisabled(false);
+                }
+
+                if (wowc_dropsfrom != null) {
+                    Xrm.Page.getAttribute("wowc_dropsfrom").setValue(setLookup);
+                    Xrm.Page.getControl("wowc_dropsfrom").setDisabled(true);
+                } else {
+                    Xrm.Page.getControl("wowc_dropsfrom").setDisabled(false);
                 }
             },
             function (error) {
@@ -81,17 +96,21 @@ function concatenateSubject() {
         Xrm.Page.getAttribute("subject").setSubmitMode("always");
     }
 }
-function setMissingItemCategory() {
+function setMissingItemFields() {
     
     var gpCategory = Xrm.Page.getAttribute("wowc_category").getValue();
-    var itemCategory = 0;
+    var gpDropsFrom = Xrm.Page.getAttribute("wowc_dropsfrom").getValue();
+    var gpDropsFromFormatted = gpDropsFrom[0].id.replace("{", "").replace("}", "");
+    var itemCategory = "";
+    var itemDropsFrom = "";
     
     var lookupId = Xrm.Page.getAttribute("wowc_item").getValue()[0].id.replace("{", "").replace("}", "");
 
-    Xrm.WebApi.online.retrieveRecord("wowc_loot", lookupId, "?$select=wowc_category").then(
+    Xrm.WebApi.online.retrieveRecord("wowc_loot", lookupId, "?$select=wowc_category,_wowc_dropsfrom_value").then(
         function success(result) {
-            var wowc_category = result["wowc_category"];
-            itemCategory = wowc_category;
+            itemCategory = result["wowc_category"];
+            itemDropsFrom = results["_wowc_dropsfrom_value"];
+
         },
         function (error) {
             Xrm.Utility.alertDialog(error.message);
@@ -113,6 +132,25 @@ function setMissingItemCategory() {
         );
         Xrm.Page.getControl("wowc_category").setDisabled(true);
     }
+    
+    if (itemDropsFrom != gpDropsFromFormatted) {
+
+        var entity = {};
+        entity["wowc_DropsFrom@odata.bind"] = "/wowc_loots(" + gpDropsFromFormatted +")";
+        
+        Xrm.WebApi.online.updateRecord("wowc_loot", lookupId, entity).then(
+            function success(result) {
+                var updatedEntityId = result.id;
+            },
+            function (error) {
+                Xrm.Utility.alertDialog(error.message);
+            }
+        );
+        
+        Xrm.Page.getControl("wowc_dropsfrom").setDisabled(true);
+    }
+    
+    
 }
 
 function setSlotModifierFromItemChange(wowc_slot, wowc_classspec) {

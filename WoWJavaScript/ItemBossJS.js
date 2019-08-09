@@ -1,6 +1,6 @@
 function overrideValues() {
     var overrideValues = Xrm.Page.getAttribute("wowc_overridevalues").getValue();
-    var overrideFields = ["wowc_name", "wowc_epvalue", "wowc_classspecmodifier", "wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_rarity", "wowc_slot", "wowc_category"];
+    var overrideFields = ["wowc_name", "wowc_epvalue", "wowc_classspecmodifier", "wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_rarity", "wowc_slot", "wowc_category", "wowc_dropsfrom"];
 
     if (overrideValues == 1) {
         for (var i = 0; i < overrideFields.length; i++) {
@@ -15,7 +15,7 @@ function overrideValues() {
 }
 function fieldLockUnlock() {
     var name = Xrm.Page.getAttribute("wowc_name").getValue();
-    var lockUnlockFields = ["wowc_name", "wowc_epvalue", "wowc_classspecmodifier", "wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_rarity", "wowc_slot", "wowc_category"];
+    var lockUnlockFields = ["wowc_name", "wowc_epvalue", "wowc_classspecmodifier", "wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_rarity", "wowc_slot", "wowc_category","wowc_dropsfrom"];
 
     if (name == null) {
         for (var i = 0; i < lockUnlockFields.length; i++) {
@@ -31,7 +31,7 @@ function fieldLockUnlock() {
 }
 function showHideFields() {
     var recordType = Xrm.Page.getAttribute("wowc_type").getValue();
-    var setVisableFields = ["wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_classspecmodifier", "wowc_rarity", "wowc_slot", "wowc_defaultgp", "wowc_huntergpvalue", "wowc_tankgpvalue", "wowc_efforttype"];
+    var setVisableFields = ["wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_classspecmodifier", "wowc_rarity", "wowc_slot", "wowc_defaultgp", "wowc_huntergpvalue", "wowc_tankgpvalue", "wowc_efforttype", "wowc_dropsfrom"];
     var setRequiredFields = ["wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_rarity", "wowc_slot", "wowc_efforttype"];
     var slotType = Xrm.Page.getAttribute("wowc_slot").getValue();
 

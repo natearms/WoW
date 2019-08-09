@@ -33,13 +33,13 @@ namespace WoW.DKPEPGP.Plugins
                 {
                     try
                     {
-                       
+
+                        Decimal total = 0;
                         Decimal ilvl = 0;
                         int rarityValue = 0;
                         Decimal slotModifier = 0;
                         int wowc_farm = 1;
                         int wowc_offSpec = 1;
-                        
                         
                         ilvl = entity.Attributes.Contains("wowc_ilvl") ? (Decimal)entity.Attributes["wowc_ilvl"] : (Decimal)image.Attributes["wowc_ilvl"];
                         rarityValue = entity.Attributes.Contains("wowc_rarityvalue") ? (int)entity.Attributes["wowc_rarityvalue"] : (int)image.Attributes["wowc_rarityvalue"];
@@ -50,7 +50,14 @@ namespace WoW.DKPEPGP.Plugins
                         tracingService.Trace("Getting Off Spec Option Set");
                         wowc_offSpec = entity.Attributes.Contains("wowc_offspec") ? (entity.GetAttributeValue<bool>("wowc_offspec") ? 2 : 1) : (image.GetAttributeValue<bool>("wowc_offspec") ? 2 : 1);
 
-                        Decimal total = (Decimal)Math.Round((4 * Math.Pow(2, ((double)ilvl / 28 + (rarityValue - 4))) * (double)slotModifier / (double)wowc_offSpec) / (double)wowc_farm);
+                        if(wowc_offSpec == 2)
+                        {
+                            total = 0;
+                        }
+                        else
+                        {
+                            total = (Decimal)Math.Round((4 * Math.Pow(2, ((double)ilvl / 28 + (rarityValue - 4))) * (double)slotModifier / (double)wowc_offSpec) / (double)wowc_farm);
+                        }                        
 
                         entity.Attributes.Add("wowc_gp",total);
                     }

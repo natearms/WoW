@@ -27,16 +27,20 @@ namespace WoW.DKPEPGP.Plugins
 
                 try
                 {
+                    string batchNumber = Guid.NewGuid().ToString();
                     
                     //Award Effort Points for Raid Team members
-                    CreateEffortPoints(GetRaidMembers(((EntityReference)entity.Attributes["wowc_raidteam"]).Id, service), service, entity);
+                    CreateEffortPoints(GetRaidMembers(((EntityReference)entity.Attributes["wowc_raidteam"]).Id, service), service, entity, batchNumber);
 
                     //Award Effort Points for Standby Team members
                     if (entity.Contains("wowc_standbyteam"))
                     {
                         tracingService.Trace("Get Standby Members");
-                        CreateEffortPoints(GetRaidMembers(((EntityReference)entity.Attributes["wowc_standbyteam"]).Id, service), service, entity);
+                        CreateEffortPoints(GetRaidMembers(((EntityReference)entity.Attributes["wowc_standbyteam"]).Id, service), service, entity, batchNumber);
                     }
+
+                    entity["wowc_batchnumber"] = batchNumber;
+                    service.Update(entity);
 
                 }
 
@@ -64,7 +68,7 @@ namespace WoW.DKPEPGP.Plugins
             
         }
 
-        private static void CreateEffortPoints(EntityCollection raidTeam, IOrganizationService service, Entity entity )
+        private static void CreateEffortPoints(EntityCollection raidTeam, IOrganizationService service, Entity entity, string batchNumber)
         {
             foreach (var a in raidTeam.Entities)
             {
@@ -79,6 +83,8 @@ namespace WoW.DKPEPGP.Plugins
                 effortPoint["wowc_eprate"] = entity.Attributes["wowc_eprate"];
                 effortPoint["wowc_epcount"] = entity.Attributes["wowc_epcount"];
                 effortPoint["wowc_ep"] = entity.Attributes["wowc_ep"];
+                effortPoint["wowc_awardeffortpointrecord"] = new EntityReference("wowc_awardeffortpoint", entity.Id);
+                effortPoint["wowc_batchnumber"] = batchNumber;
 
                 service.Create(effortPoint);
             }

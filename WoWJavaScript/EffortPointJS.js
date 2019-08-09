@@ -150,7 +150,7 @@ function calculateEP() {
         Xrm.Page.getAttribute("wowc_highneedflag").setSubmitMode("always");
     }
     
-    effortRate = effortType == 257260001? .20:1
+    //effortRate = effortType == 257260001? .20:1
     if (epCount < 0) {
         Xrm.Page.getAttribute("wowc_ep").setValue(0);
         Xrm.Page.getAttribute("wowc_ep").setSubmitMode("always");

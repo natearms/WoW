@@ -26,7 +26,7 @@ namespace WoW.DKPEPGP.Plugins
                 {
                     try
                     {
-
+                        Decimal total = 0;
                         Decimal ilvl = (Decimal)entity.Attributes["wowc_ilvl"];
                         int rarityValue = (int)entity.Attributes["wowc_rarityvalue"];
                         Decimal slotModifier = (Decimal)entity.Attributes["wowc_slotmodifier"];
@@ -36,7 +36,14 @@ namespace WoW.DKPEPGP.Plugins
                         wowc_farm = entity.Attributes.Contains("wowc_farm") ? (entity.GetAttributeValue<bool>("wowc_farm") ? 2 : 1) : 1;
                         wowc_offSpec = entity.Attributes.Contains("wowc_offspec") ? (entity.GetAttributeValue<bool>("wowc_offspec") ? 2 : 1) : 1;
 
-                        Decimal total = (Decimal)Math.Round((4 * Math.Pow(2, ((double)ilvl / 28 + (rarityValue - 4))) * (double)slotModifier / (double)wowc_offSpec) / (double)wowc_farm);
+                        if (wowc_offSpec == 2)
+                        {
+                            total = 0;
+                        }
+                        else
+                        {
+                            total = (Decimal)Math.Round((4 * Math.Pow(2, ((double)ilvl / 28 + (rarityValue - 4))) * (double)slotModifier / (double)wowc_offSpec) / (double)wowc_farm);
+                        }
 
                         entity["wowc_gp"] = total;
                         service.Update(entity);
