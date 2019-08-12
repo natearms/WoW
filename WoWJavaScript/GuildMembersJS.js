@@ -79,3 +79,11 @@ function optionSetFilterRoutine(filteredClassArray, optionSetValues, classSpecOp
         }
     }
 }
+function addEventHandler() {
+    Xrm.Page.getControl("parentcustomerid").addPreSearch(addFilter);
+}
+
+function addFilter() {
+    var account_filter = "<filter type='and'>" + "<condition attribute='contactid' operator='null' />" + "</filter>";
+    Xrm.Page.getControl("parentcustomerid").addCustomFilter(account_filter, "contact");
+}
