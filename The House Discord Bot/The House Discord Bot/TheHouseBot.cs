@@ -84,7 +84,7 @@ namespace The_House_Discord_Bot
             {
                 recurrenceFlag++;
                 
-             if(recurrenceFlag > 15 && barrensChatActivity > 5)
+             if(recurrenceFlag > 15 && barrensChatActivity > 15)
                 {
                     HttpClient client = new HttpClient();
                     string returnString = await client.GetStringAsync("http://api.icndb.com/jokes/random");
