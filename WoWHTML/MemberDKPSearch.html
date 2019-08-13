@@ -129,7 +129,7 @@
             }
 
             var req = new XMLHttpRequest();
-            req.open("GET", Xrm.Page.context.getClientUrl() + "/api/data/v9.1/contacts?$select=lastname,wowc_class,wowc_totalep,wowc_totalgp,wowc_totalpr,wowc_trialend,wowc_trialstart&$filter=" + memberFilter.join(" ") + "&$orderby=wowc_totalpr desc", true);
+            req.open("GET", Xrm.Page.context.getClientUrl() + "/api/data/v9.1/contacts?$select=lastname,wowc_class,wowc_totalep,wowc_totalgp,wowc_totalpr,wowc_trialend,wowc_trialstart,wowc_classspecialization,wowc_raidoffspecclassspecialization,wowc_30daysattendance,wowc_60daysattendance,wowc_attendanceoverall,wowc_daysasamember&$filter=" + memberFilter.join(" ") + "&$orderby=wowc_totalpr desc", true);
             req.setRequestHeader("OData-MaxVersion", "4.0");
             req.setRequestHeader("OData-Version", "4.0");
             req.setRequestHeader("Accept", "application/json");
@@ -151,14 +151,26 @@
                             var cell5 = newRow.insertCell(4);
                             var cell6 = newRow.insertCell(5);
                             var cell7 = newRow.insertCell(6);
+                            var cell8 = newRow.insertCell(7);
+                            var cell9 = newRow.insertCell(8);
+                            var cell10 = newRow.insertCell(9);
+                            var cell11 = newRow.insertCell(10);
+                            var cell12 = newRow.insertCell(11);
+                            var cell13 = newRow.insertCell(12);
 
                             cell1.innerHTML = "<a href=" + Xrm.Page.context.getClientUrl()+"/main.aspx?etc=2&extraqs=&histKey=266859510&id={" + results.value[i]["contactid"] +"}&newWindow=true&pagetype=entityrecord#688792006 target=\"_blank\">"+results.value[i]["lastname"]+"</a>";
                             cell2.innerHTML = results.value[i]["wowc_class@OData.Community.Display.V1.FormattedValue"];
-                            cell3.innerHTML = results.value[i]["wowc_totalpr"];
-                            cell4.innerHTML = results.value[i]["wowc_totalep"];
-                            cell5.innerHTML = results.value[i]["wowc_totalgp"];
-                            cell6.innerHTML = results.value[i]["wowc_trialstart"] == null ? "" : results.value[i]["wowc_trialstart"];
-                            cell7.innerHTML = results.value[i]["wowc_trialend"] == null ? "" : results.value[i]["wowc_trialend"];
+                            cell3.innerHTML = results.value[i]["wowc_classspecialization@OData.Community.Display.V1.FormattedValue"] == null ? "***Please set value***" : results.value[i]["wowc_classspecialization@OData.Community.Display.V1.FormattedValue"].split('- ')[1];
+                            cell4.innerHTML = results.value[i]["wowc_raidoffspecclassspecialization@OData.Community.Display.V1.FormattedValue"] == null ? "" : results.value[i]["wowc_raidoffspecclassspecialization@OData.Community.Display.V1.FormattedValue"].split('- ')[1];
+                            cell5.innerHTML = results.value[i]["wowc_totalpr"];
+                            cell6.innerHTML = results.value[i]["wowc_totalep"];
+                            cell7.innerHTML = results.value[i]["wowc_totalgp"];
+                            cell8.innerHTML = results.value[i]["wowc_30daysattendance"] == null ? "" : results.value[i]["wowc_30daysattendance"] + "%";
+                            cell9.innerHTML = results.value[i]["wowc_60daysattendance"] == null ? "" : results.value[i]["wowc_60daysattendance"] + "%";
+                            cell10.innerHTML = results.value[i]["wowc_attendanceoverall"] == null ? "" : results.value[i]["wowc_attendanceoverall"] + "%";
+                            cell11.innerHTML = results.value[i]["wowc_daysasamember"] == null ? "" : results.value[i]["wowc_daysasamember"] + " days";
+                            cell12.innerHTML = results.value[i]["wowc_trialstart"] == null ? "" : results.value[i]["wowc_trialstart"];
+                            cell13.innerHTML = results.value[i]["wowc_trialend"] == null ? "" : results.value[i]["wowc_trialend"];
 
                             
                         }
@@ -196,9 +208,15 @@
         <tr class="header">
             <th>Guild Member Name</th>
             <th>Class</th>
+            <th>Raid Spec</th>
+            <th>Raid Offspec</th>
             <th>Total PR</th>
             <th>Total EP</th>
             <th>Total GP</th>
+            <th>30day</th>
+            <th>60day</th>
+            <th>Overall</th>
+            <th>Raiding</th>
             <th>Trial Start</th>
             <th>Trial End</th>
         </tr>
