@@ -31,9 +31,9 @@ namespace The_House_Discord_Bot
         private IServiceProvider _servicePriveProvider;
         private IOrganizationService _crmConn;
         //Live Bot Trigger
-        //private string botTrigger = "thb! ";
+        private string botTrigger = "thb! ";
         //Test Bot Trigger
-        private string botTrigger = "thbt! ";
+        //private string botTrigger = "thbt! ";
         private int recurrenceFlag = 0;
         private int barrensChatActivity = 0;
 
@@ -70,9 +70,9 @@ namespace The_House_Discord_Bot
 
             await _command.AddModulesAsync(Assembly.GetEntryAssembly(), _servicePriveProvider);
             //Live Bot
-            //await _client.LoginAsync(TokenType.Bot, "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y");
+            await _client.LoginAsync(TokenType.Bot, "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y");
             //Test Bot
-            await _client.LoginAsync(TokenType.Bot, "NjEwODgwNTYwMTA0OTk2ODg0.XVLtjQ.jkFf9GkyyOiffLpwXPtdtEkUKIQ");
+            //await _client.LoginAsync(TokenType.Bot, "NjEwODgwNTYwMTA0OTk2ODg0.XVLtjQ.jkFf9GkyyOiffLpwXPtdtEkUKIQ");
             await _client.StartAsync();
             await Task.Delay(-1);
         }
