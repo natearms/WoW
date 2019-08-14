@@ -151,7 +151,7 @@ function calculateEP() {
     }
     
     //effortRate = effortType == 257260001? .20:1
-    if (epCount < 0) {
+    if (epCount < 0 && effortType == 257260003) {
         Xrm.Page.getAttribute("wowc_ep").setValue(0);
         Xrm.Page.getAttribute("wowc_ep").setSubmitMode("always");
         Xrm.Page.getAttribute("wowc_overridevalues").setValue("0");
