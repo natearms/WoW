@@ -84,14 +84,14 @@ namespace The_House_Discord_Bot
             {
                 recurrenceFlag++;
                 
-             if(recurrenceFlag > 15 && barrensChatActivity > 15)
+             if(recurrenceFlag > 15 && barrensChatActivity > 25)
                 {
                     HttpClient client = new HttpClient();
                     string returnString = await client.GetStringAsync("http://api.icndb.com/jokes/random");
                     JObject o = JObject.Parse(returnString);
                     string joke = (string)o["value"]["joke"];
 
-                    await ((ISocketMessageChannel)_client.GetChannel(584775200642564141)).SendMessageAsync(joke.ToString());
+                    await ((ISocketMessageChannel)_client.GetChannel(584775200642564141)).SendMessageAsync(joke.ToString().Replace("&quot;","\""));
                     recurrenceFlag = 0;
                     barrensChatActivity = 0;
                 }
