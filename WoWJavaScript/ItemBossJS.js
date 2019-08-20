@@ -31,11 +31,11 @@ function fieldLockUnlock() {
 }
 function showHideFields() {
     var recordType = Xrm.Page.getAttribute("wowc_type").getValue();
-    var setVisableFields = ["wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_classspecmodifier", "wowc_rarity", "wowc_slot", "wowc_defaultgp", "wowc_huntergpvalue", "wowc_tankgpvalue", "wowc_efforttype", "wowc_dropsfrom"];
+    var setVisableFields = ["wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_classspecmodifier", "wowc_rarity", "wowc_slot", "wowc_defaultgp", "wowc_huntergpvalue", "wowc_tankgpvalue", "wowc_efforttype", "wowc_dropsfrom", "wowc_priority1", "wowc_priority2","wowc_priority3"];
     var setRequiredFields = ["wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_rarity", "wowc_slot", "wowc_efforttype"];
     var slotType = Xrm.Page.getAttribute("wowc_slot").getValue();
 
-    if (recordType == 257260001) {
+    if (recordType == 257260001 || recordType == 257260002) {
         
         for (var i = 0; i < setVisableFields.length; i++) {
             Xrm.Page.getControl(setVisableFields[i]).setVisible(false);
