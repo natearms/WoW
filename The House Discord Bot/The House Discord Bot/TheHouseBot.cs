@@ -31,9 +31,9 @@ namespace The_House_Discord_Bot
         private IServiceProvider _servicePriveProvider;
         private IOrganizationService _crmConn;
         //Live Bot Trigger
-        //private string botTrigger = "thb! "; private string botToken = "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y";
+        private string botTrigger = "thb! "; private string botToken = "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y";
         //Test Bot Trigger
-        private string botTrigger = "thbt! "; private string botToken = "NjEwODgwNTYwMTA0OTk2ODg0.XVLtjQ.jkFf9GkyyOiffLpwXPtdtEkUKIQ";
+        //private string botTrigger = "thbt! "; private string botToken = "NjEwODgwNTYwMTA0OTk2ODg0.XVLtjQ.jkFf9GkyyOiffLpwXPtdtEkUKIQ";
         private int recurrenceFlag = 0;
         private int barrensChatActivity = 0;
 

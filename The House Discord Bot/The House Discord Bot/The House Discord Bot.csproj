@@ -205,7 +205,7 @@
     <Compile Include="Commands\Help.cs" />
     <Compile Include="Commands\polls.cs" />
     <Compile Include="Commands\CrmProfessions.cs" />
-    <Compile Include="Commands\Raids.cs" />
+    <Compile Include="Commands\Signups.cs" />
     <Compile Include="DiscordFunctions\UserRoles.cs" />
     <Compile Include="TheHouseBot.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
