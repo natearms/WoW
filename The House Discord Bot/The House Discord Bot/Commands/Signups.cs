@@ -121,8 +121,8 @@ namespace The_House_Discord_Bot.Commands
             .WithDescription(description)
             .AddField("Raid Location:", activityType.Item2, true)
             .AddField("Date:", raidDate.ToShortDateString(), true)
-            .AddField("Time PST:", raidTime.AddHours(pstOffSet).ToShortTimeString(), true)
-            .AddField("Time CST:", raidTime.AddHours(cstOffset).ToShortTimeString(), true)
+            .AddField("Time PDT:", raidTime.AddHours(pstOffSet).ToShortTimeString(), true)
+            .AddField("Time CDT:", raidTime.AddHours(cstOffset).ToShortTimeString(), true)
             .WithThumbnailUrl(activityType.Item3)
             .WithFooter("Please react to let us know if you can make it or not.")
             .WithCurrentTimestamp();
