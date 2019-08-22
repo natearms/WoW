@@ -78,16 +78,6 @@ namespace The_House_Discord_Bot.Commands
             Tuple<int, string, string> activityType = ScheduledActivityType(raid, crmService);
             EntityCollection raidSchedule = RaidSchedule(activityType.Item1, combinedDateTime, crmService);
 
-            EmbedBuilder raidScheduler = new EmbedBuilder();
-            //raidScheduler.WithTitle("Get your raid !");
-            raidScheduler.WithTitle(description);
-            raidScheduler.AddField("Raid", activityType.Item2, true);
-            raidScheduler.AddField("Date", raidDate.ToShortDateString(), true);
-            raidScheduler.AddField("Time PST", raidTime.AddHours(pstOffSet).ToShortTimeString(), true);
-            raidScheduler.AddField("Time CST", raidTime.AddHours(cstOffset).ToShortTimeString(), true);
-            raidScheduler.WithThumbnailUrl(activityType.Item3);
-            raidScheduler.WithFooter("Please react to let us know if you can make it or not.");
-
             if(raidSchedule.Entities.Count == 0)
             {
                 Guid appointmentGuid = Guid.NewGuid();
@@ -123,7 +113,20 @@ namespace The_House_Discord_Bot.Commands
                 await Context.Channel.SendMessageAsync("This raid event already exists.");
                 return;
             }
-            
+
+            EmbedBuilder raidScheduler = new EmbedBuilder();
+            //raidScheduler.WithTitle("Get your raid !");
+            raidScheduler.WithTitle("Click this link to see The House event calendar!")
+            .WithUrl("https://thehouse.crm.dynamics.com/workplace/home_calendar.aspx")
+            .WithDescription(description)
+            .AddField("Raid Location:", activityType.Item2, true)
+            .AddField("Date:", raidDate.ToShortDateString(), true)
+            .AddField("Time PST:", raidTime.AddHours(pstOffSet).ToShortTimeString(), true)
+            .AddField("Time CST:", raidTime.AddHours(cstOffset).ToShortTimeString(), true)
+            .WithThumbnailUrl(activityType.Item3)
+            .WithFooter("Please react to let us know if you can make it or not.")
+            .WithCurrentTimestamp();
+
             await Context.Channel.DeleteMessageAsync(Context.Message.Id);
             RestUserMessage msg = await Context.Channel.SendMessageAsync(null, false, raidScheduler.Build());
             
