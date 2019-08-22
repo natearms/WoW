@@ -13,6 +13,7 @@ using Discord.Commands;
 using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.Xrm.Sdk;
+using System.ServiceModel;
 using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Tooling.Connector;
@@ -24,7 +25,7 @@ namespace The_House_Discord_Bot.Commands
     public class Signups : ModuleBase<SocketCommandContext>
     {
         public IOrganizationService crmService { get; set; }
-
+        
         [Command("-raid")]
         public async Task CreateRaid(string raid, string date, string time, string timeZone, [Remainder] string description)
         {
@@ -44,138 +45,131 @@ namespace The_House_Discord_Bot.Commands
             }
             #endregion
 
-            #region SetTimezoneOffset
-            int pstOffSet = 0;
-            int cstOffset = 0;
+            SocketUser author = Context.Message.Author;
+            string guildNickname = Context.Guild.GetUser(author.Id).Nickname;
+            string userNickname = author.Username;
+            string userName = guildNickname == null ? userNickname : guildNickname;
 
-            switch (timeZone)
-            {
-                case "PST":
-                    pstOffSet = 0;
-                    cstOffset = 2;
-                    break;
-                case "CST":
-                    pstOffSet = -2;
-                    cstOffset = 0;
-                    break;
-                default:
-                    break;
-            }
+            EntityCollection authorCrmGuid = MessageAuthorCrmUser(userName, crmService);
 
-            if (pstOffSet == 0 && cstOffset == 0)
+            Tuple<int, string, string, DateTime, int, double, string> activityType = ScheduledActivityInformation(raid, date, time, timeZone, 4, description, crmService);
+
+            if (timeZone != "CDT"  && timeZone != "PDT")
             {
-                await Context.Channel.SendMessageAsync("Sorry I did not understand the timezone, please use CST or PST.");
+                await Context.Channel.SendMessageAsync("Sorry I did not understand the timezone, please use CDT or PDT.");
                 return;
             }
-            #endregion
-
-            string[] emojiArray = new string[] { "\U0001F44D", "\U0001F44E", "\U0001F937" };
-
-            DateTime raidDate = Convert.ToDateTime(date);
-            DateTime raidTime = Convert.ToDateTime(time);
-            DateTime combinedDateTime = raidDate.AddHours(raidTime.AddHours(cstOffset).Hour).AddMinutes(raidTime.Minute);
             
-            Tuple<int, string, string> activityType = ScheduledActivityType(raid, crmService);
-            EntityCollection raidSchedule = RaidSchedule(activityType.Item1, combinedDateTime, crmService);
-
+            EntityCollection raidSchedule = RaidSchedule(activityType.Item2 + " - " + activityType.Item4 + " CST", activityType.Item4, crmService);
+            
             if(raidSchedule.Entities.Count == 0)
             {
-                Guid appointmentGuid = Guid.NewGuid();
-                Guid raidScheduleGuid = Guid.NewGuid();
+                EmbedBuilder raidScheduler = BuildSignupEmbed(author, activityType);
+                RestUserMessage msg = await Context.Channel.SendMessageAsync("@here", false, raidScheduler.Build());
 
-                Entity raidScheduleRecord = new Entity("wowc_raidschedule");
-                raidScheduleRecord["wowc_raidscheduleid"] = raidScheduleGuid;
-                raidScheduleRecord["wowc_name"] = activityType.Item2 + " - " + combinedDateTime + " CST";
-                raidScheduleRecord["wowc_raidactivity"] = new OptionSetValue(activityType.Item1);
-                raidScheduleRecord["wowc_dateandtime"] = combinedDateTime;
-                raidScheduleRecord["wowc_datetimetext"] = combinedDateTime.ToString();
-                raidScheduleRecord["wowc_description"] = description;
-                crmService.Create(raidScheduleRecord);
+                string[] emojiArray = new string[] { "\U0001F44D", "\U0001F44E", "\U0001F937" };
+                for (int i = 0; i < emojiArray.Length; i++)
+                {
+                    System.Threading.Thread.Sleep(1000);
+                    await msg.AddReactionAsync(new Emoji(emojiArray.GetValue(i).ToString()));
+                }
 
-                Entity appointment = new Entity("appointment");
-                appointment.Id = appointmentGuid;
-                appointment["subject"] = activityType.Item2 + " - " + combinedDateTime + " CST";
-                appointment["description"] = description;
-                appointment["scheduledstart"] = combinedDateTime;
-                appointment["scheduledend"] = combinedDateTime.AddHours(4);
-                appointment["requiredattendees"] = UsersAsActivityParty(crmService);
-                appointment["regardingobjectid"] = new EntityReference("wowc_raidschedule", raidScheduleGuid);
-                crmService.Create(appointment);
-
-                Entity updateRaidSchedule = new Entity("wowc_raidschedule");
-                updateRaidSchedule.Id = raidScheduleGuid;
-                updateRaidSchedule["wowc_relatedappointment"] = new EntityReference("appointment", appointmentGuid);
-
-                crmService.Update(updateRaidSchedule);
+                try
+                {
+                    CreateRaidScheduleRecord(activityType, msg.GetJumpUrl(), authorCrmGuid, crmService);
+                    await Context.Channel.DeleteMessageAsync(Context.Message.Id);
+                }
+                catch (Exception ex)
+                {
+                    await Context.Channel.DeleteMessageAsync(msg.Id);
+                    await Context.Guild.Owner.SendMessageAsync(ex.ToString(), false, null );
+                    await Context.Channel.SendMessageAsync("Something went wrong when creating this event.  Please make sure that your nickname is set to your main in game. " + Context.Guild.Owner.Mention, false,null);
+                    throw;
+                }
+                
             }
             else
             {
-                await Context.Channel.SendMessageAsync("This raid event already exists.");
+                await Context.Channel.SendMessageAsync("This event already exists.");
                 return;
             }
 
-            EmbedBuilder raidScheduler = new EmbedBuilder();
-            //raidScheduler.WithTitle("Get your raid !");
-            raidScheduler.WithTitle("Click this link to see The House event calendar!")
-            .WithUrl("https://thehouse.crm.dynamics.com/workplace/home_calendar.aspx")
-            .WithDescription(description)
-            .AddField("Raid Location:", activityType.Item2, true)
-            .AddField("Date:", raidDate.ToShortDateString(), true)
-            .AddField("Time PDT:", raidTime.AddHours(pstOffSet).ToShortTimeString(), true)
-            .AddField("Time CDT:", raidTime.AddHours(cstOffset).ToShortTimeString(), true)
-            .WithThumbnailUrl(activityType.Item3)
-            .WithFooter("Please react to let us know if you can make it or not.")
-            .WithCurrentTimestamp();
-
-            await Context.Channel.DeleteMessageAsync(Context.Message.Id);
-            RestUserMessage msg = await Context.Channel.SendMessageAsync("@here", false, raidScheduler.Build());
-
-
-            for (int i = 0; i < emojiArray.Length; i++)
-            {
-                System.Threading.Thread.Sleep(1000);
-                await msg.AddReactionAsync(new Emoji(emojiArray.GetValue(i).ToString()));
-            }
+            
         }
-        private static EntityCollection RaidSchedule(int raidOptionSet, DateTime date, IOrganizationService crmService)
+        private static EntityCollection RaidSchedule(string eventName, DateTime date, IOrganizationService crmService)
         {
             QueryExpression query = new QueryExpression("wowc_raidschedule");
             query.ColumnSet.AddColumns("wowc_raidscheduleid");
             query.Criteria = new FilterExpression();
-            query.Criteria.AddCondition("wowc_raidactivity", ConditionOperator.Equal, raidOptionSet);
-            query.Criteria.AddCondition("wowc_datetimetext", ConditionOperator.Equal, date.ToString());
+            query.Criteria.AddCondition("wowc_name", ConditionOperator.Equal, eventName);
+            //query.Criteria.AddCondition("wowc_raidactivity", ConditionOperator.Equal, raidOptionSet);
+            //query.Criteria.AddCondition("wowc_datetimetext", ConditionOperator.Equal, date.ToString());
             
             EntityCollection results = crmService.RetrieveMultiple(query);
 
             return results;
         }
-        private static Tuple<int, string, string> ScheduledActivityType(string activityType, IOrganizationService crmService)
+        private static EntityCollection MessageAuthorCrmUser(string username, IOrganizationService crmService)
         {
-            Tuple<int, string, string> results;
-            switch (activityType.ToLower())
+            QueryExpression query = new QueryExpression("contact");
+            query.ColumnSet.AddColumns("contactid");
+            query.Criteria = new FilterExpression();
+            query.Criteria.AddCondition("lastname", ConditionOperator.Equal, username);
+            
+            EntityCollection results = crmService.RetrieveMultiple(query);
+
+            return results;
+        }
+        private static Tuple<int, string, string, DateTime, int, double, string> ScheduledActivityInformation(string raid, string date, string time, string timeZone, double hours, string description, IOrganizationService crmService)
+        {
+            Tuple<int, string, string, DateTime, int, double, string> results;
+
+            string raidText = raid.ToLower();
+            double estDuration = hours;
+            int timeZoneOffSet = 0;
+            
+            switch (timeZone)
             {
-                case "mc":
-                    results = Tuple.Create(1,"Molten Core", @"https://vignette.wikia.nocookie.net/wowwiki/images/2/20/Molten_Core_loading_screen.jpg");
+                case "PDT":
+                    timeZoneOffSet = +2;
                     break;
-                case "ony":
-                    results = Tuple.Create(6, "Onyxia", @"https://vignette.wikia.nocookie.net/wowwiki/images/4/46/Onyxia's_Lair_loading_screen.jpg");
-                    break;
-                case "bwl":
-                    results = Tuple.Create(2, "Blackwing Lair", "https://vignette.wikia.nocookie.net/wowwiki/images/0/09/Blackwing_Lair_loading_screen.jpg");
-                    break;
-                case "aq40":
-                    results = Tuple.Create(3, "AQ 40", @"https://vignette.wikia.nocookie.net/wowwiki/images/6/6a/Temple_of_Ahn'Qiraj_loading_screen.jpg");
-                    break;
-                case "naxx":
-                    results = Tuple.Create(4, "Naxxramas", @"https://vignette.wikia.nocookie.net/wowwiki/images/1/1f/Naxxramas_loading_screen.jpg");
+                case "CDT":
+                    timeZoneOffSet = 0;
                     break;
                 default:
-                    results = Tuple.Create(5, "Other", @"https://vignette.wikia.nocookie.net/wowwiki/images/8/89/HordeCrest.jpg");
                     break;
             }
 
+            DateTime raidDate = Convert.ToDateTime(date);
+            DateTime raidTime = Convert.ToDateTime(time);
+            DateTime combinedDateTime = raidDate.AddHours(raidTime.AddHours(timeZoneOffSet).Hour).AddMinutes(raidTime.Minute);
+
+            if(raidText == "mc" || raidText == "molten core")
+            {
+                results = Tuple.Create(1, "Molten Core", @"https://vignette.wikia.nocookie.net/wowwiki/images/2/20/Molten_Core_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
+            }
+            else if (raidText == "ony" || raidText == "onyxia")
+            {
+                results = Tuple.Create(6, "Onyxia", @"https://vignette.wikia.nocookie.net/wowwiki/images/4/46/Onyxia's_Lair_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
+            }
+            else if (raidText == "bwl" || raidText == "blackwing lair")
+            {
+                results = Tuple.Create(2, "Blackwing Lair", "https://vignette.wikia.nocookie.net/wowwiki/images/0/09/Blackwing_Lair_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
+            }
+            else if (raidText == "aq40")
+            {
+                results = Tuple.Create(3, "AQ 40", @"https://vignette.wikia.nocookie.net/wowwiki/images/6/6a/Temple_of_Ahn'Qiraj_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
+            }
+            else if (raidText == "naxx" || raidText == "naxxramas")
+            {
+                results = Tuple.Create(4, "Naxxramas", @"https://vignette.wikia.nocookie.net/wowwiki/images/1/1f/Naxxramas_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
+            }
+            else
+            {
+                results = Tuple.Create(5, raid, @"https://vignette.wikia.nocookie.net/wowwiki/images/8/89/HordeCrest.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
+            }
+
             return results;
-            
         }
         private static EntityCollection UsersAsActivityParty(IOrganizationService crmService)
         {
@@ -197,6 +191,58 @@ namespace The_House_Discord_Bot.Commands
             }
 
             return activityPartyCollection;
+        }
+        private static EmbedBuilder BuildSignupEmbed(SocketUser author, Tuple<int, string, string, DateTime, int, double, string> activityInformation)
+        {
+            EmbedBuilder raidScheduler = new EmbedBuilder();
+            //raidScheduler.WithTitle("Get your raid !");
+            raidScheduler.WithTitle("Click this link to see The House event calendar!")
+                .WithAuthor(author)
+            .WithUrl("https://thehouse.crm.dynamics.com/workplace/home_calendar.aspx")
+            .WithDescription(activityInformation.Item7)
+            .AddField("Raid Location:", activityInformation.Item2, true)
+            .AddField("Date:", activityInformation.Item4.ToShortDateString(), true)
+            .AddField("Time PDT:", activityInformation.Item4.AddHours(-2).ToShortTimeString(), true)
+            .AddField("Time CDT:", activityInformation.Item4.ToShortTimeString(), true)
+            .WithThumbnailUrl(activityInformation.Item3)
+            .WithFooter("Please react to let us know if you can make it or not.")
+            .WithCurrentTimestamp();
+
+            return raidScheduler;
+        }
+        private static void CreateRaidScheduleRecord(Tuple<int, string, string, DateTime, int, double, string> activityInformation,string messageUrl, EntityCollection crmUser, IOrganizationService crmService)
+        {
+            Guid raidScheduleGuid = Guid.NewGuid();
+
+            Entity raidScheduleRecord = new Entity("wowc_raidschedule");
+            raidScheduleRecord["wowc_raidscheduleid"] = raidScheduleGuid;
+            raidScheduleRecord["wowc_name"] = activityInformation.Item2 + " - " + activityInformation.Item4 + " CST";
+            raidScheduleRecord["wowc_raidactivity"] = new OptionSetValue(activityInformation.Item1);
+            raidScheduleRecord["wowc_dateandtime"] = activityInformation.Item4;
+            raidScheduleRecord["wowc_datetimetext"] = activityInformation.Item4.ToString();
+            raidScheduleRecord["wowc_description"] = activityInformation.Item7;
+            raidScheduleRecord["wowc_discordchatlink"] = messageUrl;
+            raidScheduleRecord["wowc_createdby"] = new EntityReference("contact", crmUser[0].Id);
+
+            crmService.Create(raidScheduleRecord);
+
+            Guid appointmentGuid = Guid.NewGuid();
+
+            Entity appointment = new Entity("appointment");
+            appointment.Id = appointmentGuid;
+            appointment["subject"] = activityInformation.Item2 + " - " + activityInformation.Item4 + " CST";
+            appointment["description"] = activityInformation.Item7;
+            appointment["scheduledstart"] = activityInformation.Item4;
+            appointment["scheduledend"] = activityInformation.Item4.AddHours(activityInformation.Item6);
+            appointment["requiredattendees"] = UsersAsActivityParty(crmService);
+            appointment["regardingobjectid"] = new EntityReference("wowc_raidschedule", raidScheduleGuid);
+            crmService.Create(appointment);
+
+            Entity updateRaidSchedule = new Entity("wowc_raidschedule");
+            updateRaidSchedule.Id = raidScheduleGuid;
+            updateRaidSchedule["wowc_relatedappointment"] = new EntityReference("appointment", appointmentGuid);
+
+            crmService.Update(updateRaidSchedule);
         }
     }
 }
