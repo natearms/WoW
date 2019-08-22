@@ -69,7 +69,7 @@ namespace The_House_Discord_Bot.Commands
             }
             #endregion
 
-            string[] emojiArray = new string[] { "\U0001F44D", "\U0001F44E" };
+            string[] emojiArray = new string[] { "\U0001F44D", "\U0001F44E", "\U0001F937" };
 
             DateTime raidDate = Convert.ToDateTime(date);
             DateTime raidTime = Convert.ToDateTime(time);
