@@ -128,8 +128,9 @@ namespace The_House_Discord_Bot.Commands
             .WithCurrentTimestamp();
 
             await Context.Channel.DeleteMessageAsync(Context.Message.Id);
-            RestUserMessage msg = await Context.Channel.SendMessageAsync(null, false, raidScheduler.Build());
-            
+            RestUserMessage msg = await Context.Channel.SendMessageAsync("@here", false, raidScheduler.Build());
+
+
             for (int i = 0; i < emojiArray.Length; i++)
             {
                 System.Threading.Thread.Sleep(1000);
