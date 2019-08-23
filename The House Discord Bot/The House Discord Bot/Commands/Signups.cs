@@ -43,6 +43,11 @@ namespace The_House_Discord_Bot.Commands
                 await Context.Channel.SendMessageAsync("Sorry but you do not have permissions to use this command.");
                 return;
             }
+            else if (Context.Channel.Id != 614097420728401955 && Context.Channel.Id != 614097533983129613 && Context.Channel.Id != 614097574877724702/*|| Context.Channel.Id == 588449417481158662*/)
+            {
+                await Context.Channel.SendMessageAsync("Sorry but you cannot create signups in this channel, please use any of the channels under \"Event Signups\" category to use this function", false, null);
+                return;
+            }
             #endregion
 
             SocketUser author = Context.Message.Author;
@@ -61,6 +66,7 @@ namespace The_House_Discord_Bot.Commands
             }
             
             EntityCollection raidSchedule = RaidSchedule(activityType.Item2 + " - " + activityType.Item4 + " CST", activityType.Item4, crmService);
+
             
             if(raidSchedule.Entities.Count == 0)
             {

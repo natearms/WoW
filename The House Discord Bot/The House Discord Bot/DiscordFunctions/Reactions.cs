@@ -62,18 +62,64 @@ namespace The_House_Discord_Bot.DiscordFunctions
 
         return role;
         }
-        public static void CreateSignupRecord(IGuildUser user, string messageUrl, IOrganizationService crmService)
+        public static void SignUpRecord(IGuildUser user, string messageUrl, IOrganizationService crmService, SocketReaction reaction, bool deleted)
         {
-            string guildNickname = user.Nickname;
-            string userNickname = user.Nickname;
-            string userName = guildNickname == null ? userNickname : guildNickname;
-            
-            if (ExistingRaidSchedule(messageUrl, crmService).Entities.Count == 1)
+            try
             {
-                //left off here, finish this shizzz
-                //need to continue implimenting the function to create the singup
-                //record in CRM when someone reacts
+                string guildNickname = user.Nickname;
+                string userNickname = user.Username;
+                string userName = guildNickname == null ? userNickname : guildNickname;
+
+                EntityCollection raidSignup = ExistingRaidSchedule(messageUrl, crmService);
+                EntityCollection crmUser = ReactedCrmUser(userName, crmService);
+                EntityCollection existingAttendance = CheckExistingAttendance(crmUser.Entities[0].GetAttributeValue<Guid>("contactid"), raidSignup.Entities[0].GetAttributeValue<Guid>("wowc_raidscheduleid"), crmService);
+
+                string emoteName = reaction.Emote.ToString();
+                int attendingOptionSet = 0;
+                switch (emoteName)
+                {
+                    case "👍":
+                        attendingOptionSet = 257260000;
+                        break;
+                    case "👎":
+                        attendingOptionSet = 257260001;
+                        break;
+                    default:
+                        attendingOptionSet = 257260002;
+                        break;
+                }
+                if (raidSignup.Entities.Count == 1 && crmUser.Entities.Count == 1 && existingAttendance.Entities.Count == 1 && deleted)
+                {
+                    crmService.Delete("wowc_raidsignup", existingAttendance.Entities[0].GetAttributeValue<Guid>("wowc_raidsignupid"));
+                }
+                else if (raidSignup.Entities.Count == 1 && crmUser.Entities.Count == 1 && existingAttendance.Entities.Count == 0)
+                {
+                    Guid raidSignupGuid = Guid.NewGuid();
+                    Entity raidSignupEntity = new Entity("wowc_raidsignup");
+                    raidSignupEntity.Id = raidSignupGuid;
+                    raidSignupEntity["wowc_name"] = raidSignup.Entities[0].GetAttributeValue<string>("wowc_name");
+                    raidSignupEntity["wowc_raider"] = new EntityReference("contact", crmUser.Entities[0].GetAttributeValue<Guid>("contactid"));
+                    raidSignupEntity["wowc_raidschedule"] = new EntityReference("wowc_raidschedule", raidSignup.Entities[0].GetAttributeValue<Guid>("wowc_raidscheduleid"));
+                    raidSignupEntity["wowc_attending"] = new OptionSetValue(attendingOptionSet);
+
+                    crmService.Create(raidSignupEntity);
+
+                }
+                else if (raidSignup.Entities.Count == 1 && crmUser.Entities.Count == 1 && existingAttendance.Entities.Count == 1)
+                {
+                    Entity raidSignupEntity = new Entity("wowc_raidsignup");
+                    raidSignupEntity.Id = existingAttendance.Entities[0].GetAttributeValue<Guid>("wowc_raidsignupid");
+                    raidSignupEntity["wowc_attending"] = new OptionSetValue(attendingOptionSet);
+                    crmService.Update(raidSignupEntity);
+
+                }
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                throw;
+            }
+            
 
         }
 
@@ -83,13 +129,13 @@ namespace The_House_Discord_Bot.DiscordFunctions
             query.ColumnSet.AddColumns("wowc_raidsignupid");
             query.Criteria = new FilterExpression();
             query.Criteria.AddCondition("wowc_raider", ConditionOperator.Equal, raider);
-            query.Criteria.AddCondition("wowc_raidsignupid", ConditionOperator.Equal, signup);
+            query.Criteria.AddCondition("wowc_raidschedule", ConditionOperator.Equal, signup);
             
             EntityCollection results = crmService.RetrieveMultiple(query);
 
             return results;
         }
-        private static EntityCollection MessageAuthorCrmUser(string username, IOrganizationService crmService)
+        private static EntityCollection ReactedCrmUser(string username, IOrganizationService crmService)
         {
             QueryExpression query = new QueryExpression("contact");
             query.ColumnSet.AddColumns("contactid");
@@ -103,7 +149,7 @@ namespace The_House_Discord_Bot.DiscordFunctions
         private static EntityCollection ExistingRaidSchedule(string discordChatLink, IOrganizationService crmService)
         {
             QueryExpression query = new QueryExpression("wowc_raidschedule");
-            query.ColumnSet.AddColumns("wowc_raidscheduleid");
+            query.ColumnSet.AddColumns("wowc_raidscheduleid", "wowc_name");
             query.Criteria = new FilterExpression();
             query.Criteria.AddCondition("wowc_discordchatlink", ConditionOperator.Equal, discordChatLink);
 
