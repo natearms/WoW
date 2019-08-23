@@ -24,16 +24,15 @@ using ServiceCollection = Microsoft.Extensions.DependencyInjection.ServiceCollec
 namespace The_House_Discord_Bot
 {
     class TheHouseBot
-    {
-        
+    {   
         private DiscordSocketClient _client;
         private CommandService _command;
         private IServiceProvider _servicePriveProvider;
         private IOrganizationService _crmConn;
         //Live Bot Trigger
-        //private string botTrigger = "thb! "; private string botToken = "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y";
+        private string botTrigger = "thb! "; private string botToken = "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y";
         //Test Bot Trigger
-        private string botTrigger = "thbt! "; private string botToken = "NjEwODgwNTYwMTA0OTk2ODg0.XVLtjQ.jkFf9GkyyOiffLpwXPtdtEkUKIQ";
+        //private string botTrigger = "thbt! "; private string botToken = "NjEwODgwNTYwMTA0OTk2ODg0.XVLtjQ.jkFf9GkyyOiffLpwXPtdtEkUKIQ";
         private int recurrenceFlag = 0;
         private int barrensChatActivity = 0;
 
@@ -141,7 +140,7 @@ namespace The_House_Discord_Bot
                     await (user).RemoveRoleAsync(reactionRole);
                 }
             }
-            if (arg3.Channel.Id == 614097420728401955 || arg3.Channel.Id == 614097533983129613 || arg3.Channel.Id == 614097574877724702|| arg3.Channel.Id == 588449417481158662)
+            if (arg3.Channel.Id == 614097420728401955 || arg3.Channel.Id == 614097533983129613 || arg3.Channel.Id == 614097574877724702 /*|| arg3.Channel.Id == 588449417481158662*/)
             {
                 Reactions.SignUpRecord(user, messageUrl, _crmConn, arg3, true, guildOwner);
             }
@@ -167,7 +166,7 @@ namespace The_House_Discord_Bot
                 }
             }
 
-            if(arg3.Channel.Id == 614097420728401955 || arg3.Channel.Id == 614097533983129613 || arg3.Channel.Id == 614097574877724702 || arg3.Channel.Id == 588449417481158662)
+            if(arg3.Channel.Id == 614097420728401955 || arg3.Channel.Id == 614097533983129613 || arg3.Channel.Id == 614097574877724702 /*|| arg3.Channel.Id == 588449417481158662*/)
             {
                 Reactions.SignUpRecord(user, messageUrl, _crmConn, arg3, false, guildOwner);
             }
