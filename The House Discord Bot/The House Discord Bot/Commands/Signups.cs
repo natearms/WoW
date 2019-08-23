@@ -26,10 +26,12 @@ namespace The_House_Discord_Bot.Commands
     {
         public IOrganizationService crmService { get; set; }
         
-        [Command("-raid")]
+        [Command("-event")]
         public async Task CreateRaid(string raid, string date, string time, string timeZone, [Remainder] string description)
         {
-            #region Validate that the User has permissions
+            #region Validate that the User has permissions, event created in approved channels, and have their nickname set in Discord
+            string timeZoneToLower = timeZone.ToLower();
+            string raidTextToLower = raid.ToLower();
             bool approved = false;
             foreach (SocketRole role in ((SocketGuildUser)Context.Message.Author).Roles)
             {
@@ -43,23 +45,37 @@ namespace The_House_Discord_Bot.Commands
                 await Context.Channel.SendMessageAsync("Sorry but you do not have permissions to use this command.");
                 return;
             }
-            else if (Context.Channel.Id != 614097420728401955 && Context.Channel.Id != 614097533983129613 && Context.Channel.Id != 614097574877724702/*|| Context.Channel.Id == 588449417481158662*/)
+            else if (Context.Channel.Id != 614097420728401955 && Context.Channel.Id != 614097533983129613 && Context.Channel.Id != 614097574877724702 && Context.Channel.Id != 588449417481158662)
             {
                 await Context.Channel.SendMessageAsync("Sorry but you cannot create signups in this channel, please use any of the channels under \"Event Signups\" category to use this function", false, null);
                 return;
             }
-            #endregion
 
             SocketUser author = Context.Message.Author;
             string guildNickname = Context.Guild.GetUser(author.Id).Nickname;
             string userNickname = author.Username;
             string userName = guildNickname == null ? userNickname : guildNickname;
 
-            EntityCollection authorCrmGuid = MessageAuthorCrmUser(userName, crmService);
+            if (guildNickname == null)
+            {
+                await author.SendMessageAsync("Please make sure you set your server nickname to your in game character name otherwise several functions of the discord bot will not work properly.", false, null);
+                await Context.Guild.Owner.SendMessageAsync(userNickname + " has not set their nickname in discord.", false, null);
+                return;
+            }
 
-            Tuple<int, string, string, DateTime, int, double, string> activityType = ScheduledActivityInformation(raid, date, time, timeZone, 4, description, crmService);
+            EntityCollection authorCrmGuid = MessageAuthorCrmUser(guildNickname, crmService);
 
-            if (timeZone != "CDT"  && timeZone != "PDT")
+            if (authorCrmGuid.Entities.Count == 0)
+            {
+                await author.SendMessageAsync("It looks like you haven't been setup in CRM yet, I've messaged Raumedrius to create a user for you in CRM.", false, null);
+                await Context.Guild.Owner.SendMessageAsync(guildNickname + " does not exist in CRM.", false, null);
+                return;
+            }
+            #endregion
+
+            Tuple<int, string, string, DateTime, int, double, string> activityType = ScheduledActivityInformation(raidTextToLower, date, time, timeZoneToLower, 4, description, crmService);
+
+            if (timeZoneToLower != "cdt"  && timeZoneToLower != "cst" && timeZoneToLower != "pst" && timeZoneToLower != "pdt")
             {
                 await Context.Channel.SendMessageAsync("Sorry I did not understand the timezone, please use CDT or PDT.");
                 return;
@@ -130,45 +146,61 @@ namespace The_House_Discord_Bot.Commands
         {
             Tuple<int, string, string, DateTime, int, double, string> results;
 
-            string raidText = raid.ToLower();
             double estDuration = hours;
             int timeZoneOffSet = 0;
-            
-            switch (timeZone)
+
+            if (timeZone == "pst" || timeZone == "pdt")
             {
-                case "PDT":
-                    timeZoneOffSet = +2;
-                    break;
-                case "CDT":
-                    timeZoneOffSet = 0;
-                    break;
-                default:
-                    break;
+                timeZoneOffSet = +2;
+            }
+            else if (timeZone == "cst" || timeZone == "cdt")
+            {
+                timeZoneOffSet = 0;
             }
 
             DateTime raidDate = Convert.ToDateTime(date);
             DateTime raidTime = Convert.ToDateTime(time);
             DateTime combinedDateTime = raidDate.AddHours(raidTime.AddHours(timeZoneOffSet).Hour).AddMinutes(raidTime.Minute);
 
-            if(raidText == "mc" || raidText == "molten core")
+            if(raid == "mc")
             {
                 results = Tuple.Create(1, "Molten Core", @"https://vignette.wikia.nocookie.net/wowwiki/images/2/20/Molten_Core_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
-            else if (raidText == "ony" || raidText == "onyxia")
+            else if (raid == "ony" || raid == "onyxia")
             {
                 results = Tuple.Create(6, "Onyxia", @"https://vignette.wikia.nocookie.net/wowwiki/images/4/46/Onyxia's_Lair_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
-            else if (raidText == "bwl" || raidText == "blackwing lair")
+            else if (raid == "bwl")
             {
                 results = Tuple.Create(2, "Blackwing Lair", "https://vignette.wikia.nocookie.net/wowwiki/images/0/09/Blackwing_Lair_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
-            else if (raidText == "aq40")
+            else if (raid == "aq40")
             {
                 results = Tuple.Create(3, "AQ 40", @"https://vignette.wikia.nocookie.net/wowwiki/images/6/6a/Temple_of_Ahn'Qiraj_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
-            else if (raidText == "naxx" || raidText == "naxxramas")
+            else if (raid == "naxx" || raid == "naxxramas")
             {
                 results = Tuple.Create(4, "Naxxramas", @"https://vignette.wikia.nocookie.net/wowwiki/images/1/1f/Naxxramas_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
+            }
+            else if (raid == "aq20")
+            {
+                results = Tuple.Create(257260000, "AQ 20", @"https://vignette.wikia.nocookie.net/wowwiki/images/5/5e/Ruins_of_Ahn'Qiraj_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
+            }
+            else if (raid == "zg")
+            {
+                results = Tuple.Create(257260001, "Zul'Gurub", @"https://vignette.wikia.nocookie.net/wowwiki/images/1/12/Zul'Gurub_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
+            }
+            else if (raid == "wsg")
+            {
+                results = Tuple.Create(257260002, "Warsong Gulch", @"https://vignette.wikia.nocookie.net/wowwiki/images/7/73/Warsong_Gulch_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
+            }
+            else if (raid == "ab")
+            {
+                results = Tuple.Create(257260003, "Arathi Basin", @"https://vignette.wikia.nocookie.net/wowwiki/images/6/6b/Arathi_Basin_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
+            }
+            else if (raid == "av")
+            {
+                results = Tuple.Create(257260004, "Alterac Valley", @"https://vignette.wikia.nocookie.net/wowwiki/images/c/c8/Alterac_Valley_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
             else
             {
@@ -206,10 +238,11 @@ namespace The_House_Discord_Bot.Commands
                 .WithAuthor(author)
             .WithUrl("https://thehouse.crm.dynamics.com/workplace/home_calendar.aspx")
             .WithDescription(activityInformation.Item7)
-            .AddField("Raid Location:", activityInformation.Item2, true)
+            .AddField("Event Location:", activityInformation.Item2, true)
             .AddField("Date:", activityInformation.Item4.ToShortDateString(), true)
             .AddField("Time PDT:", activityInformation.Item4.AddHours(-2).ToShortTimeString(), true)
             .AddField("Time CDT:", activityInformation.Item4.ToShortTimeString(), true)
+            .AddField("Calendar Credentials", "[The House CRM login](https://discordapp.com/channels/578967161322733578/584757445340037120/585125716186890280)")
             .WithThumbnailUrl(activityInformation.Item3)
             .WithFooter("Please react to let us know if you can make it or not.")
             .WithCurrentTimestamp();
