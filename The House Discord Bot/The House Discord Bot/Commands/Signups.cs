@@ -45,7 +45,7 @@ namespace The_House_Discord_Bot.Commands
                 await Context.Channel.SendMessageAsync("Sorry but you do not have permissions to use this command.");
                 return;
             }
-            else if (Context.Channel.Id != 614097420728401955 && Context.Channel.Id != 614097533983129613 && Context.Channel.Id != 614097574877724702 /*&& Context.Channel.Id != 588449417481158662*/)
+            else if (Context.Channel.Id != 614097420728401955 && Context.Channel.Id != 614097533983129613 && Context.Channel.Id != 614097574877724702 && Context.Channel.Id != 588449417481158662)
             {
                 await Context.Channel.SendMessageAsync("Sorry but you cannot create signups in this channel, please use any of the channels under \"Event Signups\" category to use this function", false, null);
                 return;
@@ -67,7 +67,7 @@ namespace The_House_Discord_Bot.Commands
 
             if (authorCrmGuid.Entities.Count == 0)
             {
-                await author.SendMessageAsync("It looks like you haven't been setup in CRM yet, I've messaged Raumedrius to create a user for you in CRM.", false, null);
+                await author.SendMessageAsync("Please make sure that your nickname matches your in game character and try again.  I've also messaged Raumedrius to create a user for you in CRM in case you need to be created still.", false, null);
                 await Context.Guild.Owner.SendMessageAsync(guildNickname + " does not exist in CRM.", false, null);
                 return;
             }

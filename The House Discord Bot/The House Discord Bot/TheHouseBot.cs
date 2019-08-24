@@ -29,12 +29,26 @@ namespace The_House_Discord_Bot
         private CommandService _command;
         private IServiceProvider _servicePriveProvider;
         private IOrganizationService _crmConn;
-        //Live Bot Trigger
-        private string botTrigger = "thb! "; private string botToken = "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y";
-        //Test Bot Trigger
-        //private string botTrigger = "thbt! "; private string botToken = "NjEwODgwNTYwMTA0OTk2ODg0.XVLtjQ.jkFf9GkyyOiffLpwXPtdtEkUKIQ";
         private int recurrenceFlag = 0;
         private int barrensChatActivity = 0;
+
+
+        //Live Bot Trigger
+        private string botTrigger = "thb! ";
+        private string botToken = "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y";
+        private ulong postingChannel = 584775200642564141;
+        private int recurrenceInterval = 18;
+        private int chatPostInterval = 18;
+
+
+        ////Test Bot Trigger
+        //private string botTrigger = "thbt! ";
+        //private string botToken = "NjEwODgwNTYwMTA0OTk2ODg0.XVLtjQ.jkFf9GkyyOiffLpwXPtdtEkUKIQ";
+        //private ulong postingChannel = 588449417481158662;
+        //private int recurrenceInterval = -1;
+        //private int chatPostInterval = 0;
+
+
 
         static void Main(string[] args)
             => new TheHouseBot().MainAsync().GetAwaiter().GetResult();
@@ -76,20 +90,74 @@ namespace The_House_Discord_Bot
         private async Task Client_Log(LogMessage Message)
         {
             Console.WriteLine($"{DateTime.Now} at {Message.Source}] {Message.Message}");
-            if (Message.Message == "Received HeartbeatAck")
+            if (Message.Message != "Received HeartbeatAck")
             {
                 recurrenceFlag++;
                 
-             if(recurrenceFlag > 15 && barrensChatActivity > 25)
+                if(recurrenceFlag > recurrenceInterval && barrensChatActivity > chatPostInterval)
                 {
-                    HttpClient client = new HttpClient();
-                    string returnString = await client.GetStringAsync("http://api.icndb.com/jokes/random");
-                    JObject o = JObject.Parse(returnString);
-                    string joke = (string)o["value"]["joke"];
-
-                    await ((ISocketMessageChannel)_client.GetChannel(584775200642564141)).SendMessageAsync(joke.ToString().Replace("&quot;","\""));
                     recurrenceFlag = 0;
                     barrensChatActivity = 0;
+
+                    int randomNumber = new Random().Next(1,4);
+                    //randomNumber = 2;
+                    
+                    if (randomNumber == 1)
+                    {
+                        HttpClient client = new HttpClient();
+                        string returnString = await client.GetStringAsync("https://api.chucknorris.io/jokes/random");
+                        JObject o = JObject.Parse(returnString);
+                        string joke = (string)o["value"];
+
+                        await ((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync(joke);
+                    }
+                    else if (randomNumber == 2)
+                    {
+                        int jokeRandom = new Random().Next(0,5);
+                        //jokeRandom = 0;
+                        
+                        string returnString = "";
+                        
+                        HttpClient client = new HttpClient();
+                        if (jokeRandom == 0)
+                        {
+                            returnString = await client.GetStringAsync("https://sv443.net/jokeapi/category/Dark?blacklistFlags=nsfw,political,religious");
+                        }   
+                        else{
+                            returnString = await client.GetStringAsync("https://sv443.net/jokeapi/category/Miscellaneous?blacklistFlags=nsfw,political,religious");
+                        }   
+                        JObject o = JObject.Parse(returnString);
+                        string jokeType = (string)o["type"];
+                        if(jokeType == "twopart")
+                        {
+                            string theSetup = (string)o["setup"];
+                            string theDelivery = (string)o["delivery"];
+                            await ((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync(theSetup);
+                            Thread.Sleep(5000);
+                            await ((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync(theDelivery);
+                        }
+                        else if (jokeType == "single")
+                        {
+                            string joke = (string)o["joke"];
+                            await ((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync(joke);
+                        }
+                    }
+                    else if (randomNumber == 3)
+                    {
+                        HttpClient client = new HttpClient();
+                        string returnString = await client.GetStringAsync("https://uselessfacts.jsph.pl/random.json?language=en");
+                        JObject o = JObject.Parse(returnString);
+                        string uselessFact = (string)o["text"];
+                        await ((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync("Fact: " + uselessFact);
+                    }
+                    else if (randomNumber == 4)
+                    {
+                        HttpClient client = new HttpClient();
+                        string returnString = await client.GetStringAsync("https://catfact.ninja/fact");
+                        JObject o = JObject.Parse(returnString);
+                        string catFact = (string)o["fact"];
+                        await ((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync("Cat facts: " + catFact);
+                    }
                 }
             }
         }
@@ -105,8 +173,10 @@ namespace The_House_Discord_Bot
             var Context = new SocketCommandContext(_client, Message);
             int ArgPos = 0;
             
-            if(Message.Channel.Id == 584775200642564141)
+            if(Message.Channel.Id == postingChannel)
             {
+                if(Context.Message.Author.IsBot) return;
+
                 barrensChatActivity++;
             }
 
@@ -140,7 +210,7 @@ namespace The_House_Discord_Bot
                     await (user).RemoveRoleAsync(reactionRole);
                 }
             }
-            if (arg3.Channel.Id == 614097420728401955 || arg3.Channel.Id == 614097533983129613 || arg3.Channel.Id == 614097574877724702 /*|| arg3.Channel.Id == 588449417481158662*/)
+            if (arg3.Channel.Id == 614097420728401955 || arg3.Channel.Id == 614097533983129613 || arg3.Channel.Id == 614097574877724702 || arg3.Channel.Id == 588449417481158662)
             {
                 Reactions.SignUpRecord(user, messageUrl, _crmConn, arg3, true, guildOwner);
             }
@@ -166,7 +236,7 @@ namespace The_House_Discord_Bot
                 }
             }
 
-            if(arg3.Channel.Id == 614097420728401955 || arg3.Channel.Id == 614097533983129613 || arg3.Channel.Id == 614097574877724702 /*|| arg3.Channel.Id == 588449417481158662*/)
+            if(arg3.Channel.Id == 614097420728401955 || arg3.Channel.Id == 614097533983129613 || arg3.Channel.Id == 614097574877724702 || arg3.Channel.Id == 588449417481158662)
             {
                 Reactions.SignUpRecord(user, messageUrl, _crmConn, arg3, false, guildOwner);
             }
