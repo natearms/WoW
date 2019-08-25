@@ -70,21 +70,14 @@ namespace The_House_Discord_Bot.DiscordFunctions
                 string userNickname = user.Username;
                 string userName = guildNickname == null ? userNickname : guildNickname;
 
-                if (guildNickname == null)
-                {
-                    user.SendMessageAsync("Please make sure you set your server nickname to your in game character name otherwise several functions of the discord bot will not work properly.", false, null);
-                    UserExtensions.SendMessageAsync(guildOwner, userNickname + " tried to singup for an event but has not set their nickname in the Discord server.", false, null);
-                    return;
-                }
-
                 EntityCollection raidSignup = ExistingRaidSchedule(messageUrl, crmService);
                 EntityCollection crmUser = ReactedCrmUser(userName, crmService);
 
                 if (crmUser.Entities.Count == 0)
                 {
                     
-                    user.SendMessageAsync("It looks like you haven't been setup in CRM yet, I've messaged Raumedrius to create a user for you in CRM.", false, null);
-                    UserExtensions.SendMessageAsync(guildOwner, guildNickname + " does not exist in CRM.", false, null);
+                    user.SendMessageAsync("I couldn't find you in CRM with \"" + userName +"\", please make sure you set your nickname in Discord to match your main's name.  If this is your main characters name, I've let Raumedrius know to create a record for you in CRM.", false, null);
+                    UserExtensions.SendMessageAsync(guildOwner, userName + " does not exist in CRM.", false, null);
                     return;
                 }
                 EntityCollection existingAttendance = CheckExistingAttendance(crmUser.Entities[0].GetAttributeValue<Guid>("contactid"), raidSignup.Entities[0].GetAttributeValue<Guid>("wowc_raidscheduleid"), crmService);
