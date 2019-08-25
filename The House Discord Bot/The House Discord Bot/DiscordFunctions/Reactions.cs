@@ -82,8 +82,9 @@ namespace The_House_Discord_Bot.DiscordFunctions
 
                 if (crmUser.Entities.Count == 0)
                 {
+                    
                     user.SendMessageAsync("It looks like you haven't been setup in CRM yet, I've messaged Raumedrius to create a user for you in CRM.", false, null);
-                    UserExtensions.SendMessageAsync(guildOwner, userNickname + " does not exist in CRM.", false, null);
+                    UserExtensions.SendMessageAsync(guildOwner, guildNickname + " does not exist in CRM.", false, null);
                     return;
                 }
                 EntityCollection existingAttendance = CheckExistingAttendance(crmUser.Entities[0].GetAttributeValue<Guid>("contactid"), raidSignup.Entities[0].GetAttributeValue<Guid>("wowc_raidscheduleid"), crmService);

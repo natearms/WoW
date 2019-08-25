@@ -113,19 +113,8 @@ namespace The_House_Discord_Bot
                     }
                     else if (randomNumber == 2)
                     {
-                        int jokeRandom = new Random().Next(0,5);
-                        //jokeRandom = 0;
-                        
-                        string returnString = "";
-                        
                         HttpClient client = new HttpClient();
-                        if (jokeRandom == 0)
-                        {
-                            returnString = await client.GetStringAsync("https://sv443.net/jokeapi/category/Dark?blacklistFlags=nsfw,political,religious");
-                        }   
-                        else{
-                            returnString = await client.GetStringAsync("https://sv443.net/jokeapi/category/Miscellaneous?blacklistFlags=nsfw,political,religious");
-                        }   
+                        string returnString = await client.GetStringAsync("https://sv443.net/jokeapi/category/Miscellaneous?blacklistFlags=nsfw,political,religious");
                         JObject o = JObject.Parse(returnString);
                         string jokeType = (string)o["type"];
                         if(jokeType == "twopart")
