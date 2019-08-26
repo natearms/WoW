@@ -31,32 +31,12 @@ namespace The_House_Discord_Bot.DiscordFunctions
             else if (randomNumber == 2)
             {
                 HttpClient client = new HttpClient();
-                string returnString = await client.GetStringAsync("https://sv443.net/jokeapi/category/Miscellaneous?blacklistFlags=nsfw,political,religious");
-                JObject o = JObject.Parse(returnString);
-                string jokeType = (string)o["type"];
-                if (jokeType == "twopart")
-                {
-                    string theSetup = (string)o["setup"];
-                    string theDelivery = (string)o["delivery"];
-                    await((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync(theSetup);
-                    Thread.Sleep(5000);
-                    await((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync(theDelivery);
-                }
-                else if (jokeType == "single")
-                {
-                    string joke = (string)o["joke"];
-                    await((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync(joke);
-                }
-            }
-            else if (randomNumber == 3)
-            {
-                HttpClient client = new HttpClient();
                 string returnString = await client.GetStringAsync("https://uselessfacts.jsph.pl/random.json?language=en");
                 JObject o = JObject.Parse(returnString);
                 string uselessFact = (string)o["text"];
                 await((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync("Fact: " + uselessFact);
             }
-            else if (randomNumber == 4)
+            else if (randomNumber == 3)
             {
                 HttpClient client = new HttpClient();
                 string returnString = await client.GetStringAsync("https://catfact.ninja/fact");
@@ -64,7 +44,7 @@ namespace The_House_Discord_Bot.DiscordFunctions
                 string catFact = (string)o["fact"];
                 await((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync("Cat facts: " + catFact);
             }
-            else if (randomNumber == 5 || randomNumber == 6)
+            else if (randomNumber == 4 || randomNumber == 5 || randomNumber == 6)
             {
                 HttpClient client = new HttpClient();
                 client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
