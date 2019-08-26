@@ -37,8 +37,8 @@ namespace The_House_Discord_Bot
         private string botTrigger = "thb! ";
         private string botToken = "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y";
         private ulong postingChannel = 584775200642564141;
-        private int recurrenceInterval = 18;
-        private int chatPostInterval = 18;
+        private int recurrenceInterval = 22;
+        private int chatPostInterval = 10;
 
 
         ////Test Bot Trigger
@@ -99,54 +99,7 @@ namespace The_House_Discord_Bot
                     recurrenceFlag = 0;
                     barrensChatActivity = 0;
 
-                    int randomNumber = new Random().Next(1,4);
-                    //randomNumber = 2;
-                    
-                    if (randomNumber == 1)
-                    {
-                        HttpClient client = new HttpClient();
-                        string returnString = await client.GetStringAsync("https://api.chucknorris.io/jokes/random");
-                        JObject o = JObject.Parse(returnString);
-                        string joke = (string)o["value"];
-
-                        await ((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync(joke);
-                    }
-                    else if (randomNumber == 2)
-                    {
-                        HttpClient client = new HttpClient();
-                        string returnString = await client.GetStringAsync("https://sv443.net/jokeapi/category/Miscellaneous?blacklistFlags=nsfw,political,religious");
-                        JObject o = JObject.Parse(returnString);
-                        string jokeType = (string)o["type"];
-                        if(jokeType == "twopart")
-                        {
-                            string theSetup = (string)o["setup"];
-                            string theDelivery = (string)o["delivery"];
-                            await ((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync(theSetup);
-                            Thread.Sleep(5000);
-                            await ((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync(theDelivery);
-                        }
-                        else if (jokeType == "single")
-                        {
-                            string joke = (string)o["joke"];
-                            await ((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync(joke);
-                        }
-                    }
-                    else if (randomNumber == 3)
-                    {
-                        HttpClient client = new HttpClient();
-                        string returnString = await client.GetStringAsync("https://uselessfacts.jsph.pl/random.json?language=en");
-                        JObject o = JObject.Parse(returnString);
-                        string uselessFact = (string)o["text"];
-                        await ((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync("Fact: " + uselessFact);
-                    }
-                    else if (randomNumber == 4)
-                    {
-                        HttpClient client = new HttpClient();
-                        string returnString = await client.GetStringAsync("https://catfact.ninja/fact");
-                        JObject o = JObject.Parse(returnString);
-                        string catFact = (string)o["fact"];
-                        await ((ISocketMessageChannel)_client.GetChannel(postingChannel)).SendMessageAsync("Cat facts: " + catFact);
-                    }
+                    await new MiscellaneousFunctions().ApiPost(_client, postingChannel);
                 }
             }
         }
