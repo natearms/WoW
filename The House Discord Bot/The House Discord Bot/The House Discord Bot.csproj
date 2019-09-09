@@ -200,6 +200,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\Blacklist.cs" />
     <Compile Include="Commands\CrmDkp.cs" />
     <Compile Include="Commands\CrmGuildBank.cs" />
     <Compile Include="Commands\Help.cs" />

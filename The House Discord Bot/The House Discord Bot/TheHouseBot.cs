@@ -33,20 +33,20 @@ namespace The_House_Discord_Bot
         private int barrensChatActivity = 0;
 
 
-        //Live Bot Trigger
-        private string botTrigger = "thb! ";
-        private string botToken = "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y";
-        private ulong postingChannel = 584775200642564141;
-        private int recurrenceInterval = 22;
-        private int chatPostInterval = 10;
+        ////Live Bot Trigger
+        //private string botTrigger = "thb! ";
+        //private string botToken = "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y";
+        //private ulong postingChannel = 584775200642564141;
+        //private int recurrenceInterval = 22;
+        //private int chatPostInterval = 10;
 
 
-        ////Test Bot Trigger
-        //private string botTrigger = "thbt! ";
-        //private string botToken = "NjEwODgwNTYwMTA0OTk2ODg0.XVLtjQ.jkFf9GkyyOiffLpwXPtdtEkUKIQ";
-        //private ulong postingChannel = 588449417481158662;
-        //private int recurrenceInterval = -1;
-        //private int chatPostInterval = 0;
+        //Test Bot Trigger
+        private string botTrigger = "thbt! ";
+        private string botToken = "NjEwODgwNTYwMTA0OTk2ODg0.XVLtjQ.jkFf9GkyyOiffLpwXPtdtEkUKIQ";
+        private ulong postingChannel = 588449417481158662;
+        private int recurrenceInterval = -1;
+        private int chatPostInterval = 400;
 
 
 
