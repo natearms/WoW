@@ -33,20 +33,20 @@ namespace The_House_Discord_Bot
         private int barrensChatActivity = 0;
 
 
-        ////Live Bot Trigger
-        //private string botTrigger = "thb! ";
-        //private string botToken = "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y";
-        //private ulong postingChannel = 584775200642564141;
-        //private int recurrenceInterval = 22;
-        //private int chatPostInterval = 10;
+        //Live Bot Trigger
+        private string botTrigger = "thb! ";
+        private string botToken = "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y";
+        private ulong postingChannel = 584775200642564141;
+        private int recurrenceInterval = 22;
+        private int chatPostInterval = 10;
 
 
-        //Test Bot Trigger
-        private string botTrigger = "thbt! ";
-        private string botToken = "NjEwODgwNTYwMTA0OTk2ODg0.XVLtjQ.jkFf9GkyyOiffLpwXPtdtEkUKIQ";
-        private ulong postingChannel = 588449417481158662;
-        private int recurrenceInterval = -1;
-        private int chatPostInterval = 400;
+        ////Test Bot Trigger
+        //private string botTrigger = "thbt! ";
+        //private string botToken = "NjEwODgwNTYwMTA0OTk2ODg0.XVLtjQ.jkFf9GkyyOiffLpwXPtdtEkUKIQ";
+        //private ulong postingChannel = 588449417481158662;
+        //private int recurrenceInterval = -1;
+        //private int chatPostInterval = 400;
 
 
 
@@ -80,13 +80,14 @@ namespace The_House_Discord_Bot
             _client.Log += Client_Log;
             _client.ReactionAdded += Client_ReactionAdded;
             _client.ReactionRemoved += Client_ReactionRemoved;
+            _client.UserJoined += Client_AnnouncedJoinedUser;
+            _client.GuildMemberUpdated += Client_GuildMemberUpdated;
 
             await _command.AddModulesAsync(Assembly.GetEntryAssembly(), _servicePriveProvider);
             await _client.LoginAsync(TokenType.Bot, botToken);
             await _client.StartAsync();
             await Task.Delay(-1);
         }
-
         private async Task Client_Log(LogMessage Message)
         {
             Console.WriteLine($"{DateTime.Now} at {Message.Source}] {Message.Message}");
@@ -103,12 +104,10 @@ namespace The_House_Discord_Bot
                 }
             }
         }
-
         private async Task Client_Ready()
         {
             await _client.SetGameAsync(botTrigger + "-help", "", ActivityType.Listening);
         }
-
         private async Task Client_MessageReceived(SocketMessage MessageParam)
         {
             var Message = MessageParam as SocketUserMessage;
@@ -158,7 +157,6 @@ namespace The_House_Discord_Bot
             }
                 
         }
-
         private async Task Client_ReactionAdded(Cacheable<IUserMessage, ulong> arg1, ISocketMessageChannel arg2, SocketReaction arg3)
         {
             IGuildUser user = (IGuildUser)arg3.User.Value;
@@ -181,6 +179,46 @@ namespace The_House_Discord_Bot
             if(arg3.Channel.Id == 614097420728401955 || arg3.Channel.Id == 614097533983129613 || arg3.Channel.Id == 614097574877724702 || arg3.Channel.Id == 588449417481158662)
             {
                 Reactions.SignUpRecord(user, messageUrl, _crmConn, arg3, false, guildOwner);
+            }
+        }
+        private async Task Client_AnnouncedJoinedUser(SocketGuildUser arg)
+        {
+            await arg.SendMessageAsync("Welcome to **<The House>** Discord server! The first and largest guild on Arcanite Reaper!  If you're interested in details on becoming a raider, please talk to **Raumedrius**."
+                    + "\n\n" + "Please take a moment to review and follow our server rules."
+                    + "\n" + "https://discordapp.com/channels/578967161322733578/584757220403707920/621077337349292067");
+        }
+        private async Task Client_GuildMemberUpdated(SocketGuildUser arg1, SocketGuildUser arg2)
+        {
+            bool memberRoleExisted = false;
+            bool memberRoleAssigned = false;
+
+            foreach (SocketRole role in arg1.Roles)
+            {
+                if(role.Id == 584755014648725524)
+                {
+                    memberRoleExisted = true;
+                }
+            }
+            foreach (SocketRole role in arg2.Roles)
+            {
+                if (role.Id == 584755014648725524)
+                {
+                    memberRoleAssigned = true;
+                }
+            }
+
+            if (!memberRoleExisted && memberRoleAssigned)
+            {
+                EmbedBuilder newMemberMessage = new EmbedBuilder();
+
+                newMemberMessage.WithTitle("Welcome to <The House>!");
+                newMemberMessage.WithDescription("It looks like you've had the member role assigned, welcome to the family!");
+                newMemberMessage.AddField("Guild Information", "Please take a moment to review the posts under **" +arg1.Guild.GetCategoryChannel(608483000736284673).Name +"** > **#"+ arg1.Guild.GetChannel(584757445340037120).Name + "** for more information about us. \n" + "https://discordapp.com/channels/578967161322733578/584757445340037120/584758046555635732", false);
+                newMemberMessage.AddField("Set your Discord Nickname!", "We utilize a custom built guild management system that requires you set your nickname to your in game character to take advantage of.  If this is not done, you may miss out on being able to use key features of our Discord bot such as not being able to sign up for events, maintain your profession information, run EP/GP commands, and more.", false);
+                newMemberMessage.AddField("Set your Discord class color!", "Wondering why everyone has different colors for their names?  Well you too can set your class color by going to this link and reacting to one of the existing reactions to set this! \nhttps://discordapp.com/channels/578967161322733578/584757445340037120/610883091241631787", false);
+                newMemberMessage.AddField("Any questions?", "Please feel free to reach out to ***Raumedrius*** with any further questions you might have!", false);
+                
+                await arg1.SendMessageAsync(null,false,newMemberMessage.Build());
             }
         }
     }
