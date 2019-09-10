@@ -22,15 +22,37 @@ namespace The_House_Discord_Bot.Commands
 {
     public class Blacklist
     {   
-        [Group("-bl")]
+        [Group("-bl"), Summary("Blacklist commands")]
         public class BlackListGroup : ModuleBase<SocketCommandContext>
         {
             public IOrganizationService crmService { get; set; }
 
-            [Command(""), Summary("Black list commands")]
+            [Command("-n"), Summary("Report a blacklist event.")]
             public async Task BlacklistUser(string blacklistUser, [Remainder]string issueDescriptionText)
             {
+                #region Validate that the User has permissions
+                bool approved = false;
+                foreach (SocketRole role in ((SocketGuildUser)Context.Message.Author).Roles)
+                {
+                    if (role.Id == 584755014648725524 || role.Id == 584754688423886858)
+                    {
+                        approved = true;
+                    }
+                }
+                if (!approved)
+                {
+                    await Context.Channel.SendMessageAsync("Sorry but you do not have permissions to use this command.");
+                    return;
+                }
+                #endregion
+
+                if(Context.Message.Attachments.Count != 1)
+                {
+                    await ReplyAsync("You must provide proof in order to use this function.  When adding the attachment you will be prompted to add a comment, enter the command here.");
+                    return;
+                }
                 string actionTakenText = "";
+                string attachmentUrl = Context.Message.Attachments.ElementAt(0).Url;
 
                 SocketUser author = Context.Message.Author;
                 string guildNickname = Context.Guild.GetUser(author.Id).Nickname;
@@ -42,12 +64,12 @@ namespace The_House_Discord_Bot.Commands
                 if (crmBlacklistUser.Entities.Count == 0)
                 {
                     Guid createdBlackListUser = CreateBlacklistUser(blacklistUser, crmService);
-                    CreateBlacklistRecord(createdBlackListUser, userName, issueDescriptionText, crmService);
+                    CreateBlacklistRecord(createdBlackListUser, userName, issueDescriptionText, attachmentUrl, crmService);
                     actionTakenText = "Created a new record for " + blacklistUser + " and added a new issue entry";
                 }
                 else if (crmBlacklistUser.Entities.Count == 1)
                 {
-                    CreateBlacklistRecord(crmBlacklistUser.Entities[0].GetAttributeValue<Guid>("wowc_blacklistid"), userName, issueDescriptionText, crmService);
+                    CreateBlacklistRecord(crmBlacklistUser.Entities[0].GetAttributeValue<Guid>("wowc_blacklistid"), userName, issueDescriptionText, attachmentUrl, crmService);
                     actionTakenText = "Added a new issue entry for " + blacklistUser;
                 }
                 else
@@ -57,9 +79,25 @@ namespace The_House_Discord_Bot.Commands
 
                 await ReplyAsync(actionTakenText, false, null);
             }
-            [Command("-s"), Summary("Black list commands")]
+            [Command("-s"), Summary("Searches to see if someone was blacklisted.")]
             public async Task SearchBlacklistedUsers(string blacklistUser)
             {
+                #region Validate that the User has permissions
+                bool approved = false;
+                foreach (SocketRole role in ((SocketGuildUser)Context.Message.Author).Roles)
+                {
+                    if (role.Id == 584755014648725524 || role.Id == 584754688423886858)
+                    {
+                        approved = true;
+                    }
+                }
+                if (!approved)
+                {
+                    await Context.Channel.SendMessageAsync("Sorry but you do not have permissions to use this command.");
+                    return;
+                }
+                #endregion
+
                 EntityCollection crmBlacklistUser = SearchBlacklistUser(blacklistUser, crmService);
 
                 if (crmBlacklistUser.Entities.Count == 0)
@@ -68,29 +106,34 @@ namespace The_House_Discord_Bot.Commands
                 }
                 else if(crmBlacklistUser.Entities.Count == 1)
                 {
-                    EntityCollection blacklistEntryResults = RetrieveBlacklistNotes(crmBlacklistUser.Entities[0].GetAttributeValue<Guid>("wowc_blacklistid"), crmService);
-
-                    /*
-                     * Need to finish building this out
-                     */
+                    await ReplyAsync(null, false, BuildBlackListEmbed(blacklistUser, RetrieveBlacklistNotes(crmBlacklistUser.Entities[0].GetAttributeValue<Guid>("wowc_blacklistid"), crmService)).Build());
                 }
                 else
                 {
-                    await ReplyAsync("Duplicate blacklist users were found in CRM. " + Context.Guild.Owner.Mention, false, null);
+                    await ReplyAsync("Duplicate blacklist users were found in CRM for "+ blacklistUser +"." + Context.Guild.Owner.Mention, false, null);
                 }
             }
 
         }
 
-
-
-        private EmbedBuilder BuildBlackListEmbed(EntityCollection blacklistUser, EntityCollection blacklistNotes)
+        private static EmbedBuilder BuildBlackListEmbed(string blacklistUser, EntityCollection blacklistNotes)
         {
             EmbedBuilder embed = new EmbedBuilder();
 
-            /*
-             * Need to finish building this out
-             */
+            embed.WithTitle("Blacklist results for " + blacklistUser);
+
+            int reportCount = blacklistNotes.Entities.Count > 25 ? 25 : blacklistNotes.Entities.Count;
+
+
+            for (int i = 0; i < reportCount; i++)
+            {
+                string reportedBy = blacklistNotes.Entities[i].GetAttributeValue<string>("subject");
+                string issueText = blacklistNotes.Entities[i].GetAttributeValue<string>("notetext").Length > 1024 ? blacklistNotes.Entities[i].GetAttributeValue<string>("notetext").Substring(0,1024) : blacklistNotes.Entities[i].GetAttributeValue<string>("notetext");
+                DateTime dateReported = blacklistNotes.Entities[i].GetAttributeValue<DateTime>("createdon");
+                embed.AddField(reportedBy + " on " + dateReported.ToShortDateString(),  issueText, false);
+            
+            }
+            
             return embed;
         }
 
@@ -127,14 +170,15 @@ namespace The_House_Discord_Bot.Commands
 
             return blacklistGuid;
         }
-        private static void CreateBlacklistRecord(Guid blacklistGuid,string createdBy, string issueText, IOrganizationService service)
+        private static void CreateBlacklistRecord(Guid blacklistGuid,string createdBy, string issueText, string attachmentUrl, IOrganizationService service)
         {
+            string noteText = attachmentUrl == "" ? issueText: attachmentUrl + "\n " + issueText;
             Entity blacklistEntry = new Entity("annotation");
             Guid blacklistEntryGuid = Guid.NewGuid();
 
             blacklistEntry.Id = blacklistEntryGuid;
-            blacklistEntry.Attributes["subject"] = "Reported by: " + createdBy;
-            blacklistEntry.Attributes["notetext"] = issueText;
+            blacklistEntry.Attributes["subject"] = createdBy;
+            blacklistEntry.Attributes["notetext"] = noteText;
             blacklistEntry.Attributes["objectid"] = new EntityReference("wowc_blacklist", blacklistGuid);
 
             service.Create(blacklistEntry);

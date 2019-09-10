@@ -64,7 +64,14 @@ namespace The_House_Discord_Bot.Commands
                 "Search for guild members that know this recpie." +
                 "" + theHouseBotTrigger + "-prof -s <item name>```\n" +
                 "Return recipes this guild member knows." +
-                "" + theHouseBotTrigger + "-prof -s <@usermention>```\n"
+                "" + theHouseBotTrigger + "-prof -s <@usermention>```\n" +
+
+                //Blacklist Commands help descriptions
+                "__**<The House> Blacklist commands**__\n\n " +
+                "Create a new blacklist record." +
+                "" + theHouseBotTrigger + "-bl -n <Character name> <Detailed description of what happened>```\n" +
+                "Search to see if someone was blacklisted." +
+                "" + theHouseBotTrigger + "-bl -s <Character name>```\n" 
                 );
 
             await Context.Message.Author.SendMessageAsync(null, false, embed.Build());
