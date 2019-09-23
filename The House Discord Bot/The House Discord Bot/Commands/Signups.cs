@@ -31,7 +31,6 @@ namespace The_House_Discord_Bot.Commands
         {
             #region Validate that the User has permissions, event created in approved channels, and have their nickname set in Discord
             string timeZoneToLower = timeZone.ToLower();
-            string raidTextToLower = raid.ToLower();
             bool approved = false;
             foreach (SocketRole role in ((SocketGuildUser)Context.Message.Author).Roles)
             {
@@ -73,7 +72,7 @@ namespace The_House_Discord_Bot.Commands
             }
             #endregion
 
-            Tuple<int, string, string, DateTime, int, double, string> activityType = ScheduledActivityInformation(raidTextToLower, date, time, timeZoneToLower, 4, description, crmService);
+            Tuple<int, string, string, DateTime, int, double, string> activityType = ScheduledActivityInformation(raid, date, time, timeZoneToLower, 4, description, crmService);
 
             if (timeZoneToLower != "cdt"  && timeZoneToLower != "cst" && timeZoneToLower != "pst" && timeZoneToLower != "pdt")
             {
@@ -146,6 +145,7 @@ namespace The_House_Discord_Bot.Commands
         {
             Tuple<int, string, string, DateTime, int, double, string> results;
 
+            string raidLower = raid.ToLower();
             double estDuration = hours;
             int timeZoneOffSet = 0;
 
@@ -162,43 +162,43 @@ namespace The_House_Discord_Bot.Commands
             DateTime raidTime = Convert.ToDateTime(time);
             DateTime combinedDateTime = raidDate.AddHours(raidTime.AddHours(timeZoneOffSet).Hour).AddMinutes(raidTime.Minute);
 
-            if(raid == "mc")
+            if(raidLower == "mc")
             {
                 results = Tuple.Create(1, "Molten Core", @"https://vignette.wikia.nocookie.net/wowwiki/images/2/20/Molten_Core_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
-            else if (raid == "ony" || raid == "onyxia")
+            else if (raidLower == "ony" || raidLower == "onyxia")
             {
                 results = Tuple.Create(6, "Onyxia", @"https://vignette.wikia.nocookie.net/wowwiki/images/4/46/Onyxia's_Lair_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
-            else if (raid == "bwl")
+            else if (raidLower == "bwl")
             {
                 results = Tuple.Create(2, "Blackwing Lair", "https://vignette.wikia.nocookie.net/wowwiki/images/0/09/Blackwing_Lair_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
-            else if (raid == "aq40")
+            else if (raidLower == "aq40")
             {
                 results = Tuple.Create(3, "AQ 40", @"https://vignette.wikia.nocookie.net/wowwiki/images/6/6a/Temple_of_Ahn'Qiraj_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
-            else if (raid == "naxx" || raid == "naxxramas")
+            else if (raidLower == "naxx" || raidLower == "naxxramas")
             {
                 results = Tuple.Create(4, "Naxxramas", @"https://vignette.wikia.nocookie.net/wowwiki/images/1/1f/Naxxramas_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
-            else if (raid == "aq20")
+            else if (raidLower == "aq20")
             {
                 results = Tuple.Create(257260000, "AQ 20", @"https://vignette.wikia.nocookie.net/wowwiki/images/5/5e/Ruins_of_Ahn'Qiraj_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
-            else if (raid == "zg")
+            else if (raidLower == "zg")
             {
                 results = Tuple.Create(257260001, "Zul'Gurub", @"https://vignette.wikia.nocookie.net/wowwiki/images/1/12/Zul'Gurub_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
-            else if (raid == "wsg")
+            else if (raidLower == "wsg")
             {
                 results = Tuple.Create(257260002, "Warsong Gulch", @"https://vignette.wikia.nocookie.net/wowwiki/images/7/73/Warsong_Gulch_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
-            else if (raid == "ab")
+            else if (raidLower == "ab")
             {
                 results = Tuple.Create(257260003, "Arathi Basin", @"https://vignette.wikia.nocookie.net/wowwiki/images/6/6b/Arathi_Basin_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
-            else if (raid == "av")
+            else if (raidLower == "av")
             {
                 results = Tuple.Create(257260004, "Alterac Valley", @"https://vignette.wikia.nocookie.net/wowwiki/images/c/c8/Alterac_Valley_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
@@ -240,7 +240,7 @@ namespace The_House_Discord_Bot.Commands
             .WithDescription(activityInformation.Item7)
             .AddField("Event Location:", activityInformation.Item2, true)
             .AddField("Date:", activityInformation.Item4.ToShortDateString(), true)
-            .AddField("Time PDT:", activityInformation.Item4.AddHours(-2).ToShortTimeString(), true)
+            .AddField("Time Server (PDT):", activityInformation.Item4.AddHours(-2).ToShortTimeString(), true)
             .AddField("Time CDT:", activityInformation.Item4.ToShortTimeString(), true)
             .AddField("Calendar Credentials", "[The House CRM login](https://discordapp.com/channels/578967161322733578/584757445340037120/585125716186890280)")
             .WithThumbnailUrl(activityInformation.Item3)
