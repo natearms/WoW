@@ -35,6 +35,8 @@ namespace WoW.DKPEPGP.Plugins
                     query.ColumnSet.AddColumns("contactid", "wowc_trialend");
                     query.Criteria = new FilterExpression();
                     query.Criteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
+                    query.Criteria.AddCondition("wowc_trialend", ConditionOperator.NotNull);
+                    query.Criteria.AddCondition("wowc_trialend", ConditionOperator.LessEqual, DateTime.Now);
 
                     RaidMembers = service.RetrieveMultiple(query);
                 }
