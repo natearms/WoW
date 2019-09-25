@@ -121,6 +121,20 @@ namespace The_House_Discord_Bot
                 barrensChatActivity++;
             }
 
+            bool approved = false;
+            foreach (SocketRole role in ((SocketGuildUser)Context.Message.Author).Roles)
+            {
+                if (role.Id == 584755014648725524)
+                {
+                    approved = true;
+                }
+            }
+            if (!approved)
+            {
+                await Context.Channel.SendMessageAsync("Sorry, but you need to be a member of The House in order to run commands.");
+                return;
+            }
+
             if (Context.User.IsBot) return;
             if (Context.Message == null || Context.Message.Content == "") return;
             if (!(Message.HasStringPrefix(botTrigger, ref ArgPos) || Message.HasMentionPrefix(_client.CurrentUser, ref ArgPos))) return;
