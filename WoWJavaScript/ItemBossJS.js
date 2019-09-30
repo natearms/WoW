@@ -1,6 +1,6 @@
 function overrideValues() {
     var overrideValues = Xrm.Page.getAttribute("wowc_overridevalues").getValue();
-    var overrideFields = ["wowc_name", "wowc_epvalue", "wowc_classspecmodifier", "wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_rarity", "wowc_slot", "wowc_category", "wowc_dropsfrom", "wowc_lootcouncil", "wowc_priority1", "wowc_priority2", "wowc_priority3"];
+    var overrideFields = ["wowc_name", "wowc_epvalue", "wowc_classspecmodifier", "wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_rarity", "wowc_slot", "wowc_category", "wowc_dropsfrom", "wowc_lootcouncil", "wowc_priority1", "wowc_priority2", "wowc_priority3", "wowc_weeklydonationcap", "wowc_marketrate", "wowc_marketratelastupdated"];
 
     if (overrideValues == 1) {
         for (var i = 0; i < overrideFields.length; i++) {
@@ -15,7 +15,7 @@ function overrideValues() {
 }
 function fieldLockUnlock() {
     var name = Xrm.Page.getAttribute("wowc_name").getValue();
-    var lockUnlockFields = ["wowc_name", "wowc_epvalue", "wowc_classspecmodifier", "wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_rarity", "wowc_slot", "wowc_category", "wowc_dropsfrom", "wowc_lootcouncil", "wowc_priority1", "wowc_priority2", "wowc_priority3"];
+    var lockUnlockFields = ["wowc_name", "wowc_epvalue", "wowc_classspecmodifier", "wowc_ilvl", "wowc_itemid", "wowc_itemidnum", "wowc_rarity", "wowc_slot", "wowc_category", "wowc_dropsfrom", "wowc_lootcouncil", "wowc_priority1", "wowc_priority2", "wowc_priority3", "wowc_weeklydonationcap", "wowc_marketrate", "wowc_marketratelastupdated"];
 
     if (name == null) {
         for (var i = 0; i < lockUnlockFields.length; i++) {
@@ -55,5 +55,18 @@ function showHideFields() {
         if (slotType != 257260008 && slotType != 257260009 && slotType != 257260007) {
             Xrm.Page.getAttribute("wowc_efforttype").setRequiredLevel("none");
         }
+    }
+}
+function setEPFromMarketRate() {
+    var marketRate = Xrm.Page.getAttribute("wowc_marketrate").getValue();
+    var currentDateTime = new Date();
+    
+    if (marketRate != null) {
+
+        Xrm.Page.getAttribute("wowc_epvalue").setValue(marketRate * .1);
+        Xrm.Page.getAttribute("wowc_marketratelastupdated").setValue(currentDateTime);
+    }
+    else {
+        Xrm.Page.getAttribute("wowc_marketratelastupdated").setValue(null);
     }
 }
