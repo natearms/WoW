@@ -27,8 +27,8 @@ namespace WoW.DKPEPGP.Plugins
 
                 foreach (var members in raidMembers.Entities)
                 {
-                    DateTime trialEnd = members.GetAttributeValue<DateTime>("wowc_trialend");
-                    tracingService.Trace("Trial End " + trialEnd);
+                    DateTime trialEnd = members.GetAttributeValue<DateTime>("wowc_firstraidattended");
+                    tracingService.Trace("First Raid Attended " + trialEnd);
 
                     Guid memberGuid = members.GetAttributeValue<Guid>("contactid");
                     tracingService.Trace("Member Guid " + memberGuid);
@@ -42,7 +42,7 @@ namespace WoW.DKPEPGP.Plugins
                     int totalMemberAttendance = MemberAttendance(trialEnd, memberGuid, service);
                     int totalMemberTrialEndRaids = AttendanceRecords(trialEnd, service);
 
-                    tracingService.Trace("Counts: Member 30 = {0} - Raid 30 = {1} - Member 60 = {2} - Raid 60 = {3} - Total Member Attendance = {4} - Total Raids From Trail = {5} ", lastThirtyAttendance, lastThirtyRaids, lastSixtyAttendance, lastSixtyRaids, totalMemberAttendance, totalMemberTrialEndRaids);
+                    tracingService.Trace("Counts: Member 30 = {0} - Raid 30 = {1} - Member 60 = {2} - Raid 60 = {3} - Total Member Attendance = {4} - Total Raids From First Raid Attended = {5} ", lastThirtyAttendance, lastThirtyRaids, lastSixtyAttendance, lastSixtyRaids, totalMemberAttendance, totalMemberTrialEndRaids);
 
                     Double thirtyDays = 0;
                     Double sixtyDays = 0;
@@ -82,11 +82,11 @@ namespace WoW.DKPEPGP.Plugins
         private static EntityCollection GetRaidMembers(IOrganizationService service)
         {
             QueryExpression query = new QueryExpression("contact");
-            query.ColumnSet.AddColumns("contactid", "wowc_trialend");
+            query.ColumnSet.AddColumns("contactid", "wowc_firstraidattended");
             query.Criteria = new FilterExpression();
             query.Criteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
-            query.Criteria.AddCondition("wowc_trialend", ConditionOperator.NotNull);
-            query.Criteria.AddCondition("wowc_trialend", ConditionOperator.LessEqual, DateTime.Now);
+            query.Criteria.AddCondition("wowc_firstraidattended", ConditionOperator.NotNull);
+            query.Criteria.AddCondition("wowc_firstraidattended", ConditionOperator.LessEqual, DateTime.Now);
 
             EntityCollection results = service.RetrieveMultiple(query);
             return results;
