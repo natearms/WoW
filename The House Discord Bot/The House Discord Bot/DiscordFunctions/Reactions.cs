@@ -128,8 +128,6 @@ namespace The_House_Discord_Bot.DiscordFunctions
                 Console.WriteLine(ex);
                 throw;
             }
-            
-
         }
 
         private static EntityCollection CheckExistingAttendance(Guid raider, Guid signup, IOrganizationService crmService)

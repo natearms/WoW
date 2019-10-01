@@ -27,7 +27,7 @@ namespace The_House_Discord_Bot.Commands
         public IOrganizationService crmService { get; set; }
         
         [Command("-event")]
-        public async Task CreateRaid(string raid, string date, string time, string timeZone, [Remainder] string description)
+        public async Task CreateRaid(string raid, string date, string time, string timeZone, double estHours, [Remainder] string description)
         {
             #region Validate that the User has permissions, event created in approved channels, and have their nickname set in Discord
             string timeZoneToLower = timeZone.ToLower();
@@ -72,15 +72,15 @@ namespace The_House_Discord_Bot.Commands
             }
             #endregion
 
-            Tuple<int, string, string, DateTime, int, double, string> activityType = ScheduledActivityInformation(raid, date, time, timeZoneToLower, 4, description, crmService);
+            Tuple<int, string, string, DateTime, int, double, string> activityType = ScheduledActivityInformation(raid, date, time, timeZoneToLower, estHours, description, crmService);
 
-            if (timeZoneToLower != "cdt"  && timeZoneToLower != "cst" && timeZoneToLower != "pst" && timeZoneToLower != "pdt")
+            if (timeZoneToLower != "pst" && timeZoneToLower != "pdt")
             {
-                await Context.Channel.SendMessageAsync("Sorry I did not understand the timezone, please use CDT or PDT.");
+                await Context.Channel.SendMessageAsync("Sorry I did not understand the timezone, please PDT.");
                 return;
             }
             
-            EntityCollection raidSchedule = RaidSchedule(activityType.Item2 + " - " + activityType.Item4 + " CST", activityType.Item4, crmService);
+            EntityCollection raidSchedule = RaidSchedule(activityType.Item2 + " - " + activityType.Item4 + " PDT", activityType.Item4, crmService);
 
             
             if(raidSchedule.Entities.Count == 0)
@@ -141,26 +141,21 @@ namespace The_House_Discord_Bot.Commands
 
             return results;
         }
-        private static Tuple<int, string, string, DateTime, int, double, string> ScheduledActivityInformation(string raid, string date, string time, string timeZone, double hours, string description, IOrganizationService crmService)
+        private static Tuple<int, string, string, DateTime, int, double, string> ScheduledActivityInformation(string raid, string date, string time, string timeZone, double estDuration, string description, IOrganizationService crmService)
         {
             Tuple<int, string, string, DateTime, int, double, string> results;
 
             string raidLower = raid.ToLower();
-            double estDuration = hours;
             int timeZoneOffSet = 0;
 
             if (timeZone == "pst" || timeZone == "pdt")
             {
-                timeZoneOffSet = +2;
-            }
-            else if (timeZone == "cst" || timeZone == "cdt")
-            {
                 timeZoneOffSet = 0;
             }
-
+            
             DateTime raidDate = Convert.ToDateTime(date);
             DateTime raidTime = Convert.ToDateTime(time);
-            DateTime combinedDateTime = raidDate.AddHours(raidTime.AddHours(timeZoneOffSet).Hour).AddMinutes(raidTime.Minute);
+            DateTime combinedDateTime = raidDate.AddHours(raidTime.Hour).AddMinutes(raidTime.Minute);
 
             if(raidLower == "mc")
             {
@@ -240,8 +235,8 @@ namespace The_House_Discord_Bot.Commands
             .WithDescription(activityInformation.Item7)
             .AddField("Event Location:", activityInformation.Item2, true)
             .AddField("Date:", activityInformation.Item4.ToShortDateString(), true)
-            .AddField("Time Server (PDT):", activityInformation.Item4.AddHours(-2).ToShortTimeString(), true)
-            .AddField("Time CDT:", activityInformation.Item4.ToShortTimeString(), true)
+            .AddField("Time PDT (Server):", activityInformation.Item4.ToShortTimeString(), true)
+            .AddField("Time CDT:", activityInformation.Item4.AddHours(2).ToShortTimeString(), true)
             .AddField("Calendar Credentials", "[The House CRM login](https://discordapp.com/channels/578967161322733578/584757445340037120/585125716186890280)")
             .WithThumbnailUrl(activityInformation.Item3)
             .WithFooter("Please react to let us know if you can make it or not.")
@@ -255,7 +250,7 @@ namespace The_House_Discord_Bot.Commands
 
             Entity raidScheduleRecord = new Entity("wowc_raidschedule");
             raidScheduleRecord["wowc_raidscheduleid"] = raidScheduleGuid;
-            raidScheduleRecord["wowc_name"] = activityInformation.Item2 + " - " + activityInformation.Item4 + " CST";
+            raidScheduleRecord["wowc_name"] = activityInformation.Item2 + " - " + activityInformation.Item4 + " PST";
             raidScheduleRecord["wowc_raidactivity"] = new OptionSetValue(activityInformation.Item1);
             raidScheduleRecord["wowc_dateandtime"] = activityInformation.Item4;
             raidScheduleRecord["wowc_datetimetext"] = activityInformation.Item4.ToString();
@@ -269,7 +264,7 @@ namespace The_House_Discord_Bot.Commands
 
             Entity appointment = new Entity("appointment");
             appointment.Id = appointmentGuid;
-            appointment["subject"] = activityInformation.Item2 + " - " + activityInformation.Item4 + " CST";
+            appointment["subject"] = activityInformation.Item2 + " - " + activityInformation.Item4 + " PST";
             appointment["description"] = activityInformation.Item7;
             appointment["scheduledstart"] = activityInformation.Item4;
             appointment["scheduledend"] = activityInformation.Item4.AddHours(activityInformation.Item6);
