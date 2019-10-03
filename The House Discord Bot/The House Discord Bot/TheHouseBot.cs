@@ -121,6 +121,12 @@ namespace The_House_Discord_Bot
                 barrensChatActivity++;
             }
 
+            
+
+            if (Context.User.IsBot) return;
+            if (Context.Message == null || Context.Message.Content == "") return;
+            if (!(Message.HasStringPrefix(botTrigger, ref ArgPos) || Message.HasMentionPrefix(_client.CurrentUser, ref ArgPos))) return;
+
             bool approved = false;
             foreach (SocketRole role in ((SocketGuildUser)Context.Message.Author).Roles)
             {
@@ -134,10 +140,6 @@ namespace The_House_Discord_Bot
                 await Context.Channel.SendMessageAsync("Sorry, but you need to be a member of The House in order to run commands.");
                 return;
             }
-
-            if (Context.User.IsBot) return;
-            if (Context.Message == null || Context.Message.Content == "") return;
-            if (!(Message.HasStringPrefix(botTrigger, ref ArgPos) || Message.HasMentionPrefix(_client.CurrentUser, ref ArgPos))) return;
 
             var Result = await _command.ExecuteAsync(Context, ArgPos, _servicePriveProvider);
                         
