@@ -67,6 +67,8 @@ namespace The_House_Discord_Bot.Commands
                 "" + theHouseBotTrigger + "-prof -s <@usermention>```\n" +
                 "Set your profession skill levels." +
                 "" + theHouseBotTrigger + "-prof -set <primary profession> <primary level> <secondary profession> <secondary level>```\n" +
+                "Set your primary or secondary profession skill level." +
+                "" + theHouseBotTrigger + "-prof -set <primary|secondary> <profession> <level>```\n" +
 
                 //Blacklist Commands help descriptions
                 "__**<The House> Blacklist commands**__\n\n " +

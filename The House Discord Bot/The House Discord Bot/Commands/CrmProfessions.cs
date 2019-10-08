@@ -49,9 +49,45 @@ namespace The_House_Discord_Bot.Commands
 
                 await ReplyAsync(DisassociateRecords(crmService, GetUserInformation(userName, crmService), GetItemInformation(itemSearch, crmService), userName, Context.Guild.Owner), false, null);
             }
+
+            [Command("-set"), Summary("Sets professions for current user.")]
+            public async Task SetProfessions(string type, string profession, int professionLevel)
+            {
+                if (type.Equals("primary"))
+                {
+                    await SetProfessions(profession, professionLevel, String.Empty, -999);
+                }
+                else
+                {
+                    await SetProfessions(String.Empty, -999, profession, professionLevel);
+                }
+            }
+
             [Command("-set"), Summary("Sets professions for current user.")]
             public async Task SetProfessions(string primaryProfession, int primaryProfessionLevel, string secondaryProfession, int secondaryProfessionLevel)
             {
+
+                var author = Context.Message.Author;
+                string guildNickname = Context.Guild.GetUser(author.Id).Nickname;
+                string userNickname = author.Username;
+                string userName = guildNickname == null ? userNickname : guildNickname;
+
+                EntityCollection currentUser = GetUserInformation(userName, crmService);
+                string currentPrimaryProfession = currentUser.Entities[0].Contains("wowc_primaryprofession") ? currentUser.Entities[0].FormattedValues["wowc_primaryprofession"] : "not set";
+                int currentPrimaryProfessionLevel = currentUser.Entities[0].Contains("wowc_primaryprofessionlevel") ? currentUser.Entities[0].GetAttributeValue<int>("wowc_primaryprofessionlevel") : 0;
+                string currentSecondaryProfession = currentUser.Entities[0].Contains("wowc_secondaryprofession") ? currentUser.Entities[0].FormattedValues["wowc_secondaryprofession"] : "not set";
+                int currentSecondaryProfessionLevel = currentUser.Entities[0].Contains("wowc_secondaryprofessionlevel") ? currentUser.Entities[0].GetAttributeValue<int>("wowc_secondaryprofessionlevel") : 0;
+
+                if (primaryProfessionLevel == -999)
+                {
+                    primaryProfession = currentPrimaryProfession;
+                    primaryProfessionLevel = currentPrimaryProfessionLevel;
+                }
+                else if (secondaryProfessionLevel == -999)
+                {
+                    secondaryProfession = currentSecondaryProfession;
+                    secondaryProfessionLevel = currentSecondaryProfessionLevel;
+                }
 
                 int primaryOptionSetValue = ProfessionOptionSetValues(primaryProfession).Item2;
                 int secondaryOptionSetValue = ProfessionOptionSetValues(secondaryProfession).Item2;
@@ -74,22 +110,15 @@ namespace The_House_Discord_Bot.Commands
                     return;
                 }
                     
-                if (secondaryProfessionLevel < 0 || secondaryProfessionLevel > 300)
+                if (secondaryProfessionLevel < 0 || secondaryProfessionLevel > 315)
                 {
                     await ReplyAsync("Please use a numeric value of 0-315 in order to set the Secondary Profession Level.", false, null);
                     return;
                 }
-                
-                var author = Context.Message.Author;
-                string guildNickname = Context.Guild.GetUser(author.Id).Nickname;
-                string userNickname = author.Username;
-                string userName = guildNickname == null ? userNickname : guildNickname;
-
-
 
                 int[] professionInfo = { primaryOptionSetValue, primaryProfessionLevel, secondaryOptionSetValue, secondaryProfessionLevel };
 
-                await ReplyAsync(SetProfession(crmService, GetUserInformation(userName, crmService), userName, professionInfo, Context.Guild.Owner), false, null);
+                await ReplyAsync(SetProfession(crmService, currentUser, userName, professionInfo, Context.Guild.Owner), false, null);
             }
             [Command("-get"), Summary("Gets professions for current user.")]
             public async Task GetProfessions()
@@ -117,7 +146,7 @@ namespace The_House_Discord_Bot.Commands
                 await ReplyAsync(null, false, UserRecipeResults(crmService, GetUserInformation(userName, crmService), userName, Context.Guild.Owner).Build());
             }
             [Command("-p"), Summary("Returns players who know this profession.")]
-            public async Task SearchForProfession(int profession)
+            public async Task SearchForProfession(string profession)
             {
                 
                 string professionText = ProfessionOptionSetValues(profession).Item1;
