@@ -74,7 +74,7 @@ namespace The_House_Discord_Bot.Commands
                     return;
                 }
                     
-                if (secondaryProfessionLevel < 0 || secondaryProfessionLevel > 300)
+                if (secondaryProfessionLevel < 0 || secondaryProfessionLevel > 315)
                 {
                     await ReplyAsync("Please use a numeric value of 0-315 in order to set the Secondary Profession Level.", false, null);
                     return;
