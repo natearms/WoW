@@ -50,7 +50,7 @@ namespace The_House_Discord_Bot.Commands
                 await ReplyAsync(DisassociateRecords(crmService, GetUserInformation(userName, crmService), GetItemInformation(itemSearch, crmService), userName, Context.Guild.Owner), false, null);
             }
 
-            [Command("-set"), Summary("Sets professions for current user.")]
+            [Command("-set"), Summary("Sets a single profession for current user.")]
             public async Task SetProfessions(string type, string profession, int professionLevel)
             {
                 if (type.Equals("primary"))
@@ -514,62 +514,41 @@ namespace The_House_Discord_Bot.Commands
 
             private static Tuple<string, int> ProfessionOptionSetValues(String professionValue)
             {
-                string professionName = "";
-                int optionSetValue = 0;
-                switch (professionValue.ToLower())
+                Profession eProfession = Profession.Alchemy;
+                if (Enum.TryParse<Profession>(professionValue, true, out eProfession))
                 {
-                    //Alchemy
-                    case "alchemy":
-                        optionSetValue = 257260000;
-                        professionName = "Alchemy";
-                        break;
-                    //Blacksmithing
-                    case "blacksmithing":
-                        optionSetValue = 257260001;
-                        professionName = "Blacksmithing";
-                        break;
-                    //Enchanting
-                    case "enchanting":
-                        optionSetValue = 257260002;
-                        professionName = "Enchanting";
-                        break;
-                    //Engineering
-                    case "engineering":
-                        optionSetValue = 257260003;
-                        professionName = "Engineering";
-                        break;
-                    //Herbalism
-                    case "herbalism":
-                        optionSetValue = 257260004;
-                        professionName = "Herbalism";
-                        break;
-                    //Leatherworking
-                    case "leatherworking":
-                        optionSetValue = 257260005;
-                        professionName = "Leatherworking";
-                        break;
-                    //Mining
-                    case "mining":
-                        optionSetValue = 257260006;
-                        professionName = "Mining";
-                        break;
-                    //Skinning
-                    case "skinning":
-                        optionSetValue = 257260007;
-                        professionName = "Skinning";
-                        break;
-                    //Tailoring
-                    case "tailoring":
-                        optionSetValue = 257260008;
-                        professionName = "Tailoring";
-                        break;
-
-                    default:
-                        optionSetValue = 0;
-                        professionName = "N/A";
-                        break;
+                    //direct match
+                    return new Tuple<string, int>(Enum.GetName(eProfession.GetType(), eProfession), (int)eProfession);
                 }
-                return new Tuple<string, int>(professionName, optionSetValue);
+                else
+                {
+                    //do a fuzzy logic match
+                    String fuzzyMatchName = Enum.GetNames(eProfession.GetType()).Where(n => FuzzyMatcher.FuzzyMatch(n, professionValue))
+                                                                                .OrderByDescending(n => FuzzyMatcher.FuzzyMatchValue(n, professionValue))
+                                                                                .FirstOrDefault();
+                    if (!String.IsNullOrWhiteSpace(fuzzyMatchName))
+                    {
+                        return new Tuple<string, int>(fuzzyMatchName, (int)Enum.Parse(eProfession.GetType(), fuzzyMatchName));
+                    }
+                    else
+                    {
+                        return new Tuple<string, int>("N/A", 0);
+                    }
+                }
+
+            }
+
+            private enum Profession
+            {
+                Alchemy = 257260000,
+                Blacksmithing,
+                Enchanting,
+                Engineering,
+                Herbalism,
+                Leatherworking,
+                Mining,
+                Skinning,
+                Tailoring
             }
         }
     }
