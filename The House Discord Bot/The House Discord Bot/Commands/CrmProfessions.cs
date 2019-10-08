@@ -52,7 +52,7 @@ namespace The_House_Discord_Bot.Commands
             [Command("-set"), Summary("Sets professions for current user.")]
             public async Task SetProfessions(int primaryProfession, int primaryProfessionLevel, int secondaryProfession, int secondaryProfessionLevel)
             {
-                //Test Commit by Tyler
+                //Test Commit by Tyler on separate branch
                 if (primaryProfession < 0 || primaryProfession > 8)
                 {
                     await ReplyAsync("Please use a numeric value of 0-8 in order to set the Primary Profession.", false, null);
