@@ -50,30 +50,33 @@ namespace The_House_Discord_Bot.Commands
                 await ReplyAsync(DisassociateRecords(crmService, GetUserInformation(userName, crmService), GetItemInformation(itemSearch, crmService), userName, Context.Guild.Owner), false, null);
             }
             [Command("-set"), Summary("Sets professions for current user.")]
-            public async Task SetProfessions(int primaryProfession, int primaryProfessionLevel, int secondaryProfession, int secondaryProfessionLevel)
+            public async Task SetProfessions(string primaryProfession, int primaryProfessionLevel, string secondaryProfession, int secondaryProfessionLevel)
             {
-                //Test Commit by Tyler
-                if (primaryProfession < 0 || primaryProfession > 8)
+
+                int primaryOptionSetValue = ProfessionOptionSetValues(primaryProfession).Item2;
+                int secondaryOptionSetValue = ProfessionOptionSetValues(secondaryProfession).Item2;
+
+                if (primaryOptionSetValue == 0)
                 {
-                    await ReplyAsync("Please use a numeric value of 0-8 in order to set the Primary Profession.", false, null);
+                    await ReplyAsync("Unable to recognize the Primary Profession " + primaryProfession +  ".", false, null);
                     return;
                 }
                     
-                if (secondaryProfession < 0 || secondaryProfession > 8)
+                if (secondaryOptionSetValue == 0)
                 {
-                    await ReplyAsync("Please use a numeric value of 0-8 in order to set the Secondary Profession.", false, null);
+                    await ReplyAsync("Unable to recognize the Secondary Profession " + secondaryProfession + ".", false, null);
                     return;
                 }
                     
-                if (primaryProfessionLevel < 0 || primaryProfessionLevel > 300)
+                if (primaryProfessionLevel < 0 || primaryProfessionLevel > 315)
                 {
-                    await ReplyAsync("Please use a numeric value of 0-300 in order to set the Primary Profession Level.", false, null);
+                    await ReplyAsync("Please use a numeric value of 0-315 in order to set the Primary Profession Level.", false, null);
                     return;
                 }
                     
                 if (secondaryProfessionLevel < 0 || secondaryProfessionLevel > 300)
                 {
-                    await ReplyAsync("Please use a numeric value of 0-300 in order to set the Secondary Profession Level.", false, null);
+                    await ReplyAsync("Please use a numeric value of 0-315 in order to set the Secondary Profession Level.", false, null);
                     return;
                 }
                 
@@ -82,8 +85,7 @@ namespace The_House_Discord_Bot.Commands
                 string userNickname = author.Username;
                 string userName = guildNickname == null ? userNickname : guildNickname;
 
-                int primaryOptionSetValue = ProfessionOptionSetValues(primaryProfession).Item2;
-                int secondaryOptionSetValue = ProfessionOptionSetValues(secondaryProfession).Item2;
+
 
                 int[] professionInfo = { primaryOptionSetValue, primaryProfessionLevel, secondaryOptionSetValue, secondaryProfessionLevel };
 
@@ -469,6 +471,66 @@ namespace The_House_Discord_Bot.Commands
                         break;
                     //Tailoring
                     case 8:
+                        optionSetValue = 257260008;
+                        professionName = "Tailoring";
+                        break;
+
+                    default:
+                        optionSetValue = 0;
+                        professionName = "N/A";
+                        break;
+                }
+                return new Tuple<string, int>(professionName, optionSetValue);
+            }
+
+            private static Tuple<string, int> ProfessionOptionSetValues(String professionValue)
+            {
+                string professionName = "";
+                int optionSetValue = 0;
+                switch (professionValue.ToLower())
+                {
+                    //Alchemy
+                    case "alchemy":
+                        optionSetValue = 257260000;
+                        professionName = "Alchemy";
+                        break;
+                    //Blacksmithing
+                    case "blacksmithing":
+                        optionSetValue = 257260001;
+                        professionName = "Blacksmithing";
+                        break;
+                    //Enchanting
+                    case "enchanting":
+                        optionSetValue = 257260002;
+                        professionName = "Enchanting";
+                        break;
+                    //Engineering
+                    case "engineering":
+                        optionSetValue = 257260003;
+                        professionName = "Engineering";
+                        break;
+                    //Herbalism
+                    case "herbalism":
+                        optionSetValue = 257260004;
+                        professionName = "Herbalism";
+                        break;
+                    //Leatherworking
+                    case "leatherworking":
+                        optionSetValue = 257260005;
+                        professionName = "Leatherworking";
+                        break;
+                    //Mining
+                    case "mining":
+                        optionSetValue = 257260006;
+                        professionName = "Mining";
+                        break;
+                    //Skinning
+                    case "skinning":
+                        optionSetValue = 257260007;
+                        professionName = "Skinning";
+                        break;
+                    //Tailoring
+                    case "tailoring":
                         optionSetValue = 257260008;
                         professionName = "Tailoring";
                         break;
