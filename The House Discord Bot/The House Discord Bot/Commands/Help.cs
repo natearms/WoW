@@ -65,6 +65,8 @@ namespace The_House_Discord_Bot.Commands
                 "" + theHouseBotTrigger + "-prof -s <item name>```\n" +
                 "Return recipes this guild member knows." +
                 "" + theHouseBotTrigger + "-prof -s <@usermention>```\n" +
+                "Set your profession skill levels." +
+                "" + theHouseBotTrigger + "-prof -set <primary profession> <primary level> <secondary profession> <secondary level>```\n" +
 
                 //Blacklist Commands help descriptions
                 "__**<The House> Blacklist commands**__\n\n " +
