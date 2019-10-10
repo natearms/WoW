@@ -100,7 +100,7 @@ namespace ClassicDB.Item.Scraper
             #endregion
 
             if (root.InnerText == "Item not found!" 
-                || Int32.Parse(itemLvl) < 40 
+                //|| Int32.Parse(itemLvl) < 40 
                 || Int32.Parse(quality) < 1 
                 || Int32.Parse(quality) == 6
                 || itemName.Contains("[PH]")
