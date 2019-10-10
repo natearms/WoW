@@ -65,8 +65,6 @@ function setEPFromMarketRate() {
 
         Xrm.Page.getAttribute("wowc_epvalue").setValue(marketRate * .1);
         Xrm.Page.getAttribute("wowc_marketratelastupdated").setValue(currentDateTime);
-    }
-    else {
-        Xrm.Page.getAttribute("wowc_marketratelastupdated").setValue(null);
+
     }
 }
