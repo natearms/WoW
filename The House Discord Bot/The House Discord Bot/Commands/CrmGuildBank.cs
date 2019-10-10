@@ -78,16 +78,16 @@ namespace The_House_Discord_Bot.Commands
             {
                 EmbedBuilder prBuilder = new EmbedBuilder();
 
-                string commentString = "```" + "Item Name".PadRight(35) + "Inventory".PadRight(13) + "High Need";
+                string commentString = "```" + "Item Name".PadRight(47) + "Inventory".PadLeft(8);
                 for (int i = 0; i < guildBankRecords.Entities.Count; i++)
                 {
                     string itemName = guildBankRecords.Entities[i].GetAttributeValue<string>("wowc_name");
                     string inventory = guildBankRecords.Entities[i].GetAttributeValue<int>("wowc_inventory").ToString();
                     string highNeed = guildBankRecords.Entities[i].GetAttributeValue<bool>("wowc_highneed") ? "Yes" : "No";
 
-                    itemName = itemName.Length > 35 ? itemName.Substring(0, 35) : itemName;
+                    itemName = itemName.Length > 49 ? itemName.Substring(0, 49) : itemName;
 
-                    commentString += "\n" + itemName.PadRight(39, '.') + inventory.ToString() + highNeed.PadLeft(18 - inventory.Length, '.');
+                    commentString += "\n" + itemName.PadRight(49, '.') + inventory.ToString().PadLeft(6,'.');
 
                 }
                 commentString += "```";
