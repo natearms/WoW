@@ -42,6 +42,7 @@ namespace The_House_Discord_Bot.Commands
             embedDKP.AddField("Return PR, EP, and GP values for mentioned user.", theHouseBotTrigger + "-dkp -s <@usermention>\n" + theHouseBotTrigger + "-dkp -s @Raumedrius", false);
             embedDKP.AddField("Return PR, EP, and GP values for mentioned users.", theHouseBotTrigger + "-dkp -s <@usermention1> <@usermention2> <@usermention3>\n" + theHouseBotTrigger + "-dkp -s @Raumedrius @Chapeau @Flarix", false);
             embedDKP.AddField("Return top list of users and their DKP.", theHouseBotTrigger + "-dkp -top <number>\n" + theHouseBotTrigger + "-dkp -top 10", false);
+            embedDKP.AddField("Return list of users and their DKP based on their class.", theHouseBotTrigger + "-dkp -class <class>\n" + theHouseBotTrigger + "-dkp -class hunter", false);
 
             await Context.Message.Author.SendMessageAsync(null, false, embedDKP.Build());
 
