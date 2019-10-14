@@ -75,22 +75,65 @@ namespace The_House_Discord_Bot.Commands
                 await ReplyAsync(null, false, BuildUsersDKP(GetTopUserEpGp(returnRange,crmService), mentionedUsers, Context.Message.Author).Build());
             }
 
-            [Command("-class")]
-            public async Task ReturnClassPrEpGp([Remainder]params string[] classesSpecified)
+            [Command("-top")]
+            public async Task ReturnTopPrEpGp(int returnRange, [Remainder] string classesSpecified)
             {
-                
+                IReadOnlyCollection<SocketUser> mentionedUsers = new List<SocketUser>();
+                string[] strClasses = classesSpecified.Split(' ');
+                Int32[] classIds = strClasses.Select(c => getClassId(c)).ToArray();
+
+                if (classIds.All(id => id > 0))
+                {
+                    try
+                    {
+                        await ReplyAsync(null, false, BuildUsersDKP(GetTopUserEpGp(returnRange, classIds, crmService), mentionedUsers, Context.Message.Author).Build());
+                    }
+                    catch
+                    {
+                        await ReplyAsync("Sorry to many users to return, please make your query more specific.");
+                    }
+
+                }
+                else
+                    await ReplyAsync("Sorry but " + String.Join(", ", strClasses) + " is not a valid class.");
+            }
+
+            [Command("-class")]
+            public async Task ReturnClassPrEpGp([Remainder] string classesSpecified)
+            {
+                int maxReturnCount = 25;
+                Int32[] classIds;
+                string all = "all";
                 IReadOnlyCollection<SocketUser> mentionedUsers = new List<SocketUser>();
 
-                Int32[] classIds = classesSpecified.Select(c => getClassId(c)).ToArray();
+                string[] strClasses = classesSpecified.Split(' ');
 
-                if (classIds.All(id=> id > 0))
+                if (String.Equals(all, classesSpecified))
                 {
-                    await ReplyAsync(null, false, BuildUsersDKP(GetClassEpGp(classIds, crmService), mentionedUsers, Context.Message.Author).Build());
+                    await ReturnTopPrEpGp(25);
                 }
-                    
                 else
-                    await ReplyAsync("Sorry but one of " + String.Join(", ", classesSpecified) + " is not a valid class.");
-                
+                {
+                    classIds = strClasses.Select(c => getClassId(c)).ToArray();
+
+                    if (classIds.All(id => id > 0))
+                    {
+                        try
+                        {
+                            await ReplyAsync(null, false, BuildUsersDKP(GetTopUserEpGp(maxReturnCount, classIds, crmService), mentionedUsers, Context.Message.Author).Build());
+                        }
+                        catch
+                        {
+                            await ReplyAsync("Sorry to many users to return, please make your query more specific.\n\n Try using -dkp -top <class>");
+                        }
+                        
+                    }
+                    else
+                        await ReplyAsync("Sorry but one of " + String.Join(", ", strClasses) + " is not a valid class.");
+
+                }
+
+
             }
 
             private Int32 getClassId(string classSpecified)
@@ -108,6 +151,7 @@ namespace The_House_Discord_Bot.Commands
                 Druid = 257260000,
                 Hunter,
                 Mage,
+                Paladin,
                 Priest,
                 Rogue,
                 Shaman,
@@ -162,15 +206,40 @@ namespace The_House_Discord_Bot.Commands
 
                 return results;
             }
+            private EntityCollection GetTopUserEpGp(int returnCount, Int32[] classesSpecified, IOrganizationService crmService)
+            {
+                QueryExpression query = new QueryExpression("contact");
+                query.ColumnSet.AddColumns("lastname", "wowc_totalpr", "wowc_totalep", "wowc_totalgp");
+                query.Criteria = new FilterExpression();
+                query.Criteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
+                FilterExpression classFilter = query.Criteria.AddFilter(LogicalOperator.Or);
+                foreach (Int32 classSpecified in classesSpecified)
+                {
+                    classFilter.AddCondition("wowc_class", ConditionOperator.Equal, classSpecified);
+
+                }
+                query.Orders.Add(new OrderExpression("wowc_totalpr", OrderType.Descending));
+                query.Orders.Add(new OrderExpression("wowc_totalep", OrderType.Descending));
+                query.PageInfo = new PagingInfo();
+                query.PageInfo.Count = returnCount;
+                query.PageInfo.PageNumber = 1;
+
+                EntityCollection results = crmService.RetrieveMultiple(query);
+
+                return results;
+            }
             private EntityCollection GetClassEpGp(Int32[] classesSpecified, IOrganizationService crmService)
             {
                 QueryExpression query = new QueryExpression("contact");
                 query.ColumnSet.AddColumns("lastname", "wowc_totalpr", "wowc_totalep", "wowc_totalgp");
                 query.Criteria = new FilterExpression();
                 query.Criteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
+
+                FilterExpression classFilter = query.Criteria.AddFilter(LogicalOperator.Or);
                 foreach (Int32 classSpecified in classesSpecified)
                 {
-                    query.Criteria.AddCondition("wowc_class", ConditionOperator.Equal, classSpecified);
+                    classFilter.AddCondition("wowc_class", ConditionOperator.Equal, classSpecified);
+                    
                 }
 
                 query.Orders.Add(new OrderExpression("wowc_totalpr", OrderType.Descending));
@@ -198,9 +267,9 @@ namespace The_House_Discord_Bot.Commands
                 for (int i = 0; i < providedUser.Entities.Count; i++)
                 {
                     string guildMember = providedUser.Entities[i].GetAttributeValue<string>("lastname");
-                    string totalPr = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalpr").ToString("0.###");
-                    string totalEp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalep").ToString("0.###");
-                    string TotalGp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalgp").ToString("0.###");
+                    string totalPr = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalpr").ToString("N3");
+                    string totalEp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalep").ToString("N3");
+                    string TotalGp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalgp").ToString("N3");
                     if (guildMember == authorUserName)
                         guildMember = "*" + guildMember;
 
