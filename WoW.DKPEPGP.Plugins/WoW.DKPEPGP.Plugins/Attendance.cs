@@ -33,21 +33,18 @@ namespace WoW.DKPEPGP.Plugins
                     EntityCollection attendanceRecordCollection =  GetAttendanceRecord((DateTime)entity.Attributes["createdon"], ((EntityReference)entity.Attributes["wowc_item"]).Id, service);
                     Entity attendanceRecord = new Entity("wowc_attendance");
 
-                    if(attendanceRecordCollection.Entities.Count == 0)
-                    {
-                        tracingService.Trace("No attendance records found, creating record.");
-                        Guid attendanceRecordGuid = Guid.NewGuid();
-                        attendanceRecord["wowc_attendanceid"] = attendanceRecordGuid;
-                        attendanceRecord["wowc_boss"] = entity.Attributes["wowc_item"];
-                        attendanceRecord["wowc_relatedawardeffortpointrecord"] = new EntityReference("wowc_awardeffortpoint", entity.Id);
-                        attendanceRecord["wowc_attendancedate"] = ((DateTime)entity.Attributes["createdon"]).Date;
-                        attendanceRecord["wowc_name"] = ((EntityReference)entity.Attributes["wowc_item"]).Name + " - " + ((DateTime)entity.Attributes["createdon"]).ToShortDateString();
+                    tracingService.Trace("Creating attendance record.");
+                    Guid attendanceRecordGuid = Guid.NewGuid();
+                    attendanceRecord["wowc_attendanceid"] = attendanceRecordGuid;
+                    attendanceRecord["wowc_boss"] = entity.Attributes["wowc_item"];
+                    attendanceRecord["wowc_relatedawardeffortpointrecord"] = new EntityReference("wowc_awardeffortpoint", entity.Id);
+                    attendanceRecord["wowc_attendancedate"] = ((DateTime)entity.Attributes["createdon"]).Date;
+                    attendanceRecord["wowc_name"] = ((EntityReference)entity.Attributes["wowc_item"]).Name + " - " + ((DateTime)entity.Attributes["createdon"]);
 
-                        service.Create(attendanceRecord);
-                        attendanceRecord.Id = attendanceRecordGuid;
-                        
-                    }
-
+                    service.Create(attendanceRecord);
+                    attendanceRecord.Id = attendanceRecordGuid;
+                    
+                    /*
                     if(attendanceRecordCollection.Entities.Count == 1)
                     {
                         tracingService.Trace("Attendance record was found.");
@@ -59,6 +56,7 @@ namespace WoW.DKPEPGP.Plugins
                         tracingService.Trace("There were multiple attendance records for this boss and date.");
                         return;
                     }
+                    */
 
                     tracingService.Trace("Creating raid member relationships with the Attendance record.");
                     var relationship = new Relationship("wowc_wowc_attendance_contact");
