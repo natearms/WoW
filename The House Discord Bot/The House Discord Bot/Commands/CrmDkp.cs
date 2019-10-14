@@ -76,51 +76,43 @@ namespace The_House_Discord_Bot.Commands
             }
 
             [Command("-class")]
-            public async Task ReturnClassPrEpGp([Remainder]string classSpecified)
+            public async Task ReturnClassPrEpGp([Remainder]params string[] classesSpecified)
             {
-                string lowerClassSpecified = classSpecified.ToLower();
+                
                 IReadOnlyCollection<SocketUser> mentionedUsers = new List<SocketUser>();
 
-                if (lowerClassSpecified == "druid" || lowerClassSpecified == "hunter" || lowerClassSpecified == "mage" || 
-                    lowerClassSpecified == "priest" || lowerClassSpecified == "rogue" || lowerClassSpecified == "shaman" || 
-                    lowerClassSpecified == "warlock" || lowerClassSpecified == "warrior")
-                {
-                    Int32 classOptionSetValue = 0;
-                    switch (lowerClassSpecified)
-                    {
-                        case "druid":
-                            classOptionSetValue = 257260000;
-                            break;
-                        case "hunter":
-                            classOptionSetValue = 257260001;
-                            break;
-                        case "mage":
-                            classOptionSetValue = 257260002;
-                            break;
-                        case "priest":
-                            classOptionSetValue = 257260004;
-                            break;
-                        case "rogue":
-                            classOptionSetValue = 257260005;
-                            break;
-                        case "shaman":
-                            classOptionSetValue = 257260006;
-                            break;
-                        case "warlock":
-                            classOptionSetValue = 257260007;
-                            break;
-                        case "warrior":
-                            classOptionSetValue = 257260008;
-                            break;
-                    }
-                        
+                Int32[] classIds = classesSpecified.Select(c => getClassId(c)).ToArray();
 
-                    await ReplyAsync(null, false, BuildUsersDKP(GetClassEpGp(classOptionSetValue, crmService), mentionedUsers, Context.Message.Author).Build());
+                if (classIds.All(id=> id > 0))
+                {
+                    await ReplyAsync(null, false, BuildUsersDKP(GetClassEpGp(classIds, crmService), mentionedUsers, Context.Message.Author).Build());
                 }
                     
                 else
-                    await ReplyAsync("Sorry but " + classSpecified + " is not a valid class.");
+                    await ReplyAsync("Sorry but one of " + String.Join(", ", classesSpecified) + " is not a valid class.");
                 
+            }
+
+            private Int32 getClassId(string classSpecified)
+            {
+                Classes eClass = Classes.Druid;
+                if (Enum.TryParse<Classes>(classSpecified, true, out eClass))
+                {
+                    //direct match
+                    return (Int32)eClass;
+                }
+                return 0;
+            }
+            private enum Classes
+            {
+                Druid = 257260000,
+                Hunter,
+                Mage,
+                Priest,
+                Rogue,
+                Shaman,
+                Warlock,
+                Warrior
             }
             private EntityCollection GetUsersFromIReadOnlyCollection(IReadOnlyCollection<SocketUser> mentionedUsers, IOrganizationService service)
             {
@@ -170,13 +162,17 @@ namespace The_House_Discord_Bot.Commands
 
                 return results;
             }
-            private EntityCollection GetClassEpGp(Int32 classSpecified, IOrganizationService crmService)
+            private EntityCollection GetClassEpGp(Int32[] classesSpecified, IOrganizationService crmService)
             {
                 QueryExpression query = new QueryExpression("contact");
                 query.ColumnSet.AddColumns("lastname", "wowc_totalpr", "wowc_totalep", "wowc_totalgp");
                 query.Criteria = new FilterExpression();
                 query.Criteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
-                query.Criteria.AddCondition("wowc_class", ConditionOperator.Equal, classSpecified);
+                foreach (Int32 classSpecified in classesSpecified)
+                {
+                    query.Criteria.AddCondition("wowc_class", ConditionOperator.Equal, classSpecified);
+                }
+
                 query.Orders.Add(new OrderExpression("wowc_totalpr", OrderType.Descending));
                 query.Orders.Add(new OrderExpression("wowc_totalep", OrderType.Descending));
                 
