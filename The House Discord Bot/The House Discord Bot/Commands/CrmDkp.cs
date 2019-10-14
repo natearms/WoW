@@ -269,7 +269,7 @@ namespace The_House_Discord_Bot.Commands
                     string guildMember = providedUser.Entities[i].GetAttributeValue<string>("lastname");
                     string totalPr = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalpr").ToString("N3");
                     string totalEp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalep").ToString("N3");
-                    string TotalGp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalgp").ToString("N3");
+                    string TotalGp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalgp").ToString("N0");
                     if (guildMember == authorUserName)
                         guildMember = "*" + guildMember;
 
