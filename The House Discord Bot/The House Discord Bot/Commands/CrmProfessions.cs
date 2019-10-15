@@ -53,13 +53,43 @@ namespace The_House_Discord_Bot.Commands
             [Command("-set"), Summary("Sets a single profession for current user.")]
             public async Task SetProfessions(string type, string profession, int professionLevel)
             {
-                if (type.Equals("primary"))
+
+                int professionOptionSetValue = ProfessionOptionSetValues(profession).Item2;
+
+                if (professionOptionSetValue == 0)
                 {
-                    await SetProfessions(profession, professionLevel, String.Empty, -999);
+                    await ReplyAsync("Unable to recognize the Profession " + profession + ".", false, null);
+                    return;
+                }
+                
+                if (professionLevel < 0 || professionLevel > 315)
+                {
+                    await ReplyAsync("Please use a numeric value of 0-315 in order to set the Profession Level.", false, null);
+                    return;
+                }
+
+                int[] professionInfo = { professionOptionSetValue, professionLevel };
+
+                var author = Context.Message.Author;
+                string guildNickname = Context.Guild.GetUser(author.Id).Nickname;
+                string userNickname = author.Username;
+                string userName = guildNickname == null ? userNickname : guildNickname;
+
+                EntityCollection currentUser = GetUserInformation(userName, crmService);
+
+                if (type.ToLower().Equals("primary"))
+                {
+                    await ReplyAsync(SetPrimaryProfession(crmService, currentUser, userName, professionInfo, Context.Guild.Owner), false, null);
+
+                }
+                else if (type.ToLower().Equals("secondary"))
+                {
+                    await ReplyAsync(SetSecondaryProfession(crmService, currentUser, userName, professionInfo, Context.Guild.Owner), false, null);
                 }
                 else
                 {
-                    await SetProfessions(String.Empty, -999, profession, professionLevel);
+                    await ReplyAsync("Unable to recognize the profession type, please use primary or secondary.", false, null);
+                    return;
                 }
             }
 
@@ -73,21 +103,6 @@ namespace The_House_Discord_Bot.Commands
                 string userName = guildNickname == null ? userNickname : guildNickname;
 
                 EntityCollection currentUser = GetUserInformation(userName, crmService);
-                string currentPrimaryProfession = currentUser.Entities[0].Contains("wowc_primaryprofession") ? currentUser.Entities[0].FormattedValues["wowc_primaryprofession"] : "not set";
-                int currentPrimaryProfessionLevel = currentUser.Entities[0].Contains("wowc_primaryprofessionlevel") ? currentUser.Entities[0].GetAttributeValue<int>("wowc_primaryprofessionlevel") : 0;
-                string currentSecondaryProfession = currentUser.Entities[0].Contains("wowc_secondaryprofession") ? currentUser.Entities[0].FormattedValues["wowc_secondaryprofession"] : "not set";
-                int currentSecondaryProfessionLevel = currentUser.Entities[0].Contains("wowc_secondaryprofessionlevel") ? currentUser.Entities[0].GetAttributeValue<int>("wowc_secondaryprofessionlevel") : 0;
-
-                if (primaryProfessionLevel == -999)
-                {
-                    primaryProfession = currentPrimaryProfession;
-                    primaryProfessionLevel = currentPrimaryProfessionLevel;
-                }
-                else if (secondaryProfessionLevel == -999)
-                {
-                    secondaryProfession = currentSecondaryProfession;
-                    secondaryProfessionLevel = currentSecondaryProfessionLevel;
-                }
 
                 int primaryOptionSetValue = ProfessionOptionSetValues(primaryProfession).Item2;
                 int secondaryOptionSetValue = ProfessionOptionSetValues(secondaryProfession).Item2;
@@ -118,7 +133,7 @@ namespace The_House_Discord_Bot.Commands
 
                 int[] professionInfo = { primaryOptionSetValue, primaryProfessionLevel, secondaryOptionSetValue, secondaryProfessionLevel };
 
-                await ReplyAsync(SetProfession(crmService, currentUser, userName, professionInfo, Context.Guild.Owner), false, null);
+                await ReplyAsync(SetProfessions(crmService, currentUser, userName, professionInfo, Context.Guild.Owner), false, null);
             }
             [Command("-get"), Summary("Gets professions for current user.")]
             public async Task GetProfessions()
@@ -305,7 +320,7 @@ namespace The_House_Discord_Bot.Commands
                 else
                     return results = "Hmm, this shouldn't have happened...";
             }
-            private static string SetProfession(IOrganizationService crmService, EntityCollection contact, string mentionedUser, int[] professionInfo, IUser guildOwner)
+            private static string SetProfessions(IOrganizationService crmService, EntityCollection contact, string mentionedUser, int[] professionInfo, IUser guildOwner)
             {
                 string results = "";
                 if (contact.Entities.Count < 1)
@@ -323,6 +338,40 @@ namespace The_House_Discord_Bot.Commands
                 crmService.Update(entity);
                 return results = "Updated your profession information in CRM.";
                     
+            }
+            private static string SetPrimaryProfession(IOrganizationService crmService, EntityCollection contact, string mentionedUser, int[] professionInfo, IUser guildOwner)
+            {
+                string results = "";
+                if (contact.Entities.Count < 1)
+                    return results = "Sorry, I could not find you in CRM, please make sure that your server nickname matches your WoW character name and try again. " + guildOwner.Mention + ", can you make sure " + mentionedUser + " exists?";
+                else if (contact.Entities.Count > 1)
+                    return results = "There seems to be more than one of you in CRM... " + guildOwner.Mention + ", could you look into this?";
+
+                Entity entity = new Entity("contact");
+                entity.Id = contact.Entities[0].GetAttributeValue<Guid>("contactid");
+                entity["wowc_primaryprofession"] = new OptionSetValue(professionInfo[0]);
+                entity["wowc_primaryprofessionlevel"] = professionInfo[1];
+
+                crmService.Update(entity);
+                return results = "Updated your profession information in CRM.";
+
+            }
+            private static string SetSecondaryProfession(IOrganizationService crmService, EntityCollection contact, string mentionedUser, int[] professionInfo, IUser guildOwner)
+            {
+                string results = "";
+                if (contact.Entities.Count < 1)
+                    return results = "Sorry, I could not find you in CRM, please make sure that your server nickname matches your WoW character name and try again. " + guildOwner.Mention + ", can you make sure " + mentionedUser + " exists?";
+                else if (contact.Entities.Count > 1)
+                    return results = "There seems to be more than one of you in CRM... " + guildOwner.Mention + ", could you look into this?";
+
+                Entity entity = new Entity("contact");
+                entity.Id = contact.Entities[0].GetAttributeValue<Guid>("contactid");
+                entity["wowc_secondaryprofession"] = new OptionSetValue(professionInfo[0]);
+                entity["wowc_secondaryprofessionlevel"] = professionInfo[1];
+
+                crmService.Update(entity);
+                return results = "Updated your profession information in CRM.";
+
             }
             private static EmbedBuilder RecipeSearchEmbedBuilder(IOrganizationService crmService, string itemSearch, IUser guildOwner)
             {
