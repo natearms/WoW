@@ -30,7 +30,9 @@ namespace WoW.DKPEPGP.Plugins
                 try
                 {
                     tracingService.Trace("Search for an existing Attendance record.");
-                    EntityCollection attendanceRecordCollection =  GetAttendanceRecord((DateTime)entity.Attributes["createdon"], ((EntityReference)entity.Attributes["wowc_item"]).Id, service);
+                    //EntityCollection attendanceRecordCollection =  GetAttendanceRecord((DateTime)entity.Attributes["createdon"], ((EntityReference)entity.Attributes["wowc_item"]).Id, service);
+                    DateTime pstTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time"));
+                    
                     Entity attendanceRecord = new Entity("wowc_attendance");
 
                     tracingService.Trace("Creating attendance record.");
@@ -38,8 +40,8 @@ namespace WoW.DKPEPGP.Plugins
                     attendanceRecord["wowc_attendanceid"] = attendanceRecordGuid;
                     attendanceRecord["wowc_boss"] = entity.Attributes["wowc_item"];
                     attendanceRecord["wowc_relatedawardeffortpointrecord"] = new EntityReference("wowc_awardeffortpoint", entity.Id);
-                    attendanceRecord["wowc_attendancedate"] = ((DateTime)entity.Attributes["createdon"]).Date;
-                    attendanceRecord["wowc_name"] = ((EntityReference)entity.Attributes["wowc_item"]).Name + " - " + ((DateTime)entity.Attributes["createdon"]);
+                    attendanceRecord["wowc_attendancedate"] = pstTime.Date;
+                    attendanceRecord["wowc_name"] = ((EntityReference)entity.Attributes["wowc_item"]).Name + " - " + pstTime;
 
                     service.Create(attendanceRecord);
                     attendanceRecord.Id = attendanceRecordGuid;
