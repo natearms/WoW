@@ -33,11 +33,14 @@ namespace WoW.DKPEPGP.Plugins
                     Guid memberGuid = members.GetAttributeValue<Guid>("contactid");
                     tracingService.Trace("Member Guid " + memberGuid);
 
-                    int lastThirtyAttendance = MemberAttendance(DateTime.Now.AddDays(-30), memberGuid, service);
-                    int lastThirtyRaids = AttendanceRecords(DateTime.Now.AddDays(-30), service);
+                    DateTime thirtyDayVariable = DateTime.Compare(trialEnd, DateTime.Today.AddDays(-30)) <= 0 ? DateTime.Today.AddDays(-30) : trialEnd;
+                    DateTime sixtyDayVariable = DateTime.Compare(trialEnd, DateTime.Today.AddDays(-60)) <= 0 ? DateTime.Today.AddDays(-60) : trialEnd;
 
-                    int lastSixtyAttendance = MemberAttendance(DateTime.Now.AddDays(-60), memberGuid, service);
-                    int lastSixtyRaids = AttendanceRecords(DateTime.Now.AddDays(-60), service);
+                    int lastThirtyAttendance = MemberAttendance(thirtyDayVariable, memberGuid, service);
+                    int lastThirtyRaids = AttendanceRecords(thirtyDayVariable, service);
+
+                    int lastSixtyAttendance = MemberAttendance(sixtyDayVariable, memberGuid, service);
+                    int lastSixtyRaids = AttendanceRecords(sixtyDayVariable, service);
 
                     int totalMemberAttendance = MemberAttendance(trialEnd, memberGuid, service);
                     int totalMemberTrialEndRaids = AttendanceRecords(trialEnd, service);
