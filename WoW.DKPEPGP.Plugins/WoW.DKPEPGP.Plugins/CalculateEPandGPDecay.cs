@@ -34,8 +34,8 @@ namespace WoW.DKPEPGP.Plugins
                     tracingService.Trace("Getting Raid Members informaiton");
                     QueryExpression query = new QueryExpression("contact");
                     query.ColumnSet.AddColumns("contactid", "wowc_totalep", "wowc_totalgp", "fullname","wowc_class");
-                    query.Criteria = new FilterExpression();
-                    query.Criteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
+                    //query.Criteria = new FilterExpression();
+                    //query.Criteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
 
                     RaidMembers = service.RetrieveMultiple(query);
                 }
