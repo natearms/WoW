@@ -32,11 +32,11 @@ namespace WoW.DKPEPGP.Plugins
                 {
                     tracingService.Trace("Getting Raid Members informaiton");
                     QueryExpression query = new QueryExpression("contact");
-                    query.ColumnSet.AddColumns("contactid", "wowc_trialend");
+                    query.ColumnSet.AddColumns("contactid", "wowc_firstraidattended");
                     query.Criteria = new FilterExpression();
                     query.Criteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
-                    query.Criteria.AddCondition("wowc_trialend", ConditionOperator.NotNull);
-                    query.Criteria.AddCondition("wowc_trialend", ConditionOperator.LessEqual, DateTime.Now);
+                    query.Criteria.AddCondition("wowc_firstraidattended", ConditionOperator.NotNull);
+                    query.Criteria.AddCondition("wowc_firstraidattended", ConditionOperator.LessEqual, DateTime.Now);
 
                     RaidMembers = service.RetrieveMultiple(query);
                 }
@@ -46,11 +46,11 @@ namespace WoW.DKPEPGP.Plugins
                     tracingService.Trace("Setting users days in guild.");
                     
 
-                    if(a.GetAttributeValue<DateTime>("wowc_trialend") != DateTime.MinValue)
+                    if(a.GetAttributeValue<DateTime>("wowc_firstraidattended") != DateTime.MinValue)
                     {
                         Entity raidMember = new Entity("contact");
                         raidMember.Id = a.Id;
-                        raidMember["wowc_daysasamember"] = (int)(DateTime.Now - a.GetAttributeValue<DateTime>("wowc_trialend")).TotalDays;
+                        raidMember["wowc_daysasamember"] = (int)(DateTime.Now - a.GetAttributeValue<DateTime>("wowc_firstraidattended")).TotalDays;
                         service.Update(raidMember);
                         tracingService.Trace("Set users days in guild.");
                     }
