@@ -99,6 +99,10 @@ namespace The_House_Discord_Bot.DiscordFunctions
                 if (raidSignup.Entities.Count == 1 && crmUser.Entities.Count == 1 && existingAttendance.Entities.Count == 1 && deleted)
                 {
                     //crmService.Delete("wowc_raidsignup", existingAttendance.Entities[0].GetAttributeValue<Guid>("wowc_raidsignupid"));
+                    Entity raidSignupEntity = new Entity("wowc_raidsignup");
+                    raidSignupEntity.Id = existingAttendance.Entities[0].GetAttributeValue<Guid>("wowc_raidsignupid");
+                    raidSignupEntity["wowc_attending"] = new OptionSetValue(257260002);
+                    crmService.Update(raidSignupEntity);
                 }
                 else if (raidSignup.Entities.Count == 1 && crmUser.Entities.Count == 1 && existingAttendance.Entities.Count == 0)
                 {
