@@ -12,7 +12,7 @@ function getBankBounty() {
                 for (var i = 0; i < results.entities.length; i++) {
                     var wowc_highneed = results.entities[i]["wowc_highneed"];
                     var wowc_highneed_formatted = results.entities[i]["wowc_highneed@OData.Community.Display.V1.FormattedValue"];
-                    bountyTotal = wowc_highneed ? 2 : 1;
+                    bountyTotal = wowc_highneed ? 1 : 1;
                 }
             },
             function (error) {
