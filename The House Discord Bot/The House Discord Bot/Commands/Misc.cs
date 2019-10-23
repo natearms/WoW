@@ -25,7 +25,7 @@ namespace The_House_Discord_Bot.Commands
         public IOrganizationService crmService { get; set; }
 
         [Command("-tsm"), Summary("Trade Skill Master string for current donations.")]
-        public async Task TSMSTringBUilder()
+        public async Task TSMStringBUilder()
         {
             EntityCollection epDonations = GetEPDonations(crmService);
             string tsmStringBuilder = "`";
@@ -35,13 +35,12 @@ namespace The_House_Discord_Bot.Commands
                 tsmStringBuilder += epDonations.Entities[i].GetAttributeValue<string>("wowc_name") + " /exact; ";
             }
             tsmStringBuilder += "`";
-            await ReplyAsync("Below is the TSM shopping list string for guild rewarded EP mats. \n\n" + tsmStringBuilder,false,null);
+            await ReplyAsync("Below is the TSM shopping list string for guild requested materials that reward EP. \n\n" + tsmStringBuilder,false,null);
 
         }
         private static EntityCollection GetEPDonations(IOrganizationService crmService)
         {
-            Int32[] slotOptions = { 257260007 , 257260008 , 257260009 };
-
+            
             QueryExpression query = new QueryExpression("wowc_loot");
             query.ColumnSet.AddColumns("wowc_name");
             query.Criteria = new FilterExpression();
