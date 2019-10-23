@@ -26,15 +26,6 @@ namespace The_House_Discord_Bot.Commands
 
             await Context.Message.Author.SendMessageAsync(null, false, embedHelp.Build());
 
-            //Poll Commands embed
-            var embedPoll = new EmbedBuilder();
-            embedPoll.WithTitle("Poll Commands");
-            embedPoll.AddField("Create a simple poll with :thumbsup: :thumbsdown: :shrug:.", theHouseBotTrigger + "-poll -s <title>\n" + theHouseBotTrigger + "-poll -s This is a simple poll", false);
-            embedPoll.AddField("Create a reaction poll with up to 26 options.", theHouseBotTrigger + "-poll -m [title] {Option1} {Option2} {Option3}\n" + theHouseBotTrigger + "-poll -m [This is a reaction poll] {First Option} {Second Option} {Third Option}", false);
-            embedPoll.AddField("Create a straw poll with up to 30 options.", "\ntrue = multi select\nfalse = single select\n" + theHouseBotTrigger + "-poll -st <true|false> [title] {Option1} {Option2} {Option3}\n" + theHouseBotTrigger + "-poll -st true [This is a straw poll] {First Option} {Second Option} {Third Option}", false);
-
-            await Context.Message.Author.SendMessageAsync(null, false, embedPoll.Build());
-
             //DKP Commands help descriptions
             var embedDKP = new EmbedBuilder();
             embedDKP.WithTitle("DKP commands");
@@ -46,16 +37,7 @@ namespace The_House_Discord_Bot.Commands
             embedDKP.AddField("Return list of users and their DKP based on their class.", theHouseBotTrigger + "-dkp -class <class>\n" + theHouseBotTrigger + "-dkp -class hunter mage priest", false);
 
             await Context.Message.Author.SendMessageAsync(null, false, embedDKP.Build());
-
-            //Guild Bank Commands help descriptions
-            var embedGuildBank = new EmbedBuilder();
-            embedGuildBank.WithTitle("Guild Bank commands");
-            embedGuildBank.AddField("Search Guild Bank records. Using \"%\" will return all records.", theHouseBotTrigger + "-gb -s <item name>\n" + theHouseBotTrigger + "-gb -s Black Lotus", false);
-            embedGuildBank.AddField("Return audit history for a specific item.", theHouseBotTrigger + "-gb -a <item name>\n" + theHouseBotTrigger + "-gb -a Black Lotus", false);
-            embedGuildBank.AddField("Search the guild bank for high need mats.", theHouseBotTrigger + "-gb -hn", false);
-
-            await Context.Message.Author.SendMessageAsync(null, false, embedGuildBank.Build());
-            
+                        
             // Profession Commands help descriptions
             var embedProfession = new EmbedBuilder();
             embedProfession.WithTitle("Profession commands");
@@ -68,9 +50,25 @@ namespace The_House_Discord_Bot.Commands
 
             await Context.Message.Author.SendMessageAsync(null, false, embedProfession.Build());
 
+            //Guild Bank Commands help descriptions
+            var embedGuildBank = new EmbedBuilder();
+            embedGuildBank.WithTitle("Guild Bank commands");
+            embedGuildBank.AddField("Search Guild Bank records. Using \"%\" will return all records.", theHouseBotTrigger + "-gb -s <item name>\n" + theHouseBotTrigger + "-gb -s Black Lotus", false);
+            embedGuildBank.AddField("Return audit history for a specific item.", theHouseBotTrigger + "-gb -a <item name>\n" + theHouseBotTrigger + "-gb -a Black Lotus", false);
+            embedGuildBank.AddField("Search the guild bank for high need mats.", theHouseBotTrigger + "-gb -hn", false);
+
+            await Context.Message.Author.SendMessageAsync(null, false, embedGuildBank.Build());
+
+            // Miscellaneous Commands help descriptions
+            var embedMiscellaneous = new EmbedBuilder();
+            embedMiscellaneous.WithTitle("Miscellaneous commands");
+            embedMiscellaneous.AddField("Generate a TradeSkillMaster shopping list string.", theHouseBotTrigger + "-tsm", false);
+        
+            await Context.Message.Author.SendMessageAsync(null, false, embedMiscellaneous.Build());
+
             // Blacklist Commands help descriptions
             var embedBlacklist = new EmbedBuilder();
-            embedBlacklist.WithTitle("Profession commands");
+            embedBlacklist.WithTitle("Blacklist commands");
             embedBlacklist.AddField("Create a new blacklist record.", theHouseBotTrigger + "-bl -n <Character name> <Detailed description of what happened>\n" + theHouseBotTrigger + "-bl -n Raumedrius This person was a terrible tank, doesn't know how to hold threat, mark targets, and communicate with members of the party.", false);
             embedBlacklist.AddField("Search to see if someone was blacklisted.", theHouseBotTrigger + "-bl -s <Character name>\n" + theHouseBotTrigger + "-bl -s Raumedrius", false);
             
@@ -82,6 +80,24 @@ namespace The_House_Discord_Bot.Commands
             embedSignups.AddField("Create a new event.", theHouseBotTrigger + "-event <eventname> <date> <time+am/pm> <timezone> <estimated hours> <description>\n" + theHouseBotTrigger + "-event MC 1/1/19 6:00pm PST 4 MC raiding, be there to get your loot!", false);
             
             await Context.Message.Author.SendMessageAsync(null, false, embedSignups.Build());
+
+            //Poll Commands embed
+            var embedPoll = new EmbedBuilder();
+            embedPoll.WithTitle("Poll Commands");
+            embedPoll.AddField("Create a simple poll with :thumbsup: :thumbsdown: :shrug:.", theHouseBotTrigger + "-poll -s <title>\n" + theHouseBotTrigger + "-poll -s This is a simple poll", false);
+            embedPoll.AddField("Create a reaction poll with up to 26 options.", theHouseBotTrigger + "-poll -m [title] {Option1} {Option2} {Option3}\n" + theHouseBotTrigger + "-poll -m [This is a reaction poll] {First Option} {Second Option} {Third Option}", false);
+            embedPoll.AddField("Create a straw poll with up to 30 options.", "\ntrue = multi select\nfalse = single select\n" + theHouseBotTrigger + "-poll -st <true|false> [title] {Option1} {Option2} {Option3}\n" + theHouseBotTrigger + "-poll -st true [This is a straw poll] {First Option} {Second Option} {Third Option}", false);
+
+            await Context.Message.Author.SendMessageAsync(null, false, embedPoll.Build());
+
+            // Raid Management Commands help descriptions
+            var embedRaidManagement = new EmbedBuilder();
+            embedRaidManagement.WithTitle("Raid Management commands");
+            embedRaidManagement.AddField("Add members to Active Raid Group", theHouseBotTrigger + "-raid -active <member>, <member>, <member>\n" + theHouseBotTrigger + "-raid -active Raumedrius, Chapeau, Flarix", false);
+            embedRaidManagement.AddField("Add members to Standby Raid Group", theHouseBotTrigger + "-raid -standby <member>, <member>, <member>\n" + theHouseBotTrigger + "-raid -standby Raumedrius, Chapeau, Flarix", false);
+            embedRaidManagement.AddField("Remove members from group", theHouseBotTrigger + "-raid -remove <member>, <member>, <member>\n" + theHouseBotTrigger + "-raid -remove Raumedrius, Chapeau, Flarix", false);
+
+            await Context.Message.Author.SendMessageAsync(null, false, embedRaidManagement.Build());
 
             /*
             var embed = new EmbedBuilder();
