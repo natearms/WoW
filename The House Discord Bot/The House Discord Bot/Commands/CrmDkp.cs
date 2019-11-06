@@ -270,7 +270,7 @@ namespace The_House_Discord_Bot.Commands
                     string totalPr = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalpr").ToString("N3");
                     string totalEp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalep").ToString("N3");
                     string TotalGp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalgp").ToString("N0");
-                    if (guildMember == authorUserName)
+                    if (guildMember.ToLower() == authorUserName.ToLower())
                         guildMember = "*" + guildMember;
 
                     commentString += "\n" + guildMember.PadRight(15, '.') + totalPr.ToString().PadLeft(12, '.') + totalEp.ToString().PadLeft(15, '.') + TotalGp.ToString().PadLeft(12, '.');

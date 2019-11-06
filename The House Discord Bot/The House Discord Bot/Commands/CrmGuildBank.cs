@@ -134,6 +134,7 @@ namespace The_House_Discord_Bot.Commands
                 query.ColumnSet.AddColumns("wowc_name", "wowc_inventory", "wowc_highneed");
                 query.Criteria = new FilterExpression();
                 query.Criteria.AddCondition("wowc_name", ConditionOperator.Like, "%" + itemSearch + "%");
+                query.Criteria.AddCondition("wowc_inventory", ConditionOperator.GreaterEqual, 1);
                 query.Orders.Add(new OrderExpression("wowc_name", OrderType.Ascending));
 
                 EntityCollection results = service.RetrieveMultiple(query);

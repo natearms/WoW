@@ -288,8 +288,17 @@ namespace The_House_Discord_Bot.Commands
                 wowc_lootCollection.Add(wowc_lootRef);
                 if (wowc_loot.Entities.Count == 1 && contact.Entities.Count == 1)
                 {
-                    crmService.Associate(contactRef.LogicalName, contactRef.Id, relationship, wowc_lootCollection);
-                    return results = "Created recipe relationship between **" + contact.Entities[0].GetAttributeValue<string>("lastname") + "** and **" + wowc_loot.Entities[0].GetAttributeValue<string>("wowc_name") + "**";
+                    try
+                    {
+                        crmService.Associate(contactRef.LogicalName, contactRef.Id, relationship, wowc_lootCollection);
+                        return results = "Created recipe relationship between **" + contact.Entities[0].GetAttributeValue<string>("lastname") + "** and **" + wowc_loot.Entities[0].GetAttributeValue<string>("wowc_name") + "**";
+                    }
+                    catch (Exception)
+                    {
+                        return results = "Recipe relationship already exists between **" + contact.Entities[0].GetAttributeValue<string>("lastname") + "** and **" + wowc_loot.Entities[0].GetAttributeValue<string>("wowc_name") + "**";
+                        throw;
+                    }
+                    
                 }
                 else
                     return results = "Hmm, this shouldn't have happened...";
