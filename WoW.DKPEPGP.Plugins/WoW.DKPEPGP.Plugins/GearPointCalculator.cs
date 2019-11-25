@@ -48,7 +48,7 @@ namespace WoW.DKPEPGP.Plugins
                         tracingService.Trace("Getting Farm Option Set");
                         wowc_farm = entity.Attributes.Contains("wowc_farm") ? (entity.GetAttributeValue<bool>("wowc_farm") ? 2 : 1) : (image.GetAttributeValue<bool>("wowc_farm") ? 2 : 1);
                         tracingService.Trace("Getting Off Spec Option Set");
-                        wowc_offSpec = entity.Attributes.Contains("wowc_offspec") ? (entity.GetAttributeValue<bool>("wowc_offspec") ? 2 : 1) : (image.GetAttributeValue<bool>("wowc_offspec") ? 2 : 1);
+                        wowc_offSpec = entity.Attributes.Contains("wowc_nocharge") ? (entity.GetAttributeValue<bool>("wowc_nocharge") ? 2 : 1) : (image.GetAttributeValue<bool>("wowc_nocharge") ? 2 : 1);
 
                         if(wowc_offSpec == 2)
                         {
