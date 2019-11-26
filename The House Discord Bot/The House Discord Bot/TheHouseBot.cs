@@ -37,8 +37,8 @@ namespace The_House_Discord_Bot
         private string botTrigger = "thb! ";
         private string botToken = "NTg4NDgyNTAzOTcxNTY5Njkw.XQFxlQ.kOu5eynSGWL05-LJAL9XrbVAu8Y";
         private ulong postingChannel = 584775200642564141;
-        private int recurrenceInterval = 22;
-        private int chatPostInterval = 10;
+        private int recurrenceInterval = 60;
+        private int chatPostInterval = 25;
 
 
         ////Test Bot Trigger
