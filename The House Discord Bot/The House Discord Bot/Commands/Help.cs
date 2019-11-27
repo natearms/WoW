@@ -104,7 +104,8 @@ namespace The_House_Discord_Bot.Commands
             embedRaidManagement.WithTitle("Raid Management commands");
             embedRaidManagement.AddField("Add members to Active Raid Group", theHouseBotTrigger + "-raid -active <member>, <member>, <member>\n" + theHouseBotTrigger + "-raid -active Raumedrius, Chapeau, Flarix", false);
             embedRaidManagement.AddField("Add members to Standby Raid Group", theHouseBotTrigger + "-raid -standby <member>, <member>, <member>\n" + theHouseBotTrigger + "-raid -standby Raumedrius, Chapeau, Flarix", false);
-            embedRaidManagement.AddField("Remove members from group", theHouseBotTrigger + "-raid -remove <member>, <member>, <member>\n" + theHouseBotTrigger + "-raid -remove Raumedrius, Chapeau, Flarix", false);
+            embedRaidManagement.AddField("Remove members from raid group.", theHouseBotTrigger + "-raid -remove <member>, <member>, <member>\n" + theHouseBotTrigger + "-raid -remove Raumedrius, Chapeau, Flarix", false);
+            embedRaidManagement.AddField("Remove all members from raid groups.", theHouseBotTrigger + "-raid -reset.", false);
 
             await Context.Message.Author.SendMessageAsync(null, false, embedRaidManagement.Build());
 
