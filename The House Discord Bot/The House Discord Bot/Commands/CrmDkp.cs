@@ -261,7 +261,7 @@ namespace The_House_Discord_Bot.Commands
                 EmbedBuilder prBuilder = new EmbedBuilder();
 
                 string missingUsers = null;
-                string commentString = "```" + "Name".PadRight(15) + "Total PR".PadLeft(12) + "Total EP".PadLeft(15) + "Total GP".PadLeft(12);
+                string commentString = "```" + "Name".PadRight(12) + "Total PR".PadLeft(12) + "Total EP".PadLeft(12) + "Total GP".PadLeft(12);
                 string missingUserCommentString = null;
 
                 for (int i = 0; i < providedUser.Entities.Count; i++)
@@ -269,11 +269,11 @@ namespace The_House_Discord_Bot.Commands
                     string guildMember = providedUser.Entities[i].GetAttributeValue<string>("lastname");
                     string totalPr = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalpr").ToString("N3");
                     string totalEp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalep").ToString("N3");
-                    string TotalGp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalgp").ToString("N0");
+                    string TotalGp = providedUser.Entities[i].GetAttributeValue<Decimal>("wowc_totalgp").ToString("N3");
                     if (guildMember.ToLower() == authorUserName.ToLower())
                         guildMember = "*" + guildMember;
 
-                    commentString += "\n" + guildMember.PadRight(15, '.') + totalPr.ToString().PadLeft(12, '.') + totalEp.ToString().PadLeft(15, '.') + TotalGp.ToString().PadLeft(12, '.');
+                    commentString += "\n" + guildMember.PadRight(12, '.') + totalPr.ToString().PadLeft(12, '.') + totalEp.ToString().PadLeft(12, '.') + TotalGp.ToString().PadLeft(12, '.');
 
                 }
 
