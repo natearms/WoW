@@ -26,11 +26,39 @@ namespace The_House_Discord_Bot.Commands
         public class EPModule : ModuleBase<SocketCommandContext>
         {
             public IOrganizationService crmService { get; set; }
-            [Command("-donations")]
+            [Command("-donations"), Summary("Donations accepted that reward EP.")]
             public async Task ReturnEPDonations()
             {
                 await ReplyAsync(null, false, epFormatEmbed(GetEPDonations(crmService), crmService).Build());
             }
+            [Command("-weekly"), Summary("Last 7 days of EP donations total.")]
+            public async Task ReturnWeeklyDonationEP()
+            {
+                var author = Context.Message.Author;
+                string guildNickname = Context.Guild.GetUser(author.Id).Nickname;
+                string userNickname = author.Username;
+                string userName = guildNickname == null ? userNickname : guildNickname;
+
+                Decimal weeklyDonation = 0;
+
+                EntityCollection donatedRecords = GetWeeklyDonation(userName, crmService);
+
+                for (int i = 0; i < donatedRecords.Entities.Count; i++)
+                {
+                    weeklyDonation += donatedRecords.Entities[i].GetAttributeValue<Decimal>("wowc_ep");
+                }
+
+                if (weeklyDonation > 0)
+                {
+                    await ReplyAsync("Thank you for your donations! You have donated **" + weeklyDonation.ToString("N3") + " EP** worth of mats to the guild bank in the last 7 days.", false, null);
+                }
+                else
+                {
+                    await ReplyAsync("It does look like you've donated anything with in the last 7 days that give EP.", false, null);
+                }
+                
+            }
+
             private EntityCollection GetEPDonations(IOrganizationService crmService)
             {
                 QueryExpression query = new QueryExpression("wowc_loot");
@@ -44,6 +72,43 @@ namespace The_House_Discord_Bot.Commands
                 EntityCollection results = crmService.RetrieveMultiple(query);
 
                 return results;
+            }
+            private EntityCollection GetWeeklyDonation(string guildMember, IOrganizationService crmService)
+            {
+                QueryExpression contactQuery = new QueryExpression("contact");
+                contactQuery.ColumnSet.AddColumns("lastname");
+                contactQuery.Criteria = new FilterExpression();
+                contactQuery.Criteria.AddCondition("lastname", ConditionOperator.Equal, guildMember);
+                contactQuery.Criteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
+                EntityCollection contactResult = crmService.RetrieveMultiple(contactQuery);
+
+                if (contactResult.Entities.Count == 0)
+                    return contactResult;
+
+                QueryExpression query = new QueryExpression("wowc_effortpoint");
+                query.ColumnSet.AddColumns("wowc_raidmember", "wowc_ep");
+
+                FilterExpression donatedRecords = new FilterExpression(LogicalOperator.And);
+                donatedRecords.AddCondition("wowc_efforttype", ConditionOperator.Equal, 257260003);
+                donatedRecords.AddCondition("wowc_ep", ConditionOperator.GreaterThan, 0);
+
+                FilterExpression adjustmentRecords = new FilterExpression(LogicalOperator.And);
+                adjustmentRecords.AddCondition("wowc_efforttype", ConditionOperator.Equal, 257260006);
+                adjustmentRecords.AddCondition("wowc_ep", ConditionOperator.LessThan, 0);
+                adjustmentRecords.AddCondition("subject", ConditionOperator.NotLike, "%decay%");
+
+                FilterExpression effortRecordsCombined = new FilterExpression(LogicalOperator.Or);
+                effortRecordsCombined.AddFilter(donatedRecords);
+                effortRecordsCombined.AddFilter(adjustmentRecords);
+
+                query.Criteria = new FilterExpression(LogicalOperator.And);
+                query.Criteria.AddCondition("wowc_raidmember", ConditionOperator.Equal, contactResult.Entities[0].Id);
+                query.Criteria.AddCondition("createdon", ConditionOperator.GreaterEqual, DateTime.Now.AddDays(-7));
+                query.Criteria.AddFilter(effortRecordsCombined);
+
+                EntityCollection results = crmService.RetrieveMultiple(query);
+                return results;
+
             }
             private EmbedBuilder epFormatEmbed(EntityCollection epRecords, IOrganizationService crmService)
             {

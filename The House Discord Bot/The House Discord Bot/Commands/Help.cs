@@ -37,7 +37,16 @@ namespace The_House_Discord_Bot.Commands
             embedDKP.AddField("Return list of users and their DKP based on their class.", theHouseBotTrigger + "-dkp -class <class>\n" + theHouseBotTrigger + "-dkp -class hunter mage priest", false);
 
             await Context.Message.Author.SendMessageAsync(null, false, embedDKP.Build());
-                        
+
+            //EP/GP Commands help descriptions
+            var embedEPGP = new EmbedBuilder();
+            embedEPGP.WithTitle("EP/GP commands");
+            embedEPGP.AddField("Return a list of donatable records that award EP.", theHouseBotTrigger + "-ep -donations", false);
+            embedEPGP.AddField("Returns the total count of your last 7 days of donations.", theHouseBotTrigger + "-ep -weekly", false);
+            embedEPGP.AddField("Returns GP Values for items searched.", theHouseBotTrigger + "-gp -s <itemname>\n" + theHouseBotTrigger + "-gp -s Thunderfury", false);
+
+            await Context.Message.Author.SendMessageAsync(null, false, embedEPGP.Build());
+
             // Profession Commands help descriptions
             var embedProfession = new EmbedBuilder();
             embedProfession.WithTitle("Profession commands");

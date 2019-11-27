@@ -25,7 +25,7 @@ namespace WoW.DKPEPGP.Plugins
             {
                 Entity entity = (Entity)context.InputParameters["Target"];
                 
-                if(entity.GetAttributeValue<OptionSetValue>("wowc_efforttype").Value == 257260003)
+                if(entity.GetAttributeValue<OptionSetValue>("wowc_efforttype").Value == 257260003 || entity.GetAttributeValue<OptionSetValue>("wowc_efforttype").Value == 257260006)
                 {
                     try
                     {
@@ -61,11 +61,24 @@ namespace WoW.DKPEPGP.Plugins
         {
             QueryExpression query = new QueryExpression("wowc_effortpoint");
             query.ColumnSet.AddColumns("wowc_raidmember", "wowc_ep");
-            query.Criteria = new FilterExpression();
+
+            FilterExpression donatedRecords = new FilterExpression(LogicalOperator.And);
+            donatedRecords.AddCondition("wowc_efforttype", ConditionOperator.Equal, 257260003);
+            donatedRecords.AddCondition("wowc_ep", ConditionOperator.GreaterThan, 0);
+
+            FilterExpression adjustmentRecords = new FilterExpression(LogicalOperator.And);
+            adjustmentRecords.AddCondition("wowc_efforttype", ConditionOperator.Equal, 257260006);
+            adjustmentRecords.AddCondition("wowc_ep", ConditionOperator.LessThan, 0);
+            adjustmentRecords.AddCondition("subject", ConditionOperator.NotLike, "%decay%");
+
+            FilterExpression effortRecordsCombined = new FilterExpression(LogicalOperator.Or);
+            effortRecordsCombined.AddFilter(donatedRecords);
+            effortRecordsCombined.AddFilter(adjustmentRecords);
+
+            query.Criteria = new FilterExpression(LogicalOperator.And);
             query.Criteria.AddCondition("wowc_raidmember", ConditionOperator.Equal, contactId);
-            query.Criteria.AddCondition("wowc_efforttype", ConditionOperator.Equal, 257260003);
-            query.Criteria.AddCondition("wowc_ep", ConditionOperator.NotEqual, 0);
             query.Criteria.AddCondition("createdon", ConditionOperator.GreaterEqual, DateTime.Now.AddDays(-7));
+            query.Criteria.AddFilter(effortRecordsCombined);
 
             EntityCollection results = service.RetrieveMultiple(query);
             return results;
