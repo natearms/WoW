@@ -113,7 +113,7 @@ namespace The_House_Discord_Bot.Commands
                 await ReplyAsync("Standby Raid Team count = " + GetTotalMembers(new Guid("9AEC1299-778A-E911-A81A-000D3A3B53C4"), crmService).Entities.Count, false, null);
             }
             [Command("-remove"), Summary("Remove member from group.")]
-            public async Task TSMSTringBUilder([Remainder] string removalString)
+            public async Task RemoveFromRaidGroup([Remainder] string removalString)
             {
                 bool approved = false;
                 foreach (SocketRole role in ((SocketGuildUser)Context.Message.Author).Roles)
@@ -152,6 +152,34 @@ namespace The_House_Discord_Bot.Commands
                         await ReplyAsync("Duplicate guild member records were found for **" + raidMembers[i] + "*", false, null);
                     }
                 }
+            }
+            [Command("-reset"), Summary("Remove member from group.")]
+            public async Task ResetRaidGroup()
+            {
+                bool approved = false;
+                foreach (SocketRole role in ((SocketGuildUser)Context.Message.Author).Roles)
+                {
+                    if (role.Id == 584754688423886858)
+                    {
+                        approved = true;
+                    }
+                }
+                if (!approved)
+                {
+                    await Context.Channel.SendMessageAsync("Sorry but you do not have permissions to use this command.");
+                    return;
+                }
+                EntityCollection raidMembersWithRaidGroup = GetMembersWithRaidGroup(crmService);
+                for (int i = 0; i < raidMembersWithRaidGroup.Entities.Count; i++)
+                {
+                    Entity contact = new Entity("contact");
+                    contact.Id = raidMembersWithRaidGroup.Entities[i].Id;
+                    contact["parentcustomerid"] = null;
+
+                    crmService.Update(contact);
+                }
+                
+                await Context.Channel.SendMessageAsync("Members with a raid group = " + GetMembersWithRaidGroup(crmService).Entities.Count);
 
             }
             private static EntityCollection GetUserInformation(string userName, IOrganizationService crmService)
@@ -172,6 +200,16 @@ namespace The_House_Discord_Bot.Commands
                 query.Criteria = new FilterExpression();
                 query.Criteria.AddCondition("parentcustomerid", ConditionOperator.Equal, team);
                 
+                EntityCollection results = crmService.RetrieveMultiple(query);
+                return results;
+            }
+            private static EntityCollection GetMembersWithRaidGroup(IOrganizationService crmService)
+            {
+                QueryExpression query = new QueryExpression("contact");
+                query.ColumnSet.AddColumns("lastname", "contactid", "parentcustomerid");
+                query.Criteria = new FilterExpression();
+                query.Criteria.AddCondition("parentcustomerid", ConditionOperator.NotNull);
+
                 EntityCollection results = crmService.RetrieveMultiple(query);
                 return results;
             }
