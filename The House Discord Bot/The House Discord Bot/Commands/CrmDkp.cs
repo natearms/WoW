@@ -261,7 +261,7 @@ namespace The_House_Discord_Bot.Commands
                 EmbedBuilder prBuilder = new EmbedBuilder();
 
                 string missingUsers = null;
-                string commentString = "```" + "Name".PadRight(12) + "Total PR".PadLeft(12) + "Total EP".PadLeft(12) + "Total GP".PadLeft(12);
+                string commentString = "```" + "Name".PadRight(13) + "Total PR".PadLeft(12) + "Total EP".PadLeft(12) + "Total GP".PadLeft(12);
                 string missingUserCommentString = null;
 
                 for (int i = 0; i < providedUser.Entities.Count; i++)
@@ -273,7 +273,7 @@ namespace The_House_Discord_Bot.Commands
                     if (guildMember.ToLower() == authorUserName.ToLower())
                         guildMember = "*" + guildMember;
 
-                    commentString += "\n" + guildMember.PadRight(12, '.') + totalPr.ToString().PadLeft(12, '.') + totalEp.ToString().PadLeft(12, '.') + TotalGp.ToString().PadLeft(12, '.');
+                    commentString += "\n" + guildMember.PadRight(13, '.') + totalPr.ToString().PadLeft(12, '.') + totalEp.ToString().PadLeft(12, '.') + TotalGp.ToString().PadLeft(12, '.');
 
                 }
 
