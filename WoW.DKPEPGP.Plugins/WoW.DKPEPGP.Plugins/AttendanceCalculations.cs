@@ -33,8 +33,16 @@ namespace WoW.DKPEPGP.Plugins
                     Guid memberGuid = members.GetAttributeValue<Guid>("contactid");
                     tracingService.Trace("Member Guid " + memberGuid);
 
+                    DateTime sevenDayVariable = DateTime.Compare(trialEnd, DateTime.Today.AddDays(-7)) <= 0 ? DateTime.Today.AddDays(-7) : trialEnd;
+                    DateTime fifteenDayVariable = DateTime.Compare(trialEnd, DateTime.Today.AddDays(-15)) <= 0 ? DateTime.Today.AddDays(-15) : trialEnd;
                     DateTime thirtyDayVariable = DateTime.Compare(trialEnd, DateTime.Today.AddDays(-30)) <= 0 ? DateTime.Today.AddDays(-30) : trialEnd;
                     DateTime sixtyDayVariable = DateTime.Compare(trialEnd, DateTime.Today.AddDays(-60)) <= 0 ? DateTime.Today.AddDays(-60) : trialEnd;
+
+                    int lastSevenAttendance = MemberAttendance(sevenDayVariable, memberGuid, service);
+                    int lastSevenRaids = AttendanceRecords(sevenDayVariable, service);
+
+                    int lastFifteenAttendance = MemberAttendance(fifteenDayVariable, memberGuid, service);
+                    int lastFifteenRaids = AttendanceRecords(fifteenDayVariable, service);
 
                     int lastThirtyAttendance = MemberAttendance(thirtyDayVariable, memberGuid, service);
                     int lastThirtyRaids = AttendanceRecords(thirtyDayVariable, service);
@@ -47,10 +55,20 @@ namespace WoW.DKPEPGP.Plugins
 
                     tracingService.Trace("Counts: Member 30 = {0} - Raid 30 = {1} - Member 60 = {2} - Raid 60 = {3} - Total Member Attendance = {4} - Total Raids From First Raid Attended = {5} ", lastThirtyAttendance, lastThirtyRaids, lastSixtyAttendance, lastSixtyRaids, totalMemberAttendance, totalMemberTrialEndRaids);
 
+                    Double sevenDays = 0;
+                    Double fifteenDays = 0;
                     Double thirtyDays = 0;
                     Double sixtyDays = 0;
                     Double totalAttendance = 0;
 
+                    if (lastSevenAttendance > 0)
+                    {
+                        sevenDays = ((Double)lastSevenAttendance / (Double)lastSevenRaids) * 100;
+                    }
+                    if (lastThirtyAttendance > 0)
+                    {
+                        fifteenDays = ((Double)lastFifteenAttendance / (Double)lastFifteenRaids) * 100;
+                    }
                     if (lastThirtyAttendance > 0)
                     {
                         thirtyDays = ((Double)lastThirtyAttendance / (Double)lastThirtyRaids)*100;
@@ -69,6 +87,8 @@ namespace WoW.DKPEPGP.Plugins
                     Entity entity = new Entity("contact");
 
                     entity.Id = memberGuid;
+                    entity["wowc_7daysattendance"] = (Double)sevenDays;
+                    entity["wowc_15daysattendance"] = (Double)fifteenDays;
                     entity["wowc_30daysattendance"] = (Double)thirtyDays;
                     entity["wowc_60daysattendance"] = (Double)sixtyDays;
                     entity["wowc_attendanceoverall"] = (Double)totalAttendance;
