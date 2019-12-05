@@ -146,6 +146,7 @@ namespace The_House_Discord_Bot.Commands
             Tuple<int, string, string, DateTime, int, double, string> results;
 
             string raidLower = raid.ToLower();
+            string raidSplit = raid.Replace('-',' ');
             int timeZoneOffSet = 0;
 
             if (timeZone == "pst" || timeZone == "pdt")
@@ -199,7 +200,7 @@ namespace The_House_Discord_Bot.Commands
             }
             else
             {
-                results = Tuple.Create(5, raid, @"https://vignette.wikia.nocookie.net/wowwiki/images/8/89/HordeCrest.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
+                results = Tuple.Create(5, raidSplit, @"https://vignette.wikia.nocookie.net/wowwiki/images/8/89/HordeCrest.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
 
             return results;
