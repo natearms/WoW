@@ -199,9 +199,11 @@ namespace The_House_Discord_Bot
         }
         private async Task Client_AnnouncedJoinedUser(SocketGuildUser arg)
         {
+            /*
             await arg.SendMessageAsync("Welcome to **<The House>** Discord server! The first and largest guild on Arcanite Reaper!  If you're interested in details on becoming a raider, please talk to **Raumedrius**."
                     + "\n\n" + "Please take a moment to review and follow our server rules."
                     + "\n" + "https://discordapp.com/channels/578967161322733578/584757220403707920/621077337349292067");
+            */
         }
         private async Task Client_GuildMemberUpdated(SocketGuildUser arg1, SocketGuildUser arg2)
         {
