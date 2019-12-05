@@ -39,24 +39,82 @@ namespace The_House_Discord_Bot.Commands
                 string userNickname = author.Username;
                 string userName = guildNickname == null ? userNickname : guildNickname;
 
-                Decimal weeklyDonation = 0;
+                EntityCollection contactSearch = GetUserGuid(userName, crmService);
 
-                EntityCollection donatedRecords = GetWeeklyDonation(userName, crmService);
-
-                for (int i = 0; i < donatedRecords.Entities.Count; i++)
+                if (contactSearch.Entities.Count == 0)
                 {
-                    weeklyDonation += donatedRecords.Entities[i].GetAttributeValue<Decimal>("wowc_ep");
+                    await ReplyAsync("I could not find a record for you in The Butler.",false,null);
                 }
+                else if (contactSearch.Entities.Count == 1)
+                {
+                    Decimal weeklyDonation = 0;
 
-                if (weeklyDonation > 0)
-                {
-                    await ReplyAsync("Thank you for your donations! You have donated **" + weeklyDonation.ToString("N3") + " EP** worth of mats to the guild bank in the last 7 days.", false, null);
-                }
-                else
-                {
-                    await ReplyAsync("It does look like you've donated anything with in the last 7 days that give EP.", false, null);
+                    EntityCollection donatedRecords = GetWeeklyDonation(contactSearch.Entities[0].GetAttributeValue<Guid>("contactid"), crmService);
+
+                    for (int i = 0; i < donatedRecords.Entities.Count; i++)
+                    {
+                        weeklyDonation += donatedRecords.Entities[i].GetAttributeValue<Decimal>("wowc_ep");
+                    }
+
+                    if (weeklyDonation > 0)
+                    {
+                        await ReplyAsync("Thank you for your donations! You have donated **" + weeklyDonation.ToString("N3") + " EP** worth of mats to the guild bank in the last 7 days.", false, null);
+                    }
+                    else
+                    {
+                        await ReplyAsync("It doesn't look like you've donated anything within the last 7 days that rewards EP.", false, null);
+                    }
                 }
                 
+                
+            }
+            [Command("-topweekly"),Summary("List of users who danted this week.")]
+            public async Task ReturnTopWeeklyDonationEP()
+            {
+                var donations = new List<Tuple<string, Decimal>>();
+                EntityCollection usersWhoDonated = GetUsersWhoDonated(crmService);
+
+                for (int i = 0; i < usersWhoDonated.Entities.Count; i++)
+                {
+                    Decimal epDonation = 0;
+                    EntityCollection memberDonations = GetWeeklyDonation(usersWhoDonated.Entities[i].Id, crmService);
+                    for (int d = 0; d < memberDonations.Entities.Count; d++)
+                    {
+                        epDonation += memberDonations.Entities[d].GetAttributeValue<Decimal>("wowc_ep");
+                    }
+                    if(epDonation > 0 && usersWhoDonated.Entities[i].GetAttributeValue<string>("lastname").ToLower() != "guild bank")
+                    {
+                        donations.Add(new Tuple<string, Decimal>(usersWhoDonated.Entities[i].GetAttributeValue<string>("lastname"), epDonation));
+                    }
+                }
+
+                donations = donations.OrderByDescending(t => t.Item2).ToList();
+
+                EmbedBuilder topWeeklyDonations = new EmbedBuilder();
+                int nameLength = 0;
+
+                foreach (var userDonation in donations)
+                {
+                    if (userDonation.Item1.Length > nameLength)
+                    {
+                        nameLength = userDonation.Item1.Length;
+                    }
+                }
+
+                string commentString = "```" + "Name".PadRight(nameLength) + "Total".PadLeft(10);
+                foreach (var userDonation in donations)
+                {
+                    string recordName = userDonation.Item1;
+                    string epValue = userDonation.Item2.ToString("N3");
+
+                    commentString += "\n" + recordName.PadRight(nameLength, '.') + epValue.PadLeft(10, '.');
+                }
+                
+                commentString += "```";
+
+                topWeeklyDonations.WithDescription(commentString);
+
+                await ReplyAsync("Here are the results of who has donated in the last 7 days.", false, topWeeklyDonations.Build());
             }
 
             private EntityCollection GetEPDonations(IOrganizationService crmService)
@@ -73,18 +131,40 @@ namespace The_House_Discord_Bot.Commands
 
                 return results;
             }
-            private EntityCollection GetWeeklyDonation(string guildMember, IOrganizationService crmService)
+            private EntityCollection GetUsersWhoDonated(IOrganizationService crmService)
+            {
+                var fetchXml = @"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='true'>
+                                  <entity name='contact'>
+                                    <attribute name='lastname' />
+                                    <attribute name='contactid' />
+                                    <order attribute='lastname' descending='true' />
+                                    <link-entity name='wowc_effortpoint' from='wowc_raidmember' to='contactid' link-type='inner' alias='ad'>
+                                      <filter type='and'>
+                                        <condition attribute='wowc_efforttype' operator='eq' value='257260003' />
+                                        <condition attribute='wowc_ep' operator='gt' value='0' />
+                                        <condition attribute='createdon' operator='last-seven-days' />
+                                      </filter>
+                                    </link-entity>
+                                  </entity>
+                                </fetch>";
+                var fetchExpression = new FetchExpression(fetchXml);
+                EntityCollection fetchResults = crmService.RetrieveMultiple(fetchExpression);
+
+                return fetchResults;
+            }
+            private EntityCollection GetUserGuid(string guildMember, IOrganizationService crmService)
             {
                 QueryExpression contactQuery = new QueryExpression("contact");
-                contactQuery.ColumnSet.AddColumns("lastname");
+                contactQuery.ColumnSet.AddColumns("lastname", "contactid");
                 contactQuery.Criteria = new FilterExpression();
                 contactQuery.Criteria.AddCondition("lastname", ConditionOperator.Equal, guildMember);
                 contactQuery.Criteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
                 EntityCollection contactResult = crmService.RetrieveMultiple(contactQuery);
 
-                if (contactResult.Entities.Count == 0)
-                    return contactResult;
-
+                return contactResult;
+            }
+            private EntityCollection GetWeeklyDonation(Guid contactGuid, IOrganizationService crmService)
+            {
                 QueryExpression query = new QueryExpression("wowc_effortpoint");
                 query.ColumnSet.AddColumns("wowc_raidmember", "wowc_ep");
 
@@ -102,7 +182,7 @@ namespace The_House_Discord_Bot.Commands
                 effortRecordsCombined.AddFilter(adjustmentRecords);
 
                 query.Criteria = new FilterExpression(LogicalOperator.And);
-                query.Criteria.AddCondition("wowc_raidmember", ConditionOperator.Equal, contactResult.Entities[0].Id);
+                query.Criteria.AddCondition("wowc_raidmember", ConditionOperator.Equal, contactGuid);
                 query.Criteria.AddCondition("createdon", ConditionOperator.GreaterEqual, DateTime.Now.AddDays(-7));
                 query.Criteria.AddFilter(effortRecordsCombined);
 

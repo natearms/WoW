@@ -43,6 +43,7 @@ namespace The_House_Discord_Bot.Commands
             embedEPGP.WithTitle("EP/GP commands");
             embedEPGP.AddField("Return a list of donatable records that award EP.", theHouseBotTrigger + "-ep -donations", false);
             embedEPGP.AddField("Returns the total count of your last 7 days of donations.", theHouseBotTrigger + "-ep -weekly", false);
+            embedEPGP.AddField("Returns results for who has donated in the last 7 days.", theHouseBotTrigger + "-ep -topweekly", false);
             embedEPGP.AddField("Returns GP Values for items searched.", theHouseBotTrigger + "-gp -s <itemname>\n" + theHouseBotTrigger + "-gp -s Thunderfury", false);
 
             await Context.Message.Author.SendMessageAsync(null, false, embedEPGP.Build());
