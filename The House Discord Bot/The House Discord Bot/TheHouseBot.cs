@@ -125,7 +125,7 @@ namespace The_House_Discord_Bot
 
             if (Context.User.IsBot) return;
             if (Context.Message == null || Context.Message.Content == "") return;
-            if (!(Message.HasStringPrefix(botTrigger, ref ArgPos) || Message.HasMentionPrefix(_client.CurrentUser, ref ArgPos))) return;
+            if (!(Message.HasStringPrefix(botTrigger, ref ArgPos, StringComparison.OrdinalIgnoreCase) || Message.HasMentionPrefix(_client.CurrentUser, ref ArgPos))) return;
 
             bool approved = false;
             foreach (SocketRole role in ((SocketGuildUser)Context.Message.Author).Roles)
