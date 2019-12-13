@@ -105,7 +105,6 @@ namespace The_House_Discord_Bot.Commands
                     await Context.Channel.DeleteMessageAsync(msg.Id);
                     await Context.Guild.Owner.SendMessageAsync(ex.ToString(), false, null );
                     await Context.Channel.SendMessageAsync("Something went wrong when creating this event.  Please make sure that your nickname is set to your main in game. " + Context.Guild.Owner.Mention, false,null);
-                    throw;
                 }
                 
             }
