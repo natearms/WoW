@@ -203,9 +203,12 @@
     <Compile Include="Commands\Blacklist.cs" />
     <Compile Include="Commands\CrmDkp.cs" />
     <Compile Include="Commands\CrmGuildBank.cs" />
+    <Compile Include="Commands\EPGP.cs" />
     <Compile Include="Commands\Help.cs" />
+    <Compile Include="Commands\Misc.cs" />
     <Compile Include="Commands\polls.cs" />
     <Compile Include="Commands\CrmProfessions.cs" />
+    <Compile Include="Commands\RaidManagement.cs" />
     <Compile Include="Commands\Signups.cs" />
     <Compile Include="DiscordFunctions\MiscellaneousFunctions.cs" />
     <Compile Include="DiscordFunctions\Reactions.cs" />

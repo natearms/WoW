@@ -105,7 +105,6 @@ namespace The_House_Discord_Bot.Commands
                     await Context.Channel.DeleteMessageAsync(msg.Id);
                     await Context.Guild.Owner.SendMessageAsync(ex.ToString(), false, null );
                     await Context.Channel.SendMessageAsync("Something went wrong when creating this event.  Please make sure that your nickname is set to your main in game. " + Context.Guild.Owner.Mention, false,null);
-                    throw;
                 }
                 
             }
@@ -146,6 +145,7 @@ namespace The_House_Discord_Bot.Commands
             Tuple<int, string, string, DateTime, int, double, string> results;
 
             string raidLower = raid.ToLower();
+            string raidSplit = raid.Replace('-',' ');
             int timeZoneOffSet = 0;
 
             if (timeZone == "pst" || timeZone == "pdt")
@@ -171,7 +171,7 @@ namespace The_House_Discord_Bot.Commands
             }
             else if (raidLower == "aq40")
             {
-                results = Tuple.Create(3, "AQ 40", @"https://vignette.wikia.nocookie.net/wowwiki/images/6/6a/Temple_of_Ahn'Qiraj_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
+                results = Tuple.Create(3, "Temple of Ahn'Qiraj", @"https://vignette.wikia.nocookie.net/wowwiki/images/6/6a/Temple_of_Ahn'Qiraj_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
             else if (raidLower == "naxx" || raidLower == "naxxramas")
             {
@@ -179,7 +179,7 @@ namespace The_House_Discord_Bot.Commands
             }
             else if (raidLower == "aq20")
             {
-                results = Tuple.Create(257260000, "AQ 20", @"https://vignette.wikia.nocookie.net/wowwiki/images/5/5e/Ruins_of_Ahn'Qiraj_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
+                results = Tuple.Create(257260000, "Ruins of Ahn'Qiraj", @"https://vignette.wikia.nocookie.net/wowwiki/images/5/5e/Ruins_of_Ahn'Qiraj_loading_screen.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
             else if (raidLower == "zg")
             {
@@ -199,7 +199,7 @@ namespace The_House_Discord_Bot.Commands
             }
             else
             {
-                results = Tuple.Create(5, raid, @"https://vignette.wikia.nocookie.net/wowwiki/images/8/89/HordeCrest.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
+                results = Tuple.Create(5, raidSplit, @"https://vignette.wikia.nocookie.net/wowwiki/images/8/89/HordeCrest.jpg", combinedDateTime, timeZoneOffSet, estDuration, description);
             }
 
             return results;
@@ -229,15 +229,17 @@ namespace The_House_Discord_Bot.Commands
         {
             EmbedBuilder raidScheduler = new EmbedBuilder();
             //raidScheduler.WithTitle("Get your raid !");
-            raidScheduler.WithTitle("Click this link to see The House event calendar!")
-                .WithAuthor(author)
+            raidScheduler.WithTitle(activityInformation.Item2)
+                //.WithAuthor(author)
             .WithUrl("https://thehouse.crm.dynamics.com/workplace/home_calendar.aspx")
             .WithDescription(activityInformation.Item7)
-            .AddField("Event Location:", activityInformation.Item2, true)
+            //.AddField("Event Location:", activityInformation.Item2, false)
             .AddField("Date:", activityInformation.Item4.ToShortDateString(), true)
+            .AddField("Day:", activityInformation.Item4.DayOfWeek, true)
             .AddField("Time PDT (Server):", activityInformation.Item4.ToShortTimeString(), true)
-            .AddField("Time CDT:", activityInformation.Item4.AddHours(2).ToShortTimeString(), true)
-            .AddField("Calendar Credentials", "[The House CRM login](https://discordapp.com/channels/578967161322733578/584757445340037120/585125716186890280)")
+            .AddField("The Butler Credentials:", "[Click this link for login information for The Butler](https://discordapp.com/channels/578967161322733578/584757445340037120/585125716186890280)")
+            //.AddField("Time CDT:", activityInformation.Item4.AddHours(2).ToShortTimeString(), true)
+
             .WithThumbnailUrl(activityInformation.Item3)
             .WithFooter("Please react to let us know if you can make it or not.")
             .WithCurrentTimestamp();

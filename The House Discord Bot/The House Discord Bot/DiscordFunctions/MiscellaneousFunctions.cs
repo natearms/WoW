@@ -16,7 +16,7 @@ namespace The_House_Discord_Bot.DiscordFunctions
     {
         public async Task ApiPost(DiscordSocketClient _client, ulong postingChannel)
         {
-            int randomNumber = new Random().Next(1, 6);
+            int randomNumber = new Random().Next(4, 6);
             //randomNumber = 5;
 
             if (randomNumber == 1)
