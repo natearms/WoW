@@ -1,0 +1,5 @@
+## Interface: 11302
+## Title: Raid To CSV
+## Author: Flarix
+
+RaidToCSV.lua

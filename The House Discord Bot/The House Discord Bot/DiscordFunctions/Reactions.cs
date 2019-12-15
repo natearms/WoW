@@ -130,7 +130,6 @@ namespace The_House_Discord_Bot.DiscordFunctions
             {
                 UserExtensions.SendMessageAsync(guildOwner, "Error when attempting to create singup in CRM: \n" + ex, false, null);
                 Console.WriteLine(ex);
-                throw;
             }
         }
 

@@ -296,7 +296,6 @@ namespace The_House_Discord_Bot.Commands
                     catch (Exception)
                     {
                         return results = "Recipe relationship already exists between **" + contact.Entities[0].GetAttributeValue<string>("lastname") + "** and **" + wowc_loot.Entities[0].GetAttributeValue<string>("wowc_name") + "**";
-                        throw;
                     }
                     
                 }
