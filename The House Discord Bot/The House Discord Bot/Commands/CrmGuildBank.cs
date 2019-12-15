@@ -1,16 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Xml;
-using System.Configuration;
-using System.IdentityModel.Metadata;
-using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Messages;
@@ -26,22 +17,38 @@ namespace The_House_Discord_Bot.Commands
         public class GuildBankModule : ModuleBase<SocketCommandContext>
         {
             public IOrganizationService crmService { get; set; }
-
+            
             [Command("-hn"), Summary("Searches the guild bank for high need mats.")]
             public async Task GuildBankHighNeed()
             {
-                string responseText = "";
+                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname;
+                var fetchXml = $@"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
+                                  <entity name='wowc_guildbankrecord'>
+                                    <attribute name='wowc_guildbankrecordid' />
+                                    <attribute name='wowc_name' />
+                                    <attribute name='wowc_inventory' />
+                                    <attribute name='wowc_highneed' />
+                                    <order attribute='wowc_name' descending='false' />
+                                    <filter type='and'>
+                                      <condition attribute='wowc_highneed' operator='eq' value='1' />
+                                    </filter>
+                                  </entity>
+                                </fetch>";
+                var fetchExpression = new FetchExpression(fetchXml);
+                EntityCollection fetchResults = crmService.RetrieveMultiple(fetchExpression);
+
+                EmbedBuilder embed = new EmbedBuilder();
+
                 EntityCollection guildBankRecord = GetGuildBankHighNeedRecords(crmService);
 
                 if (guildBankRecord.Entities.Count == 0)
                 {
-                    responseText = "There doesn't seem to be any guild bank records in high need right now, please check back later.";
-                    await ReplyAsync(responseText, false, null);
+                    await ReplyAsync("There doesn't seem to be any guild bank records in high need right now, please check back later.", false, null);
                 }
                 else
                 {
-                    responseText = "Below is a list of high need items for the guild bank.";
-                    await ReplyAsync(responseText, false, GuildBankEmbedBuilder(guildBankRecord).Build());
+                    
+                    await ReplyAsync("Below is a list of high need items for the guild bank.", false, GuildBankEmbedBuilder(guildBankRecord).Build());
                 }
             }
 
