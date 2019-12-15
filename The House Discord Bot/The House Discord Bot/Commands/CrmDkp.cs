@@ -17,6 +17,7 @@ using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Tooling.Connector;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
+using The_House_Discord_Bot.Utilities;
 
 namespace The_House_Discord_Bot.Commands
 {
@@ -30,13 +31,35 @@ namespace The_House_Discord_Bot.Commands
             [Command("-s")]
             public async Task ReturnPlayersPrEpGP()
             {
-                List<SocketUser> list = new List<SocketUser>();
-                list.Add(Context.Message.Author);
-                IReadOnlyCollection<SocketUser> mentionedUsers = list;
+                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname;
+                var fetchXml = $@"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
+                                      <entity name='contact'>
+                                        <attribute name='wowc_totalpr' />
+                                        <attribute name='wowc_totalgp' />
+                                        <attribute name='wowc_totalep' />
+                                        <attribute name='lastname' />
+                                        <attribute name='contactid' />
+                                        <order attribute='wowc_totalpr' descending='true' />
+                                        <filter type='and'>
+                                          <condition attribute='statecode' operator='eq' value='0' />
+                                          <condition attribute='lastname' operator='like' value='%{triggeredBy}%' />
+                                        </filter>
+                                      </entity>
+                                    </fetch>";
+                var fetchExpression = new FetchExpression(fetchXml);
+                EntityCollection fetchResults = crmService.RetrieveMultiple(fetchExpression);
 
-                EntityCollection sortedEntityCollection = GetUsersFromIReadOnlyCollection(mentionedUsers, crmService);
+                if(fetchResults.Entities.Count == 0)
+                {
+                    await ReplyAsync("I could not find a record for you in The Butler.");
+                }
+                else
+                {
+                    EmbedBuilder embed = new EmbedBuilder();
+                    embed.Description = ResultsFormatter.FormatResultsIntoTable(fetchResults, triggeredBy, new string[] { "Name", "Total PR", "Total EP", "Total GP" }, new string[] { "lastname", "wowc_totalpr", "wowc_totalep", "wowc_totalgp" });
 
-                await ReplyAsync(null, false, BuildUsersDKP(sortedEntityCollection, mentionedUsers, Context.Message.Author).Build());
+                    await ReplyAsync(null, false, embed.Build());
+                }
             }
 
 
@@ -70,7 +93,31 @@ namespace The_House_Discord_Bot.Commands
             [Command("-top")]
             public async Task ReturnTopPrEpGp(int returnRange)
             {
+                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname;
+                var fetchXml = $@"<fetch top='{returnRange}' version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
+                                    <entity name='contact'>
+                                    <attribute name='wowc_totalpr' />
+                                    <attribute name='wowc_totalgp' />
+                                    <attribute name='wowc_totalep' />
+                                    <attribute name='lastname' />
+                                    <attribute name='contactid' />
+                                    <order attribute='wowc_totalpr' descending='true' />
+                                    <filter type='and'>
+                                        <condition attribute='statecode' operator='eq' value='0' />
+                                    </filter>
+                                    </entity>
+                                </fetch>";
+                var fetchExpression = new FetchExpression(fetchXml);
+                EntityCollection fetchResults = crmService.RetrieveMultiple(fetchExpression);
+
+                
+
                 IReadOnlyCollection<SocketUser> mentionedUsers = new List<SocketUser>();
+
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.Description = ResultsFormatter.FormatResultsIntoTable(fetchResults, triggeredBy, new string[] { "Name", "Total PR", "Total EP", "Total GP" }, new string[] { "lastname", "wowc_totalpr", "wowc_totalep", "wowc_totalgp" });
+
+                await ReplyAsync(null, false, embed.Build());
 
                 await ReplyAsync(null, false, BuildUsersDKP(GetTopUserEpGp(returnRange,crmService), mentionedUsers, Context.Message.Author).Build());
             }
