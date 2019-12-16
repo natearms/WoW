@@ -31,7 +31,8 @@ namespace The_House_Discord_Bot.Commands
             [Command("-s")]
             public async Task ReturnPlayersPrEpGP()
             {
-                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname;
+                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname == null ? Context.Message.Author.Username : Context.Guild.GetUser(Context.Message.Author.Id).Nickname;
+
                 var fetchXml = $@"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
                                       <entity name='contact'>
                                         <attribute name='wowc_totalpr' />

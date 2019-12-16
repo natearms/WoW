@@ -8,6 +8,7 @@ using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Tooling.Connector;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
+using The_House_Discord_Bot.Utilities;
 namespace The_House_Discord_Bot.Commands
 {
     public class CrmGuildBank: ModuleBase<SocketCommandContext>
@@ -21,89 +22,69 @@ namespace The_House_Discord_Bot.Commands
             [Command("-hn"), Summary("Searches the guild bank for high need mats.")]
             public async Task GuildBankHighNeed()
             {
-                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname;
-                var fetchXml = $@"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
+                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname == null ? Context.Message.Author.Username : Context.Guild.GetUser(Context.Message.Author.Id).Nickname;
+                
+                EntityCollection fetchResults = crmService.RetrieveMultiple(
+                    new FetchExpression($@"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
                                   <entity name='wowc_guildbankrecord'>
-                                    <attribute name='wowc_guildbankrecordid' />
                                     <attribute name='wowc_name' />
                                     <attribute name='wowc_inventory' />
-                                    <attribute name='wowc_highneed' />
                                     <order attribute='wowc_name' descending='false' />
                                     <filter type='and'>
                                       <condition attribute='wowc_highneed' operator='eq' value='1' />
                                     </filter>
                                   </entity>
-                                </fetch>";
-                var fetchExpression = new FetchExpression(fetchXml);
-                EntityCollection fetchResults = crmService.RetrieveMultiple(fetchExpression);
+                                </fetch>")
+                    );
 
-                EmbedBuilder embed = new EmbedBuilder();
+                EmbedBuilder embed = new EmbedBuilder()
+                    .WithDescription(ResultsFormatter.FormatResultsIntoTable(fetchResults, triggeredBy, new string[] { "Item Name", "Stock" }, new string[] { "wowc_name", "wowc_inventory" }));
 
-                EntityCollection guildBankRecord = GetGuildBankHighNeedRecords(crmService);
-
-                if (guildBankRecord.Entities.Count == 0)
+                if (fetchResults.Entities.Count == 0)
                 {
                     await ReplyAsync("There doesn't seem to be any guild bank records in high need right now, please check back later.", false, null);
                 }
                 else
                 {
-                    
-                    await ReplyAsync("Below is a list of high need items for the guild bank.", false, GuildBankEmbedBuilder(guildBankRecord).Build());
+                    await ReplyAsync("Below is a list of high need items for the guild bank.", false, embed.Build());
                 }
             }
 
             [Command("-s"), Summary("Searches the guild bank with string criteria.")]
             public async Task GuildBankSearch([Remainder] string itemSearch)
             {
-                string responseText = "";
-                EntityCollection guildBankRecord = GetGuildBankRecords(itemSearch, crmService);
+                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname == null ? Context.Message.Author.Username : Context.Guild.GetUser(Context.Message.Author.Id).Nickname;
 
-                if(guildBankRecord.Entities.Count == 0)
+                EntityCollection fetchResults = crmService.RetrieveMultiple(
+                    new FetchExpression($@"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
+                                          <entity name='wowc_guildbankrecord'>
+                                            <attribute name='wowc_name' />
+                                            <attribute name='wowc_inventory' />
+                                            <order attribute='wowc_name' descending='false' />
+                                            <filter type='and'>
+                                              <condition attribute='wowc_name' operator='like' value='%{itemSearch}%' />
+                                              <condition attribute='wowc_inventory' operator='gt' value='0' />
+                                            </filter>
+                                          </entity>
+                                        </fetch>")
+                    );
+
+                EmbedBuilder embed = new EmbedBuilder()
+                    .WithDescription(ResultsFormatter.FormatResultsIntoTable(fetchResults, triggeredBy, new string[] { "Item Name", "Stock" }, new string[] { "wowc_name", "wowc_inventory" }));
+
+                if (fetchResults.Entities.Count == 0)
                 {
-                    responseText = "I could not find a guild bank record matching criteria **" + itemSearch + "** in the guild bank.  Please make sure you spelled the item name or part of the item name correctly and try again.";
-                    await ReplyAsync(responseText, false, null);
+                    await ReplyAsync("I could not find a guild bank record matching criteria **" + itemSearch + "** in the guild bank.  Please make sure you spelled the item name or part of the item name correctly and try again.", false, null);
                 }
                 else
                 {
-                    responseText = "Here is what I found with your search criteria **\"" + itemSearch + "\"**";
-                    await ReplyAsync(responseText, false, GuildBankEmbedBuilder(guildBankRecord).Build());
+                    await ReplyAsync("Here is what I found with your search criteria **\"" + itemSearch + "\"**", false, embed.Build());
                 }
             }
             [Command("-a"), Summary("Returns audit history for an item.")]
             public async Task GuildBankAuditHistory([Remainder] string itemSearch)
             {
-                await ReplyAsync(null, false, GuildBankAuditEmbedBuilder(itemSearch, crmService).Build());
-            }
-            private EmbedBuilder GuildBankEmbedBuilder(EntityCollection guildBankRecords)
-            {
-                EmbedBuilder prBuilder = new EmbedBuilder();
-                int itemNameLength = 0;
-
-                for (int i = 0; i < guildBankRecords.Entities.Count; i++)
-                {
-                    if(guildBankRecords.Entities[i].GetAttributeValue<string>("wowc_name").Length > itemNameLength)
-                    {
-                        itemNameLength = guildBankRecords.Entities[i].GetAttributeValue<string>("wowc_name").Length >= 45 ? 45 : guildBankRecords.Entities[i].GetAttributeValue<string>("wowc_name").Length;
-                    }
-                }
-
-                string commentString = "```" + "Item Name".PadRight(itemNameLength) + "Stock".PadLeft(10);
-                for (int i = 0; i < guildBankRecords.Entities.Count; i++)
-                {
-                    string itemName = guildBankRecords.Entities[i].GetAttributeValue<string>("wowc_name");
-                    string inventory = guildBankRecords.Entities[i].GetAttributeValue<int>("wowc_inventory").ToString();
-                    string highNeed = guildBankRecords.Entities[i].GetAttributeValue<bool>("wowc_highneed") ? "Yes" : "No";
-
-                    itemName = itemName.Length > 45 ? itemName.Substring(0, 45) : itemName;
-
-                    commentString += "\n" + itemName.PadRight(itemNameLength, '.') + inventory.ToString().PadLeft(10,'.');
-
-                }
-                commentString += "```";
-                prBuilder.WithDescription(commentString)
-                ;
-
-                return prBuilder;
+               await ReplyAsync(null, false, GuildBankAuditEmbedBuilder(itemSearch, crmService).Build());
             }
             private EmbedBuilder GuildBankAuditEmbedBuilder(string itemSearch, IOrganizationService service)
             {
@@ -144,18 +125,6 @@ namespace The_House_Discord_Bot.Commands
                 query.Criteria = new FilterExpression();
                 query.Criteria.AddCondition("wowc_name", ConditionOperator.Like, "%" + itemSearch + "%");
                 query.Criteria.AddCondition("wowc_inventory", ConditionOperator.GreaterEqual, 1);
-                query.Orders.Add(new OrderExpression("wowc_name", OrderType.Ascending));
-
-                EntityCollection results = service.RetrieveMultiple(query);
-                return results;
-
-            }
-            private static EntityCollection GetGuildBankHighNeedRecords(IOrganizationService service)
-            {
-                QueryExpression query = new QueryExpression("wowc_guildbankrecord");
-                query.ColumnSet.AddColumns("wowc_name", "wowc_inventory", "wowc_highneed");
-                query.Criteria = new FilterExpression();
-                query.Criteria.AddCondition("wowc_highneed", ConditionOperator.Equal, true);
                 query.Orders.Add(new OrderExpression("wowc_name", OrderType.Ascending));
 
                 EntityCollection results = service.RetrieveMultiple(query);
