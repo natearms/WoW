@@ -17,6 +17,7 @@ using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Tooling.Connector;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
+using The_House_Discord_Bot.Utilities;
 
 namespace The_House_Discord_Bot.Commands
 {
@@ -409,22 +410,8 @@ namespace The_House_Discord_Bot.Commands
                     return prBuilder.WithDescription("It seems like no one has what you are looking for, or you mispelled what you were looking for.");
                 else
                 {
-                    string commentString = "```" + "Guild Member".PadRight(13) + "Item Name".PadLeft(40);
-                    for (int i = 0; i < results.Entities.Count; i++)
-                    {
-                        var playerName = results.Entities[i].GetAttributeValue<AliasedValue>("contact2.lastname").Value.ToString();
-                        string recipe = results.Entities[i].GetAttributeValue<string>("wowc_name").ToString();
-                        recipe = recipe.Substring(recipe.LastIndexOf(':') + 1).TrimStart(' ');
+                    prBuilder.WithDescription(ResultsFormatter.FormatResultsIntoTable(results, "test", new string[] { "Guild Member", "Item Name" }, new string[] { "contact2.lastname", "wowc_name" }));
 
-                        playerName = playerName.Length > 12 ? playerName.Substring(0, 12) : playerName;
-                        recipe = recipe.Length > 40 ? recipe.Substring(0, 40) : recipe;
-
-                        commentString += "\n" + playerName.PadRight(13, '.') + recipe.ToString().PadLeft(40, '.');
-
-                    }
-                    commentString += "```";
-                    prBuilder.WithDescription(commentString)
-                        ;
                 }
 
                 return prBuilder;

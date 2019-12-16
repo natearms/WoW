@@ -27,6 +27,7 @@ namespace The_House_Discord_Bot.Utilities
             string formattedString = "";
             string headerFormatted = "";
             string bodyFormatted = "";
+            int additionalPadding = 4;
             int[] columnWidths = columnHeaders.Select(x => x.Length).ToArray();
 
             //Determine field lengths
@@ -39,6 +40,13 @@ namespace The_House_Discord_Bot.Utilities
                         if (entity.GetAttributeValue<Decimal>(queryColumns[i]).ToString("N3").Length > columnWidths[i])
                         {
                             columnWidths[i] = entity.GetAttributeValue<Decimal>(queryColumns[i]).ToString("N3").Length > 45 ? 45 : entity.GetAttributeValue<Decimal>(queryColumns[i]).ToString("N3").Length;
+                        }
+                    }
+                    else if (entity.Attributes[queryColumns[i]].GetType() == typeof(AliasedValue))
+                    {
+                        if (entity.GetAttributeValue<AliasedValue>(queryColumns[i]).Value.ToString().Length > columnWidths[i])
+                        {
+                            columnWidths[i] = entity.GetAttributeValue<AliasedValue>(queryColumns[i]).Value.ToString().Length > 45 ? 45 : entity.GetAttributeValue<AliasedValue>(queryColumns[i]).Value.ToString().Length;
                         }
                     }
                     else
@@ -61,7 +69,7 @@ namespace The_House_Discord_Bot.Utilities
                 }
                 else
                 {
-                    headerFormatted += columnHeaders[i].PadLeft(columnWidths[i] + 2);
+                    headerFormatted += columnHeaders[i].PadLeft(columnWidths[i] + additionalPadding);
                 }
             }
 
@@ -76,6 +84,10 @@ namespace The_House_Discord_Bot.Utilities
                         {
                             bodyFormatted += entity.GetAttributeValue<Decimal>(queryColumns[i]).ToString("N3").PadRight(columnWidths[i], '.');
                         }
+                        else if(entity.Attributes[queryColumns[i]].GetType() == typeof(AliasedValue))
+                        {
+                            bodyFormatted += entity.GetAttributeValue<AliasedValue>(queryColumns[i]).Value.ToString().PadRight(columnWidths[i],'.');
+                        }
                         else
                         {
                             bodyFormatted += entity.Attributes[queryColumns[i]].ToString().ToLower() == triggeredBy.ToLower() ? ("*" + entity.Attributes[queryColumns[i]].ToString()).PadRight(columnWidths[i], '.') : entity.Attributes[queryColumns[i]].ToString().PadRight(columnWidths[i], '.');
@@ -85,11 +97,15 @@ namespace The_House_Discord_Bot.Utilities
                     {
                         if(entity.Attributes[queryColumns[i]].GetType() == typeof(Decimal))
                         {
-                            bodyFormatted += entity.GetAttributeValue<Decimal>(queryColumns[i]).ToString("N3").PadLeft(columnWidths[i] + 2, '.');
+                            bodyFormatted += entity.GetAttributeValue<Decimal>(queryColumns[i]).ToString("N3").PadLeft(columnWidths[i] + additionalPadding, '.');
+                        }
+                        else if (entity.Attributes[queryColumns[i]].GetType() == typeof(AliasedValue))
+                        {
+                            bodyFormatted += entity.GetAttributeValue<AliasedValue>(queryColumns[i]).Value.ToString().PadLeft(columnWidths[i] + additionalPadding, '.');
                         }
                         else
                         {
-                            bodyFormatted += entity.Attributes[queryColumns[i]].ToString().PadLeft(columnWidths[i] + 2, '.');
+                            bodyFormatted += entity.Attributes[queryColumns[i]].ToString().PadLeft(columnWidths[i] + additionalPadding, '.');
                         }
                     }
                 }
