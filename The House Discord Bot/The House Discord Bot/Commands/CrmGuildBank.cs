@@ -22,8 +22,8 @@ namespace The_House_Discord_Bot.Commands
             [Command("-hn"), Summary("Searches the guild bank for high need mats.")]
             public async Task GuildBankHighNeed()
             {
-                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname == null ? Context.Message.Author.Username : Context.Guild.GetUser(Context.Message.Author.Id).Nickname;
-                
+                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname != null ? Context.Guild.GetUser(Context.Message.Author.Id).Nickname : Context.Message.Author.Username;
+
                 EntityCollection fetchResults = crmService.RetrieveMultiple(
                     new FetchExpression($@"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
                                   <entity name='wowc_guildbankrecord'>
@@ -37,15 +37,15 @@ namespace The_House_Discord_Bot.Commands
                                 </fetch>")
                     );
 
-                EmbedBuilder embed = new EmbedBuilder()
-                    .WithDescription(ResultsFormatter.FormatResultsIntoTable(fetchResults, triggeredBy, new string[] { "Item Name", "Stock" }, new string[] { "wowc_name", "wowc_inventory" }));
-
                 if (fetchResults.Entities.Count == 0)
                 {
                     await ReplyAsync("There doesn't seem to be any guild bank records in high need right now, please check back later.", false, null);
                 }
                 else
                 {
+                    EmbedBuilder embed = new EmbedBuilder()
+                        .WithDescription(ResultsFormatter.FormatResultsIntoTable(fetchResults, triggeredBy, new string[] { "Item Name", "Stock" }, new string[] { "wowc_name", "wowc_inventory" }));
+
                     await ReplyAsync("Below is a list of high need items for the guild bank.", false, embed.Build());
                 }
             }
@@ -53,7 +53,7 @@ namespace The_House_Discord_Bot.Commands
             [Command("-s"), Summary("Searches the guild bank with string criteria.")]
             public async Task GuildBankSearch([Remainder] string itemSearch)
             {
-                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname == null ? Context.Message.Author.Username : Context.Guild.GetUser(Context.Message.Author.Id).Nickname;
+                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname != null ? Context.Guild.GetUser(Context.Message.Author.Id).Nickname : Context.Message.Author.Username;
 
                 EntityCollection fetchResults = crmService.RetrieveMultiple(
                     new FetchExpression($@"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
@@ -69,15 +69,15 @@ namespace The_House_Discord_Bot.Commands
                                         </fetch>")
                     );
 
-                EmbedBuilder embed = new EmbedBuilder()
-                    .WithDescription(ResultsFormatter.FormatResultsIntoTable(fetchResults, triggeredBy, new string[] { "Item Name", "Stock" }, new string[] { "wowc_name", "wowc_inventory" }));
-
                 if (fetchResults.Entities.Count == 0)
                 {
                     await ReplyAsync("I could not find a guild bank record matching criteria **" + itemSearch + "** in the guild bank.  Please make sure you spelled the item name or part of the item name correctly and try again.", false, null);
                 }
                 else
                 {
+                    EmbedBuilder embed = new EmbedBuilder()
+                        .WithDescription(ResultsFormatter.FormatResultsIntoTable(fetchResults, triggeredBy, new string[] { "Item Name", "Stock" }, new string[] { "wowc_name", "wowc_inventory" }));
+                    
                     await ReplyAsync("Here is what I found with your search criteria **\"" + itemSearch + "\"**", false, embed.Build());
                 }
             }
