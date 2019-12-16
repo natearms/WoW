@@ -17,6 +17,7 @@ using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Tooling.Connector;
 using Microsoft.Xrm.Sdk.Query;
 using Microsoft.Crm.Sdk.Messages;
+using The_House_Discord_Bot.Utilities;
 
 namespace The_House_Discord_Bot.Commands
 {
@@ -29,17 +30,19 @@ namespace The_House_Discord_Bot.Commands
             [Command("-donations"), Summary("Donations accepted that reward EP.")]
             public async Task ReturnEPDonations()
             {
-                await ReplyAsync(null, false, epFormatEmbed(GetEPDonations(crmService), crmService).Build());
+                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname != null ? Context.Guild.GetUser(Context.Message.Author.Id).Nickname : Context.Message.Author.Username;
+
+                EmbedBuilder embed = new EmbedBuilder();
+                    embed.Description = ResultsFormatter.FormatResultsIntoTable(GetEPDonations(crmService), triggeredBy, new string[] { "Name", "EP Value"}, new string[] { "wowc_name", "wowc_epvalue"});
+
+                await ReplyAsync(null, false, embed.Build());
             }
             [Command("-weekly"), Summary("Last 7 days of EP donations total.")]
             public async Task ReturnWeeklyDonationEP()
             {
-                var author = Context.Message.Author;
-                string guildNickname = Context.Guild.GetUser(author.Id).Nickname;
-                string userNickname = author.Username;
-                string userName = guildNickname == null ? userNickname : guildNickname;
+                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname != null ? Context.Guild.GetUser(Context.Message.Author.Id).Nickname : Context.Message.Author.Username;
 
-                EntityCollection contactSearch = GetUserGuid(userName, crmService);
+                EntityCollection contactSearch = GetUserGuid(triggeredBy, crmService);
 
                 if (contactSearch.Entities.Count == 0)
                 {
@@ -71,6 +74,8 @@ namespace The_House_Discord_Bot.Commands
             [Command("-topweekly"),Summary("List of users who danted this week.")]
             public async Task ReturnTopWeeklyDonationEP()
             {
+                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname != null ? Context.Guild.GetUser(Context.Message.Author.Id).Nickname : Context.Message.Author.Username;
+
                 var donations = new List<Tuple<string, Decimal>>();
                 EntityCollection usersWhoDonated = GetUsersWhoDonated(crmService);
 
@@ -133,7 +138,8 @@ namespace The_House_Discord_Bot.Commands
             }
             private EntityCollection GetUsersWhoDonated(IOrganizationService crmService)
             {
-                var fetchXml = @"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='true'>
+                EntityCollection fetchResults = crmService.RetrieveMultiple(
+                    new FetchExpression(@"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='true'>
                                   <entity name='contact'>
                                     <attribute name='lastname' />
                                     <attribute name='contactid' />
@@ -146,9 +152,7 @@ namespace The_House_Discord_Bot.Commands
                                       </filter>
                                     </link-entity>
                                   </entity>
-                                </fetch>";
-                var fetchExpression = new FetchExpression(fetchXml);
-                EntityCollection fetchResults = crmService.RetrieveMultiple(fetchExpression);
+                                </fetch>"));
 
                 return fetchResults;
             }
@@ -190,34 +194,6 @@ namespace The_House_Discord_Bot.Commands
                 return results;
 
             }
-            private EmbedBuilder epFormatEmbed(EntityCollection epRecords, IOrganizationService crmService)
-            {
-                EmbedBuilder epBuilder = new EmbedBuilder();
-                int nameLength = 0;                
-
-                for (int i = 0; i < epRecords.Entities.Count; i++)
-                {
-                    if(epRecords.Entities[i].GetAttributeValue<string>("wowc_name").Length > nameLength)
-                    {
-                        nameLength = epRecords.Entities[i].GetAttributeValue<string>("wowc_name").Length;
-                    }
-                }
-
-                string commentString = "```" + "Name".PadRight(nameLength) + "EP Value".PadLeft(10);
-
-                for (int i = 0; i < epRecords.Entities.Count; i++)
-                {
-                    string recordName = epRecords.Entities[i].GetAttributeValue<string>("wowc_name");
-                    string epValue = epRecords.Entities[i].GetAttributeValue<Decimal>("wowc_epvalue").ToString("N3");
-
-                    commentString += "\n" + recordName.PadRight(nameLength, '.') + epValue.PadLeft(10,'.');
-                }
-                commentString += "```";
-
-                epBuilder.WithDescription(commentString);
-
-                return epBuilder;
-            }
         }
         [Group("-gp"), Summary("GP Value of Item")]
         public class GPModule : ModuleBase<SocketCommandContext>
@@ -226,76 +202,45 @@ namespace The_House_Discord_Bot.Commands
             [Command("-s"), Summary("Return GP Values on items")]
             public async Task ReturnGPValues([Remainder]string itemSearch)
             {
-                await ReplyAsync(null, false, GpFormatEmbed(GetGPValues(itemSearch,crmService),crmService).Build());
-            }
-            private EntityCollection GetGPValues(string itemName, IOrganizationService crmService)
-            {
-                QueryExpression query = new QueryExpression("wowc_loot");
-                query.ColumnSet.AddColumns("wowc_name", "wowc_defaultgp","wowc_huntergpvalue");
-                query.Criteria = new FilterExpression();
-                query.Criteria.AddCondition("statecode", ConditionOperator.Equal, "Active");
-                query.Criteria.AddCondition("wowc_name", ConditionOperator.Like, "%" + itemName + "%");
-                query.Orders.Add(new OrderExpression("wowc_name", OrderType.Ascending));
+                var triggeredBy = Context.Guild.GetUser(Context.Message.Author.Id).Nickname != null ? Context.Guild.GetUser(Context.Message.Author.Id).Nickname : Context.Message.Author.Username;
+                bool hunterGp = false;
 
-                EntityCollection results = crmService.RetrieveMultiple(query);
+                EntityCollection fetchResults = crmService.RetrieveMultiple(
+                    new FetchExpression($@"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
+                                              <entity name='wowc_loot'>
+                                                <attribute name='wowc_name' />
+                                                <attribute name='wowc_huntergpvalue' />
+                                                <attribute name='wowc_defaultgp' />
+                                                <attribute name='wowc_lootid' />
+                                                <order attribute='wowc_name' descending='false' />
+                                                <filter type='and'>
+                                                  <condition attribute='statecode' operator='eq' value='0' />
+                                                  <condition attribute='wowc_name' operator='like' value='%{itemSearch}%' />
+                                                  <condition attribute='wowc_defaultgp' operator='gt' value='0' />
+                                                </filter>
+                                              </entity>
+                                            </fetch>"));
 
-                return results;
-            }
-            private EmbedBuilder GpFormatEmbed(EntityCollection gpRecords, IOrganizationService crmService)
-            {
-                EmbedBuilder gpBuilder = new EmbedBuilder();
-
-                int nameLength = 0;
-                bool containsHunterValues = false;
-
-                for (int i = 0; i < gpRecords.Entities.Count; i++)
+               if (fetchResults.Entities.Count == 0)
                 {
-                    if (gpRecords.Entities[i].GetAttributeValue<string>("wowc_name").Length > nameLength)
-                    {
-                        nameLength = gpRecords.Entities[i].GetAttributeValue<string>("wowc_name").Length >= 30 ? 30 : gpRecords.Entities[i].GetAttributeValue<string>("wowc_name").Length;
-
-                        if (gpRecords.Entities[i].GetAttributeValue<Decimal>("wowc_huntergpvalue") > 0)
-                            containsHunterValues = true;
-                    }
-                }
-
-                string commentString = "";
-                if (containsHunterValues)
-                {
-                    commentString += "```" + "Name".PadRight(nameLength+2) + "GP Value".PadLeft(10) + "Hunter GP".PadLeft(12);
+                    await ReplyAsync("I could not find any records with your search in The Butler.", false, null);
                 }
                 else
                 {
-                    commentString += "```" + "Name".PadRight(nameLength+2) + "GP Value".PadLeft(10);
-                }
-                
-
-                for (int i = 0; i < gpRecords.Entities.Count; i++)
-                {
-                    if (containsHunterValues)
+                    foreach (var entity in fetchResults.Entities)
                     {
-                        string recordName = gpRecords.Entities[i].GetAttributeValue<string>("wowc_name").Length >= 30 ? gpRecords.Entities[i].GetAttributeValue<string>("wowc_name").Substring(0,30) : gpRecords.Entities[i].GetAttributeValue<string>("wowc_name");
-                        string gpValue = gpRecords.Entities[i].GetAttributeValue<Decimal>("wowc_defaultgp").ToString("N3");
-                        string hunterGpValue = gpRecords.Entities[i].GetAttributeValue<Decimal>("wowc_huntergpvalue").ToString("N3");
-
-                        commentString += "\n" + recordName.PadRight(nameLength+2, '.') + gpValue.PadLeft(10,'.') + hunterGpValue.PadLeft(12,'.');
+                        if (entity.Contains("wowc_huntergpvalue"))
+                        {
+                            hunterGp = true;
+                        }
                     }
-                    else
-                    {
-                        string recordName = gpRecords.Entities[i].GetAttributeValue<string>("wowc_name").Length >= 30 ? gpRecords.Entities[i].GetAttributeValue<string>("wowc_name").Substring(0, 30) : gpRecords.Entities[i].GetAttributeValue<string>("wowc_name");
-                        string gpValue = gpRecords.Entities[i].GetAttributeValue<Decimal>("wowc_defaultgp").ToString("N3");
 
-                        commentString += "\n" + recordName.PadRight(nameLength+2, '.') + gpValue.PadLeft(10,'.');
-                    }
-                    
+                    EmbedBuilder embed = new EmbedBuilder();
+                        embed.Description = ResultsFormatter.FormatResultsIntoTable(fetchResults, triggeredBy, hunterGp ? new string[] { "Name", "GP Value", "Hunter GP"} : new string[] { "Name", "GP Value" }, hunterGp ? new string[] { "wowc_name", "wowc_defaultgp", "wowc_huntergpvalue"} : new string[] { "wowc_name", "wowc_defaultgp"});
+
+                    await ReplyAsync(null, false, embed.Build());
                 }
-                commentString += "```";
-
-                gpBuilder.WithDescription(commentString);
-
-                return gpBuilder;
             }
         }
-    }
-     
+    }    
 }

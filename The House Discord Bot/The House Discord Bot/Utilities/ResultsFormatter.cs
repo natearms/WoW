@@ -28,6 +28,7 @@ namespace The_House_Discord_Bot.Utilities
             string headerFormatted = "";
             string bodyFormatted = "";
             int additionalPadding = 4;
+            int maxColumnWidth = columnHeaders.Length > 2 ? 30 : 45;
             int[] columnWidths = columnHeaders.Select(x => x.Length).ToArray();
 
             //Determine field lengths
@@ -35,25 +36,29 @@ namespace The_House_Discord_Bot.Utilities
             {
                 for (int i = 0; i < queryColumns.Length; i++)
                 {
-                    if (entity.Attributes[queryColumns[i]].GetType() == typeof(Decimal))
+                    if (!entity.Attributes.Contains(queryColumns[i]))
+                    {
+                        ;
+                    }
+                    else if (entity.Attributes[queryColumns[i]].GetType() == typeof(Decimal))
                     {
                         if (entity.GetAttributeValue<Decimal>(queryColumns[i]).ToString("N3").Length > columnWidths[i])
                         {
-                            columnWidths[i] = entity.GetAttributeValue<Decimal>(queryColumns[i]).ToString("N3").Length > 45 ? 45 : entity.GetAttributeValue<Decimal>(queryColumns[i]).ToString("N3").Length;
+                            columnWidths[i] = entity.GetAttributeValue<Decimal>(queryColumns[i]).ToString("N3").Length > maxColumnWidth ? maxColumnWidth : entity.GetAttributeValue<Decimal>(queryColumns[i]).ToString("N3").Length;
                         }
                     }
                     else if (entity.Attributes[queryColumns[i]].GetType() == typeof(AliasedValue))
                     {
                         if (entity.GetAttributeValue<AliasedValue>(queryColumns[i]).Value.ToString().Length > columnWidths[i])
                         {
-                            columnWidths[i] = entity.GetAttributeValue<AliasedValue>(queryColumns[i]).Value.ToString().Length > 45 ? 45 : entity.GetAttributeValue<AliasedValue>(queryColumns[i]).Value.ToString().Length;
+                            columnWidths[i] = entity.GetAttributeValue<AliasedValue>(queryColumns[i]).Value.ToString().Length > maxColumnWidth ? maxColumnWidth : entity.GetAttributeValue<AliasedValue>(queryColumns[i]).Value.ToString().Length;
                         }
                     }
                     else
                     {
                         if (entity.Attributes[queryColumns[i]].ToString().Length > columnWidths[i])
                         {
-                            columnWidths[i] = entity.Attributes[queryColumns[i]].ToString().Length > 45 ? 45 : entity.Attributes[queryColumns[i]].ToString().ToLower() == triggeredBy.ToLower() ? ("*" + entity.Attributes[queryColumns[i]].ToString()).Length : entity.Attributes[queryColumns[i]].ToString().Length;
+                            columnWidths[i] = entity.Attributes[queryColumns[i]].ToString().Length > maxColumnWidth ? maxColumnWidth : entity.Attributes[queryColumns[i]].ToString().ToLower() == triggeredBy.ToLower() ? ("*" + entity.Attributes[queryColumns[i]].ToString()).Length : entity.Attributes[queryColumns[i]].ToString().Length;
 
                         }
                     }
@@ -80,7 +85,11 @@ namespace The_House_Discord_Bot.Utilities
                 {
                     if (i == 0)
                     {
-                        if (entity.Attributes[queryColumns[i]].GetType() == typeof(Decimal))
+                        if (!entity.Attributes.Contains(queryColumns[i]))
+                        {
+                            bodyFormatted += ".".PadRight(columnWidths[i], '.'); 
+                        }
+                        else if (entity.Attributes[queryColumns[i]].GetType() == typeof(Decimal))
                         {
                             bodyFormatted += entity.GetAttributeValue<Decimal>(queryColumns[i]).ToString("N3").PadRight(columnWidths[i], '.');
                         }
@@ -90,12 +99,16 @@ namespace The_House_Discord_Bot.Utilities
                         }
                         else
                         {
-                            bodyFormatted += entity.Attributes[queryColumns[i]].ToString().ToLower() == triggeredBy.ToLower() ? ("*" + entity.Attributes[queryColumns[i]].ToString()).PadRight(columnWidths[i], '.') : entity.Attributes[queryColumns[i]].ToString().PadRight(columnWidths[i], '.');
+                            bodyFormatted += entity.Attributes[queryColumns[i]].ToString().ToLower() == triggeredBy.ToLower() ? ("*" + entity.Attributes[queryColumns[i]].ToString()).PadRight(columnWidths[i], '.') : entity.Attributes[queryColumns[i]].ToString().Length > columnWidths[i] ? entity.Attributes[queryColumns[i]].ToString().Substring(0, columnWidths[i]).PadRight(columnWidths[i], '.') : entity.Attributes[queryColumns[i]].ToString().PadRight(columnWidths[i], '.');
                         }
                     }
                     else
                     {
-                        if(entity.Attributes[queryColumns[i]].GetType() == typeof(Decimal))
+                        if (!entity.Attributes.Contains(queryColumns[i]))
+                        {
+                            bodyFormatted += ".".PadLeft(columnWidths[i] + additionalPadding, '.'); ;
+                        }
+                        else if (entity.Attributes[queryColumns[i]].GetType() == typeof(Decimal))
                         {
                             bodyFormatted += entity.GetAttributeValue<Decimal>(queryColumns[i]).ToString("N3").PadLeft(columnWidths[i] + additionalPadding, '.');
                         }
