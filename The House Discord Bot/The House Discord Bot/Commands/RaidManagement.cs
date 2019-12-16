@@ -108,7 +108,7 @@ namespace The_House_Discord_Bot.Commands
                         standBy.Id = Guid.NewGuid();
                         standBy["wowc_guildmember"] = new EntityReference("contact", userInfo.Entities[0].Id);
                         standBy["wowc_standbydate"] = DateTime.Now;
-                        standBy["wowc_name"] = userInfo.Entities[i].GetAttributeValue<string>("lastname") + " - " + DateTime.Now.ToShortDateString();
+                        standBy["wowc_name"] = userInfo.Entities[0].GetAttributeValue<string>("lastname") + " - " + DateTime.Now.ToShortDateString();
 
                         crmService.Create(standBy);
 
