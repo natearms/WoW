@@ -169,6 +169,12 @@ namespace The_House_Discord_Bot.Commands
             }
             private EntityCollection GetWeeklyDonation(Guid contactGuid, IOrganizationService crmService)
             {
+                var tuesdayDiff = 7 + (int)DateTime.Today.DayOfWeek - (int)DayOfWeek.Tuesday;
+                if(tuesdayDiff > 6)
+                {
+                    tuesdayDiff -= 7;
+                }
+
                 QueryExpression query = new QueryExpression("wowc_effortpoint");
                 query.ColumnSet.AddColumns("wowc_raidmember", "wowc_ep");
 
@@ -187,7 +193,8 @@ namespace The_House_Discord_Bot.Commands
 
                 query.Criteria = new FilterExpression(LogicalOperator.And);
                 query.Criteria.AddCondition("wowc_raidmember", ConditionOperator.Equal, contactGuid);
-                query.Criteria.AddCondition("createdon", ConditionOperator.GreaterEqual, DateTime.Now.AddDays(-7));
+                query.Criteria.AddCondition("createdon", ConditionOperator.GreaterEqual, DateTime.Today.AddDays(tuesdayDiff * -1).AddHours(6));
+
                 query.Criteria.AddFilter(effortRecordsCombined);
 
                 EntityCollection results = crmService.RetrieveMultiple(query);
