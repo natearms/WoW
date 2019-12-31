@@ -1,4 +1,5 @@
 var bountyTotal = 1;
+var bountyMulti = 1;
 function getBankBounty() {
     var lootId = Xrm.Page.getAttribute("wowc_item").getValue();
 
@@ -12,7 +13,8 @@ function getBankBounty() {
                 for (var i = 0; i < results.entities.length; i++) {
                     var wowc_highneed = results.entities[i]["wowc_highneed"];
                     var wowc_highneed_formatted = results.entities[i]["wowc_highneed@OData.Community.Display.V1.FormattedValue"];
-                    bountyTotal = wowc_highneed ? 1 : 1;
+                    bountyTotal = wowc_highneed ? 2 : 1;
+                    bountyMulti = wowc_highneed ? 1.5 : 1;
                 }
             },
             function (error) {
@@ -131,15 +133,27 @@ function calculateEP() {
     var effortRate = 1;
     var highNeedFlag = Xrm.Page.getAttribute("wowc_highneedflag").getValue();
     var createdOn = Xrm.Page.getAttribute("wowc_created").getValue();
-
+    
     if (highNeedFlag == true && bountyTotal == 1 && createdOn == true)
-        bountyTotal = 2;
+    {
+       bountyTotal = 2;
+       bountyMulti = 1.5;
+	}     
     else if (highNeedFlag == true && bountyTotal == 2 && createdOn == true)
-        bountyTotal = 2;
+    {
+       bountyTotal = 2;
+       bountyMulti = 1.5;
+	}
     else if (highNeedFlag == false && bountyTotal == 2 && createdOn == true)
-        bountyTotal = 1;
+    {
+       bountyTotal = 1;
+       bountyMulti = 1;
+	}
     else if (highNeedFlag == false && bountyTotal == 1 && createdOn == true)
-        bountyTotal = 1;
+    {
+       bountyTotal = 1;
+       bountyMulti = 1;
+	}
 
     if (bountyTotal == 2 && createdOn != true) {
         Xrm.Page.getAttribute("wowc_highneedflag").setValue(1);
@@ -156,7 +170,7 @@ function calculateEP() {
         Xrm.Page.getAttribute("wowc_ep").setSubmitMode("always");
         Xrm.Page.getAttribute("wowc_overridevalues").setValue("0");
     } else {
-        Xrm.Page.getAttribute("wowc_ep").setValue(((epRate * epCount) * effortRate) * bountyTotal);
+        Xrm.Page.getAttribute("wowc_ep").setValue(((epRate * epCount) * effortRate) * bountyMulti);
         Xrm.Page.getAttribute("wowc_ep").setSubmitMode("always");
         Xrm.Page.getAttribute("wowc_overridevalues").setValue("0");
     }
