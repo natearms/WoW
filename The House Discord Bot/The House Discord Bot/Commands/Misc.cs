@@ -41,9 +41,10 @@ namespace The_House_Discord_Bot.Commands
         [Command("-drink"), Summary("Randomly assign people to drink")]
         public async Task RaidMemberDrink(int drinkCount)
         {
+            string drinkResults = "";
+            int activeRaidMembers = 0;
             List<int> randomNumbers = new List<int>();
 
-            int[] randomMembers = new int[drinkCount];
             EntityCollection fetchResults = crmService.RetrieveMultiple(
                     new FetchExpression(@"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
                                               <entity name='contact'>
@@ -55,7 +56,8 @@ namespace The_House_Discord_Bot.Commands
                                                 </filter>
                                               </entity>
                                             </fetch>"));
-            int activeRaidMembers = fetchResults.Entities.Count;
+
+            activeRaidMembers = fetchResults.Entities.Count;
 
             while (randomNumbers.Count < drinkCount)
             {
@@ -69,13 +71,30 @@ namespace The_House_Discord_Bot.Commands
                         unique = false;
                         break;
                     }
-
                 }
                 if (unique)
                 {
                     randomNumbers.Add(randomNum);
                 }
             }
+
+            int[] sortedRandomNumbers = randomNumbers.OrderBy(x=>x).ToArray();
+
+            for (int i = 0; i < sortedRandomNumbers.Length; i++)
+            {
+                if(i == 0)
+                {
+                    drinkResults += fetchResults.Entities[sortedRandomNumbers[i]].GetAttributeValue<string>("lastname");
+                }
+                else
+                {
+                    drinkResults += ", " + fetchResults.Entities[sortedRandomNumbers[i]].GetAttributeValue<string>("lastname");
+                }
+            }
+
+            drinkResults += " time to drink!";
+
+            await ReplyAsync(drinkResults, false, null);
 
         }
         private static EntityCollection GetEPDonations(IOrganizationService crmService)
