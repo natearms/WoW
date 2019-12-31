@@ -38,6 +38,46 @@ namespace The_House_Discord_Bot.Commands
             await ReplyAsync("Below is the TSM shopping list string for guild requested materials that reward EP. \n\n" + tsmStringBuilder,false,null);
 
         }
+        [Command("-drink"), Summary("Randomly assign people to drink")]
+        public async Task RaidMemberDrink(int drinkCount)
+        {
+            List<int> randomNumbers = new List<int>();
+
+            int[] randomMembers = new int[drinkCount];
+            EntityCollection fetchResults = crmService.RetrieveMultiple(
+                    new FetchExpression(@"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
+                                              <entity name='contact'>
+                                                <attribute name='lastname' />
+                                                <attribute name='contactid' />
+                                                <order attribute='lastname' descending='false' />
+                                                <filter type='and'>
+                                                  <condition attribute='parentcustomerid' operator='eq' uiname='Active Raid Group' uitype='account' value='{BA455092-778A-E911-A81A-000D3A3B53C4}' />
+                                                </filter>
+                                              </entity>
+                                            </fetch>"));
+            int activeRaidMembers = fetchResults.Entities.Count;
+
+            while (randomNumbers.Count < drinkCount)
+            {
+                bool unique = true;
+
+                int randomNum = new Random().Next(activeRaidMembers);
+                foreach (var item in randomNumbers)
+                {
+                    if (item == randomNum)
+                    {
+                        unique = false;
+                        break;
+                    }
+
+                }
+                if (unique)
+                {
+                    randomNumbers.Add(randomNum);
+                }
+            }
+
+        }
         private static EntityCollection GetEPDonations(IOrganizationService crmService)
         {
             
