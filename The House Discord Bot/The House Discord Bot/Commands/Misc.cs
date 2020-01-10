@@ -58,43 +58,86 @@ namespace The_House_Discord_Bot.Commands
                                             </fetch>"));
 
             activeRaidMembers = fetchResults.Entities.Count;
-
-            while (randomNumbers.Count < drinkCount)
+            
+            if(activeRaidMembers == 0)
             {
-                bool unique = true;
-
-                int randomNum = new Random().Next(activeRaidMembers);
-                foreach (var item in randomNumbers)
-                {
-                    if (item == randomNum)
-                    {
-                        unique = false;
-                        break;
-                    }
-                }
-                if (unique)
-                {
-                    randomNumbers.Add(randomNum);
-                }
+                await ReplyAsync("Doesn't look like there's an active raid.", false, null);
+                return;
             }
 
-            int[] sortedRandomNumbers = randomNumbers.OrderBy(x=>x).ToArray();
-
-            for (int i = 0; i < sortedRandomNumbers.Length; i++)
+            if(drinkCount > 10)
             {
-                if(i == 0)
+                await ReplyAsync("Whoa whoa whoa, lets take it easy there, how about you pick somewhere between 1-10 people to drink.  We do need to get this done at some point.", false, null);
+            }
+            else if (drinkCount <= 0)
+            {
+                await ReplyAsync("Enter more than 0! Make em drink!", false, null);
+            }
+            else if(drinkCount == 5 || drinkCount == 10)
+            {
+                if(drinkCount == 5)
                 {
-                    drinkResults += fetchResults.Entities[sortedRandomNumbers[i]].GetAttributeValue<string>("lastname");
+                    if (activeRaidMembers > 35)
+                    {
+                        await ReplyAsync("Group " + new Random().Next(1, 7) + " drink!", false, null);
+                    }
+                    else
+                    {
+                        await ReplyAsync("Group " + new Random().Next(1, 8) + " drink!", false, null);
+                    }
                 }
                 else
                 {
-                    drinkResults += ", " + fetchResults.Entities[sortedRandomNumbers[i]].GetAttributeValue<string>("lastname");
+                    int groupA = new Random().Next(1, 8);
+                    int groupB = 0;
+
+                    do
+                    {
+                        groupB = new Random().Next(1, 8);
+                    } while (groupA == groupB);
+
+                    await ReplyAsync($"Groups {groupA} and {groupB} drink!", false, null);
                 }
             }
+            else
+            {
+                while (randomNumbers.Count < drinkCount)
+                {
+                    bool unique = true;
 
-            drinkResults += " time to drink!";
+                    int randomNum = new Random().Next(activeRaidMembers);
+                    foreach (var item in randomNumbers)
+                    {
+                        if (item == randomNum)
+                        {
+                            unique = false;
+                            break;
+                        }
+                    }
+                    if (unique)
+                    {
+                        randomNumbers.Add(randomNum);
+                    }
+                }
 
-            await ReplyAsync(drinkResults, false, null);
+                int[] sortedRandomNumbers = randomNumbers.OrderBy(x => x).ToArray();
+
+                for (int i = 0; i < sortedRandomNumbers.Length; i++)
+                {
+                    if (i == 0)
+                    {
+                        drinkResults += fetchResults.Entities[sortedRandomNumbers[i]].GetAttributeValue<string>("lastname");
+                    }
+                    else
+                    {
+                        drinkResults += ", " + fetchResults.Entities[sortedRandomNumbers[i]].GetAttributeValue<string>("lastname");
+                    }
+                }
+
+                drinkResults += " time to drink!";
+
+                await ReplyAsync(drinkResults, false, null);
+            }
 
         }
         private static EntityCollection GetEPDonations(IOrganizationService crmService)
