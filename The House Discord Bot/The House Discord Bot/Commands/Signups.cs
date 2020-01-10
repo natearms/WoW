@@ -88,17 +88,17 @@ namespace The_House_Discord_Bot.Commands
                 EmbedBuilder raidScheduler = BuildSignupEmbed(author, activityType);
                 RestUserMessage msg = await Context.Channel.SendMessageAsync("@here", false, raidScheduler.Build());
 
-                string[] emojiArray = new string[] { "\U0001F44D", "\U0001F44E", "\U0001F937" };
-                for (int i = 0; i < emojiArray.Length; i++)
-                {
-                    System.Threading.Thread.Sleep(1000);
-                    await msg.AddReactionAsync(new Emoji(emojiArray.GetValue(i).ToString()));
-                }
-
                 try
                 {
                     CreateRaidScheduleRecord(activityType, msg.GetJumpUrl(), authorCrmGuid, crmService);
                     await Context.Channel.DeleteMessageAsync(Context.Message.Id);
+
+                    string[] emojiArray = new string[] { "\U0001F44D", "\U0001F44E", "\U0001F937" };
+                    for (int i = 0; i < emojiArray.Length; i++)
+                    {
+                        System.Threading.Thread.Sleep(1000);
+                        await msg.AddReactionAsync(new Emoji(emojiArray.GetValue(i).ToString()));
+                    }
                 }
                 catch (Exception ex)
                 {
