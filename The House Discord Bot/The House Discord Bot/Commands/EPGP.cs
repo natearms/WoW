@@ -61,11 +61,11 @@ namespace The_House_Discord_Bot.Commands
 
                     if (weeklyDonation > 0)
                     {
-                        await ReplyAsync("Thank you for your donations! You have donated **" + weeklyDonation.ToString("N3") + " EP** worth of mats to the guild bank in the last 7 days.", false, null);
+                        await ReplyAsync("Thank you for your donations! You have donated **" + weeklyDonation.ToString("N3") + " EP** worth of mats to the guild bank since Tuesday.", false, null);
                     }
                     else
                     {
-                        await ReplyAsync("It doesn't look like you've donated anything within the last 7 days that rewards EP.", false, null);
+                        await ReplyAsync("It doesn't look like you've donated anything since Tuesday that rewards EP.", false, null);
                     }
                 }
                 
@@ -119,7 +119,7 @@ namespace The_House_Discord_Bot.Commands
 
                 topWeeklyDonations.WithDescription(commentString);
 
-                await ReplyAsync("Here are the results of who has donated in the last 7 days.", false, topWeeklyDonations.Build());
+                await ReplyAsync("Here are the results of who has donated since tuesday.", false, topWeeklyDonations.Build());
             }
 
             private EntityCollection GetEPDonations(IOrganizationService crmService)
