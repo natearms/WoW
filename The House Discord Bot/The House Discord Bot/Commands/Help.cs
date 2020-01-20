@@ -73,6 +73,7 @@ namespace The_House_Discord_Bot.Commands
             var embedMiscellaneous = new EmbedBuilder();
             embedMiscellaneous.WithTitle("Miscellaneous commands");
             embedMiscellaneous.AddField("Generate a TradeSkillMaster shopping list string.", theHouseBotTrigger + "-tsm", false);
+            embedMiscellaneous.AddField("Select random raid members to drink!", theHouseBotTrigger + "-drink", false);
         
             await Context.Message.Author.SendMessageAsync(null, false, embedMiscellaneous.Build());
 

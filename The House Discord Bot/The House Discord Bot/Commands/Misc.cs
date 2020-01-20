@@ -39,8 +39,9 @@ namespace The_House_Discord_Bot.Commands
 
         }
         [Command("-drink"), Summary("Randomly assign people to drink")]
-        public async Task RaidMemberDrink(int drinkCount)
+        public async Task RaidMemberDrink()
         {
+            int drinkCount = new Random().Next(4, 7);
             string drinkResults = "";
             int activeRaidMembers = 0;
             List<int> randomNumbers = new List<int>();
