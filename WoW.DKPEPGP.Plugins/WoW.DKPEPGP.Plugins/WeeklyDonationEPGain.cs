@@ -37,6 +37,11 @@ namespace WoW.DKPEPGP.Plugins
                             totalEpGain += lastWeeksDonations.Entities[i].GetAttributeValue<Decimal>("wowc_ep");
                         }
 
+                        if(totalEpGain < 0)
+                        {
+                            totalEpGain = 0;
+                        }
+
                         Entity contact = new Entity("contact");
                         contact.Id = entity.GetAttributeValue<EntityReference>("wowc_raidmember").Id;
                         contact["wowc_last7daysofepdonations"] = (Decimal)totalEpGain;
@@ -50,7 +55,7 @@ namespace WoW.DKPEPGP.Plugins
 
                     catch (Exception ex)
                     {
-                        tracingService.Trace("FollowUpPlugin: {0}", ex.ToString());
+                        tracingService.Trace("WeeklyDonationEPGain Plugin Failure: {0}", ex.ToString());
                         throw;
                     }
                 }
