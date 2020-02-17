@@ -55,13 +55,14 @@ namespace WoW.DKPEPGP.Plugins
                 Entity decayItemLoot = DecayInformation.Entities[0];
                 
                 foreach (var a in RaidMembers.Entities)
-                {
-                    tracingService.Trace("Creating EP Decay record");
+                {   
                     Entity effortPoint = new Entity("wowc_effortpoint");
                     Entity gearPoint = new Entity("wowc_gearpoint");
 
                     if(a.GetAttributeValue<Decimal>("wowc_totalep") > 0)
                     {
+                        tracingService.Trace($"Creating EP Decay record for {a.GetAttributeValue<string>("fullname")}");
+
                         effortPoint["subject"] = decayItemLoot.Attributes["wowc_name"] + " - " + a.GetAttributeValue<string>("fullname") + " - " + DateTime.Today.ToShortDateString();
                         effortPoint["wowc_raidmember"] = new EntityReference("contact", a.GetAttributeValue<Guid>("contactid"));
                         effortPoint["wowc_item"] = new EntityReference("wowc_loot", decayItemLoot.GetAttributeValue<Guid>("wowc_lootid"));
@@ -76,6 +77,8 @@ namespace WoW.DKPEPGP.Plugins
                     
                     if(a.GetAttributeValue<Decimal>("wowc_totalgp") > 0)
                     {
+                        tracingService.Trace($"Creating GP Decay record for {a.GetAttributeValue<string>("fullname")}");
+
                         gearPoint["subject"] = decayItemLoot.Attributes["wowc_name"] + " - " + a.GetAttributeValue<string>("fullname") + " - " + DateTime.Today.ToShortDateString();
                         gearPoint["wowc_raidmember"] = new EntityReference("contact", a.GetAttributeValue<Guid>("contactid"));
                         gearPoint["wowc_item"] = new EntityReference("wowc_loot", decayItemLoot.GetAttributeValue<Guid>("wowc_lootid"));
@@ -89,16 +92,16 @@ namespace WoW.DKPEPGP.Plugins
                         gearPoint["wowc_gp"] = (a.GetAttributeValue<Decimal>("wowc_totalgp") * new Decimal(.10)) * -1;
 
                         service.Create(gearPoint);
-                    }
-                    
+                    }   
                 }
-                
-
             }
             catch (FaultException<OrganizationServiceFault> e)
             {
-
-                throw;
+                tracingService.Trace(e.ToString());
+            }
+            catch (Exception e)
+            {
+                tracingService.Trace(e.ToString());
             }
 
         }
