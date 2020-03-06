@@ -216,6 +216,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utilities\ResultsFormatter.cs" />
     <Compile Include="Utilities\FuzzyMatcher.cs" />
+    <Compile Include="Utilities\StringUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

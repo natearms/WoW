@@ -248,12 +248,19 @@ namespace The_House_Discord_Bot.Commands
                 EntityCollection results = crmService.RetrieveMultiple(query);
                 return results;
             }
+
+            private static string getSearchableName(string itemSearch)
+            {
+                string itemSearchSpecialsReplaced = StringUtils.ReplaceSpecialCharactersWithString(itemSearch, "@");
+                string[] itemSearchTokens = itemSearchSpecialsReplaced.Split(new[] { "@" }, StringSplitOptions.RemoveEmptyEntries);
+                return String.Join("%", itemSearchTokens);
+            }
             private static EntityCollection GetItemInformation(string itemSearch, IOrganizationService crmService)
             {
                 QueryExpression query = new QueryExpression("wowc_loot");
                 query.ColumnSet.AddColumns("wowc_lootid", "wowc_name");
                 query.Criteria = new FilterExpression();
-                query.Criteria.AddCondition("wowc_name", ConditionOperator.Like, "%" + itemSearch + "%");
+                query.Criteria.AddCondition("wowc_name", ConditionOperator.Like, "%" + getSearchableName(itemSearch) + "%");
                 query.Criteria.AddCondition("wowc_slot", ConditionOperator.Equal, 257260010);
 
                 EntityCollection results = crmService.RetrieveMultiple(query);
@@ -400,7 +407,7 @@ namespace The_House_Discord_Bot.Commands
                 linkEntity2.Orders.Add(new OrderExpression("lastname", OrderType.Ascending));
                 linkEntity1.LinkEntities.Add(linkEntity2);
                 query.LinkEntities.Add(linkEntity1);
-                query.Criteria.AddCondition("wowc_name", ConditionOperator.Like, "%" + itemSearch + "%");
+                query.Criteria.AddCondition("wowc_name", ConditionOperator.Like, "%" + getSearchableName(itemSearch) + "%");
                 query.Criteria.AddCondition("wowc_slot", ConditionOperator.Equal, 257260010);
                 query.Orders.Add(new OrderExpression("wowc_name", OrderType.Ascending));
 
